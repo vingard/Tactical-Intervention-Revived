@@ -210,7 +210,7 @@
         ],
         "publish": {
             "provider": "github",
-            "owner": "vin",
+            "owner": "vingard",
             "repo": "Tactical-Intervention-Revived"
         }
     },
