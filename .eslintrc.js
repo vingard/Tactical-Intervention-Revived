@@ -12,10 +12,12 @@ module.exports = {
         "no-shadow": "off",
         "@typescript-eslint/no-shadow": "error",
         "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/no-unused-vars": "warn",
         semi: ["warn", "never"],
         "comma-dangle": ["warn", "never"],
         quotes: ["warn", "double"],
+        "spaced-comment": "off",
+        "import/prefer-default-export": "off",
         "prettier/prettier": "off"
     },
     parserOptions: {
