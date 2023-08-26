@@ -186,7 +186,8 @@
         },
         "nsis": {
             "oneClick": false,
-            "allowToChangeInstallationDirectory": true
+            "allowToChangeInstallationDirectory": true,
+            "perMachine": true
         },
         "win": {
             "requestedExecutionLevel": "requireAdministrator",

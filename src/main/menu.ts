@@ -80,18 +80,7 @@ export default class MenuBuilder {
                                       this.mainWindow.webContents.toggleDevTools()
                                   }
                               }
-                          ]
-                        : [
-                              {
-                                  label: "Toggle &Full Screen",
-                                  accelerator: "F11",
-                                  click: () => {
-                                      this.mainWindow.setFullScreen(
-                                          !this.mainWindow.isFullScreen()
-                                      )
-                                  }
-                              }
-                          ]
+                          ] : []
             },
             {
                 label: "Help",

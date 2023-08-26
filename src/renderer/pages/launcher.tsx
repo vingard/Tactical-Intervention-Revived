@@ -10,9 +10,9 @@ export function LauncherPage() {
                 <Toolbar/>
             </Card>
 
-            <Callout title="Game not installed" intent="danger">
+            {/* <Callout title="Game not installed" intent="danger">
                 Your game is not installed! Click here to install your game.
-            </Callout>
+            </Callout> */}
 
             <div className="modList container">
                 <div className="modList noMods">
