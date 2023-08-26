@@ -58,7 +58,8 @@ const installExtensions = async () => {
 
 const createWindow = async () => {
     if (isDebug) {
-        await installExtensions()
+        //await installExtensions()
+        // TODO: FIXME broken right now
     }
 
     const RESOURCES_PATH = app.isPackaged

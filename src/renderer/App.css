@@ -54,6 +54,10 @@ body,
     color: #ABB3BF;
 }
 
+.fade {
+    color: #cdd1d7;
+}
+
 .input {
     margin-bottom: 2rem;
 }
@@ -65,7 +69,7 @@ body,
 .input>.muted {
     margin-top: 0.5rem;
     margin-left: 0.2rem;
-    font-style: italic;
+    font-size: 12px;
 }
 
 .installer.progressInfo {
@@ -73,6 +77,11 @@ body,
     padding: 0px;
     margin: 0px;
     margin-top: 1rem;
+}
+
+.installer.progressInfo>p {
+    color: #ABB3BF;
+    font-weight: 500;
 }
 
 .installer>p {

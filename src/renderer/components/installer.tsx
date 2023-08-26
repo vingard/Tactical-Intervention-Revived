@@ -13,11 +13,14 @@ function StartPanel(props: React.FC<DownloadPanelProps>) {
             <div className="installer">
                 <h2>Welcome to Tactical Intervention Revived!</h2>
 
-                <p>
-                    <b>The game is currently not installed, {`Before you can start playing you'll need to download the game files.`}</b>
-                </p>
-                <p>The game will be installed to the same location as this program.</p>
-                <p>Approximate size on disk: <b>5GB</b></p>
+                <div className="fade">
+                    <p>
+                        <b>The game is currently not installed, {`Before you can start playing you'll need to download the game files.`}</b>
+                        <br/>The game will be installed to the same location as this program.
+                    </p>
+
+                    <p>Approximate size on disk: <b>5GB</b></p>
+                </div>
             </div>
         </DialogBody>
     )
@@ -46,7 +49,7 @@ function SetupPanel() {
         <DialogBody>
             <div className="installer">
                 <div className="input small">
-                    <h3>Profile</h3>
+                    <h3>Setup your Preferences</h3>
 
                     <FormGroup
                         helperText="This will be your display name in online play"
@@ -58,13 +61,19 @@ function SetupPanel() {
                         />
                     </FormGroup>
 
-                    <h3>Preferences</h3>
-
                     <FormGroup
                         label="Gore Enabled"
                     >
                         <Switch
-                            placeholder="Username"
+                            defaultChecked
+                        />
+                    </FormGroup>
+
+                    <FormGroup
+                        label="Add to Steam Library"
+                        helperText="After finishing this install, you must restart Steam to see Tactical Intervention Revived in your library"
+                    >
+                        <Switch
                             defaultChecked
                         />
                     </FormGroup>
@@ -81,13 +90,14 @@ function SetupPanel() {
                         </HTMLSelect>
                     </FormGroup>
 
-                    <div className="muted">You can always change these later in the {`'Settings'`} menu.</div>
+                    <div className="muted">
+                        You can always change your preferences later in the {`'Settings'`} menu
+                    </div>
                 </div>
             </div>
         </DialogBody>
     )
 }
-
 
 export function GameInstaller() {
     return (
@@ -100,12 +110,12 @@ export function GameInstaller() {
             }}
             finalButtonProps={{
                 text: "Finish",
-                disabled: false,
+                disabled: true,
                 tooltipContent: "end"
             }}
             title="Install the game"
-            isOpen={true}
-            isCloseButtonShown={false}
+            isOpen={true} // TODO: Add state
+            isCloseButtonShown={true} // TODO: Remove close btn
         >
             <DialogStep
                 id="start"
@@ -130,12 +140,6 @@ export function GameInstaller() {
                 backButtonProps={{
                     disabled: true
                 }}
-            />
-
-            <DialogStep
-                id="shortcuts"
-                title="Shortcuts"
-                panel={<StartPanel/>}
             />
         </MultistepDialog>
     )
