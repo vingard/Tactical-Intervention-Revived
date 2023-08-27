@@ -18,7 +18,11 @@ module.exports = {
         quotes: ["warn", "double"],
         "spaced-comment": "off",
         "import/prefer-default-export": "off",
-        "prettier/prettier": "off"
+        "prettier/prettier": "off",
+        "no-restricted-syntax": "off",
+        "no-continue": "off",
+        "no-plusplus": "off",
+        "react/require-default-props": "off"
     },
     parserOptions: {
         ecmaVersion: 2020,

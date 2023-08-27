@@ -1,5 +1,5 @@
 import { Callout, DialogBody, DialogStep, FormGroup, HTMLSelect, InputGroup, MultistepDialog, ProgressBar, Radio, RadioGroup, Slider, Switch } from "@blueprintjs/core"
-import React from "react"
+import React, { useState } from "react"
 
 
 interface DownloadPanelProps {
@@ -7,7 +7,7 @@ interface DownloadPanelProps {
 }
 
 
-function StartPanel(props: React.FC<DownloadPanelProps>) {
+function StartPanel() {
     return (
         <DialogBody>
             <div className="installer">
@@ -57,6 +57,7 @@ function SetupPanel() {
                         labelInfo="(required)"
                     >
                         <InputGroup
+                            name="username"
                             placeholder="Username"
                         />
                     </FormGroup>
@@ -65,6 +66,7 @@ function SetupPanel() {
                         label="Gore Enabled"
                     >
                         <Switch
+                            name="gore"
                             defaultChecked
                         />
                     </FormGroup>
@@ -74,6 +76,7 @@ function SetupPanel() {
                         helperText="After finishing this install, you must restart Steam to see Tactical Intervention Revived in your library"
                     >
                         <Switch
+                            name="steamLibrary"
                             defaultChecked
                         />
                     </FormGroup>
@@ -81,7 +84,7 @@ function SetupPanel() {
                     <FormGroup
                         label="FPS limit"
                     >
-                        <HTMLSelect>
+                        <HTMLSelect name="fpsLimit">
                             <option value="60">60 FPS</option>
                             <option value="90">90 FPS</option>
                             <option value="120">120 FPS</option>
@@ -99,7 +102,8 @@ function SetupPanel() {
     )
 }
 
-export function GameInstaller() {
+// eslint-disable-next-line react/require-default-props
+export function GameInstaller({open, onClosed}: {open: boolean, onClosed?: any}) {
     return (
         <MultistepDialog
             className="bp5-dark"
@@ -114,8 +118,8 @@ export function GameInstaller() {
                 tooltipContent: "end"
             }}
             title="Install the game"
-            isOpen={true} // TODO: Add state
-            isCloseButtonShown={true} // TODO: Remove close btn
+            isOpen={open}
+            isCloseButtonShown={false}
         >
             <DialogStep
                 id="start"

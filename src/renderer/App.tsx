@@ -4,6 +4,7 @@ import "./App.css"
 import { useState } from "react"
 import classNames from "classnames"
 import { LauncherPage } from "./pages/launcher"
+import { GameProvider } from "./providers/game.provider"
 
 export default function App() {
     const [darkTheme, setDarkTheme] = useState(true)
@@ -16,11 +17,13 @@ export default function App() {
                 [Classes.DARK]: darkTheme
             })}
         >
-            <Router>
-                <Routes>
-                    <Route path="/" element={<LauncherPage />} />
-                </Routes>
-            </Router>
+            <GameProvider>
+                <Router>
+                    <Routes>
+                        <Route path="/" element={<LauncherPage />} />
+                    </Routes>
+                </Router>
+            </GameProvider>
         </div>
     )
 }

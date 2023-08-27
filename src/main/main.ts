@@ -14,6 +14,8 @@ import { autoUpdater } from "electron-updater"
 import log from "electron-log"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
+import * as config from "./core/config"
+import * as game from "./core/game"
 
 class AppUpdater {
     constructor() {
@@ -125,8 +127,16 @@ app.on("window-all-closed", () => {
     }
 })
 
+async function handleGameCheckState() {
+    return game.checkInstalled()
+}
+
 app.whenReady()
     .then(() => {
+        ipcMain.handle("game:checkState", handleGameCheckState)
+
+        config.create()
+
         createWindow()
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the

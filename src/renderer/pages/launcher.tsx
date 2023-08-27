@@ -1,11 +1,17 @@
-import { Callout, Card, NonIdealState } from "@blueprintjs/core";
-import { GameInstaller } from "renderer/components/installer";
-import { Toolbar } from "renderer/components/toolbar";
+import { Callout, Card, NonIdealState } from "@blueprintjs/core"
+import { useCallback, useContext, useEffect, useState } from "react"
+import { GameInstaller } from "renderer/components/installer"
+import { Toolbar } from "renderer/components/toolbar"
+import { GameContext } from "renderer/providers/game.provider"
 
 export function LauncherPage() {
+    //const [installerOpen, setInstallerOpen] = useState(false)
+    const {gameInfo} = useContext(GameContext)
+
     return (
         <div className="content">
-            <GameInstaller/>
+            <GameInstaller open={!gameInfo.gameInstalled}/>
+
             <Card>
                 <Toolbar/>
             </Card>
