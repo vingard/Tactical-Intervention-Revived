@@ -120,6 +120,12 @@ export function GameInstaller({open, onClosed}: {open: boolean, onClosed?: any})
             title="Install the game"
             isOpen={open}
             isCloseButtonShown={false}
+            onChange={(newStepId, lastStepId) => {
+                if (newStepId === "download") {
+                    window.electron.ipcRenderer.invoke("game:startInstall")
+                    return
+                }
+            }}
         >
             <DialogStep
                 id="start"

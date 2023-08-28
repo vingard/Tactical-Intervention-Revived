@@ -2,7 +2,10 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"
 
-export type Channels = "game:checkState"
+export type Channels =
+    | "game:checkState"
+    | "game:startInstall"
+    | "loading:setState"
 
 const electronHandler = {
     ipcRenderer: {

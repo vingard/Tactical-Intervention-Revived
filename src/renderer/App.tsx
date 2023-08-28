@@ -8,9 +8,6 @@ import { GameProvider } from "./providers/game.provider"
 
 export default function App() {
     const [darkTheme, setDarkTheme] = useState(true)
-    console.log(classNames("app", {
-        [Classes.DARK]: darkTheme
-    }))
 
     return (
         <div className={classNames("app", {
@@ -20,7 +17,7 @@ export default function App() {
             <GameProvider>
                 <Router>
                     <Routes>
-                        <Route path="/" element={<LauncherPage />} />
+                        <Route path="/" element={<LauncherPage/>}/>
                     </Routes>
                 </Router>
             </GameProvider>

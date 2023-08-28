@@ -127,13 +127,22 @@ app.on("window-all-closed", () => {
     }
 })
 
+export function getWindow() {
+    return mainWindow
+}
+
 async function handleGameCheckState() {
     return game.checkInstalled()
+}
+
+async function handleGameStartInstall() {
+    return game.installGame()
 }
 
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
+        ipcMain.handle("game:startInstall", handleGameStartInstall)
 
         config.create()
 

@@ -50,17 +50,17 @@ export async function installGame(overrideUrl?: string) {
         console.log("Getting remote 'package.json' file...")
         const remotePackage = await getRemotePackage()
 
-        if (!remotePackage.patchedContentUrl) {
-            throw new Error("No 'patchedContentUrl' in remote package.json!")
+        if (!remotePackage.contentUrl) {
+            throw new Error("No 'contentUrl' in remote package.json!")
         }
 
-        url = remotePackage.patchedContentUrl
+        url = remotePackage.contentUrl
     }
 
     if (!url) throw new Error("Failed to get game content download URL")
 
     const destination = appPath.baseContentDir
-    const tempFileName = "patched_content.zip"
+    const tempFileName = "game_content.zip"
 
     // Wait 1 second to prevent spam
     //await new Promise(resolve => setTimeout(resolve, 1000))
