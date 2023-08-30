@@ -1,42 +1,35 @@
 import { DialogBody, DialogStep, FormGroup, HTMLSelect, InputGroup, Switch } from "@blueprintjs/core"
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { GameContext } from "renderer/providers/game.provider"
 import { LoadingBar } from "./loadingbar"
 import { NoNavInputMultiStepDialog } from "./thirdparty/nonavmultistep"
-import { electron } from "process"
 
+function StartPanel() {
+    return (
+        <DialogBody>
+            <div className="installer">
+                <h2>Welcome to Tactical Intervention Revived!</h2>
 
-interface DownloadPanelProps {
-    //onChange:  (event: React.FormEvent<HTMLInputElement>) => void
+                <div className="fade">
+                    <p>
+                        <b>The game is currently not installed, {`Before you can start playing you'll need to download the game files.`}</b>
+                        <br/>The game will be installed to the same location as this program.
+                    </p>
+
+                    <p>Approximate size on disk: <b>5GB</b></p>
+                </div>
+            </div>
+        </DialogBody>
+    )
 }
 
-
 function StartStep() {
-    function Panel() {
-        return (
-            <DialogBody>
-                <div className="installer">
-                    <h2>Welcome to Tactical Intervention Revived!</h2>
-
-                    <div className="fade">
-                        <p>
-                            <b>The game is currently not installed, {`Before you can start playing you'll need to download the game files.`}</b>
-                            <br/>The game will be installed to the same location as this program.
-                        </p>
-
-                        <p>Approximate size on disk: <b>5GB</b></p>
-                    </div>
-                </div>
-            </DialogBody>
-        )
-    }
-
     return (
         <DialogStep
             id="start"
             title="Start"
-            panel={<Panel/>}
+            panel={<StartPanel/>}
             nextButtonProps={{
                 disabled: false,
                 text: "Start Download"
@@ -45,29 +38,29 @@ function StartStep() {
     )
 }
 
-function DownloadStep({installed}: {installed: boolean}) {
-    function Panel() {
-        return (
-            <DialogBody>
-                <div className="installer">
-                    <h3>Downloading & Installing</h3>
+function DownloadPanel() {
+    return (
+        <DialogBody>
+            <div className="installer">
+                <h3>Downloading & Installing</h3>
 
-                    <div className="installer progressInfo">
-                        <LoadingBar loadStateId="game"/>
-                    </div>
-
-                    <br/>
-                    <p>Please wait for the download and installation to complete. It may take a while depending on your internet connection speed. Do not close this program.</p>
+                <div className="installer progressInfo">
+                    <LoadingBar loadStateId="game"/>
                 </div>
-            </DialogBody>
-        )
-    }
 
+                <br/>
+                <p>Please wait for the download and installation to complete. It may take a while depending on your internet connection speed. Do not close this program.</p>
+            </div>
+        </DialogBody>
+    )
+}
+
+function DownloadStep({installed}: {installed: boolean}) {
     return (
         <DialogStep
             id="download"
             title="Download & Install"
-            panel={<Panel/>}
+            panel={<DownloadPanel/>}
             nextButtonProps={{
                 disabled: !installed
             }}
@@ -75,87 +68,87 @@ function DownloadStep({installed}: {installed: boolean}) {
     )
 }
 
-function SetupStep({form}: {form: any}) {
+function SetupPanel({form}: {form: any}) {
     const {register, handleSubmit, control, formState: {errors}} = form
 
-    function Panel() {
-        return (
-            <DialogBody>
-                <div className="installer">
-                    <div className="input small">
-                        <h3>Setup your Preferences</h3>
+    return (
+        <DialogBody>
+            <div className="installer">
+                <div className="input small">
+                    <h3>Setup your Preferences</h3>
 
-                        <form>
-                            <FormGroup
-                                helperText="This will be your display name in online play"
-                                label="Username"
-                                labelInfo="(required)"
-                                intent={errors.username && "danger"}
-                            >
-                                <Controller
-                                    name="username"
-                                    control={control}
-                                    rules={{required: true}}
-                                    render={({field}) => (
-                                        <InputGroup
-                                            {...field}
-                                            placeholder="Username"
-                                            intent={errors.username && "danger"}
-                                        />
-                                    )}
-                                />
+                    <form>
+                        <FormGroup
+                            helperText="This will be your display name in online play"
+                            label="Username"
+                            labelInfo="(required)"
+                            intent={errors.username && "danger"}
+                        >
+                            <Controller
+                                name="username"
+                                control={control}
+                                rules={{required: true}}
+                                render={({field}) => (
+                                    <InputGroup
+                                        {...field}
+                                        placeholder="Username"
+                                        intent={errors.username && "danger"}
+                                    />
+                                )}
+                            />
 
-                            </FormGroup>
+                        </FormGroup>
 
-                            <FormGroup
-                                label="Gore Enabled"
+                        <FormGroup
+                            label="Gore Enabled"
+                            intent={errors.goreEnabled && "danger"}
+                        >
+                            <Switch
                                 intent={errors.goreEnabled && "danger"}
-                            >
-                                <Switch
-                                    intent={errors.goreEnabled && "danger"}
-                                    {...register("goreEnabled")}
-                                />
-                            </FormGroup>
+                                {...register("goreEnabled")}
+                            />
+                        </FormGroup>
 
-                            <FormGroup
-                                label="Add to Steam Library"
-                                helperText="After finishing this install, you must restart Steam to see Tactical Intervention Revived in your library"
+                        <FormGroup
+                            label="Add to Steam Library"
+                            helperText="After finishing this install, you must restart Steam to see Tactical Intervention Revived in your library"
+                            intent={errors.steamShortcut && "danger"}
+                        >
+                            <Switch
                                 intent={errors.steamShortcut && "danger"}
-                            >
-                                <Switch
-                                    intent={errors.steamShortcut && "danger"}
-                                    {...register("steamShortcut")}
-                                />
-                            </FormGroup>
+                                {...register("steamShortcut")}
+                            />
+                        </FormGroup>
 
-                            <FormGroup
-                                label="FPS limit"
-                                intent={errors.maxFps && "danger"}
-                            >
-                                <HTMLSelect intent={errors.maxFps && "danger"} {...register("maxFps")}>
-                                    <option value="60">60 FPS</option>
-                                    <option value="90">90 FPS</option>
-                                    <option value="120">120 FPS</option>
-                                    <option value="140">140 FPS</option>
-                                    <option value="240">240 FPS</option>
-                                </HTMLSelect>
-                            </FormGroup>
-                        </form>
+                        <FormGroup
+                            label="FPS limit"
+                            intent={errors.maxFps && "danger"}
+                        >
+                            <HTMLSelect intent={errors.maxFps && "danger"} {...register("maxFps")}>
+                                <option value="60">60 FPS</option>
+                                <option value="90">90 FPS</option>
+                                <option value="120">120 FPS</option>
+                                <option value="140">140 FPS</option>
+                                <option value="240">240 FPS</option>
+                            </HTMLSelect>
+                        </FormGroup>
+                    </form>
 
-                        <div className="muted">
-                            You can always change your preferences later in the {`'Settings'`} menu
-                        </div>
+                    <div className="muted">
+                        You can always change your preferences later in the {`'Settings'`} menu
                     </div>
                 </div>
-            </DialogBody>
-        )
-    }
+            </div>
+        </DialogBody>
+    )
+}
 
+function SetupStep({form}: {form: any}) {
     return (
         <DialogStep
             id="setup"
             title="Setup"
-            panel={<Panel/>}
+            panel={<SetupPanel form={form}/>}
             backButtonProps={{
                 disabled: true
             }}
@@ -182,7 +175,6 @@ export function GameInstaller() {
         const success = await window.electron.ipcRenderer.invoke("game:startInstall")
         setInstallingGame(false)
         setInstallSuccess(success)
-        console.log("successful install:", success)
     }
 
     async function setupFormSubmit(data: any, event: any) {
@@ -194,9 +186,11 @@ export function GameInstaller() {
         //checkGameState()
     }
 
-    if (!gameInfo.gameInstalled && !installerOpen && !installerComplete) {
-        setInstallerOpen(true)
-    }
+    useEffect(() => {
+        if (gameInfo.gameInstalled === false && !installerOpen && !installerComplete) {
+            setInstallerOpen(true)
+        }
+    }, [gameInfo, installerOpen, installerComplete])
 
     return (
         <NoNavInputMultiStepDialog
@@ -217,9 +211,6 @@ export function GameInstaller() {
             isOpen={installerOpen}
             isCloseButtonShown={false}
             onChange={(newStepId, lastStepId, event) => {
-                if (newStepId === "start" && (installSuccess === true || installingGame === true)) event.stopPropagation()
-                if (newStepId === "setup" && installSuccess === false) event.preventDefault()
-
                 if (newStepId === "download" && installingGame === false && installSuccess === false) {
                     setInstallingGame(true)
                     invokeInstall()

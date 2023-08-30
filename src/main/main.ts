@@ -12,6 +12,7 @@ import path from "path"
 import { app, BrowserWindow, shell, ipcMain } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
+import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
@@ -135,6 +136,7 @@ export function getWindow() {
 
 async function handleGameCheckState() {
     try {
+        console.log(game.checkInstalled())
         return game.checkInstalled()
     } catch(err: any) {
         config.create(true)
@@ -146,7 +148,8 @@ async function handleGameStartInstall() {
         await game.installGame()
         return true
     } catch (err: any) {
-        console.error(err)
+        console.error("InstallGameCaughtError", err)
+        log.error(err.message)
         loadingSetError("game", err.message)
         return false
     }
@@ -154,8 +157,8 @@ async function handleGameStartInstall() {
 
 async function handleSetStartConfig(event: any, data: any) {
     let cfg = ""
-    cfg += data.goreEnabled && "ti_low_violence 0\n"
-    cfg += data.maxFps && `fps_max ${data.maxFps}\n`
+    cfg += data.goreEnabled && "ti_low_violence 0\n" || ""
+    cfg += data.maxFps && `fps_max ${data.maxFps}\n` || ""
 
     await game.setCfg(cfg)
     await game.setUsername(data.username)
@@ -166,11 +169,65 @@ async function handleSetStartConfig(event: any, data: any) {
     }
 }
 
+async function handleQueryServer(event: any, ip: string, port: number) {
+    // MasterServer({
+    //     quantity: 100,
+    //     region: "EUROPE",
+    //     timeout: 3000,
+    //     filter
+    // }).then(servers => {
+    //     console.log(servers)
+    // })
+
+    // let server
+    // try {
+    //     console.log(ip, port)
+    //     server = await Server({
+    //         ip,
+    //         port,
+    //         timeout: 2000,
+    //         debug: true,
+    //         enableWarns: true
+    //     })
+    // } catch(err) {
+    //     console.log(err)
+    //     return {error: "Server not found"}
+    // }
+
+    const server = await tcpPingPort(ip, port)
+    return server.online || false
+}
+
+async function handleConnectServer(event: any, addr: string) {
+    try {
+        await game.start(`connect ${addr}`)
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
+async function handleGameStart(event: any) {
+    try {
+        await game.start()
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
         ipcMain.handle("game:startInstall", handleGameStartInstall)
         ipcMain.handle("game:setStartConfig", handleSetStartConfig)
+        ipcMain.handle("game:queryServer", handleQueryServer)
+        ipcMain.handle("game:connectServer", handleConnectServer)
+        ipcMain.handle("game:start", handleGameStart)
 
         config.create()
 

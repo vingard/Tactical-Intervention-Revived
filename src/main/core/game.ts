@@ -15,8 +15,10 @@ import * as mod from "./mod"
 import * as game from "./game"
 // eslint-disable-next-line import/no-cycle
 import { isDebug } from "../main"
-import { loadingReset, loadingSetState } from "./util"
+import { loadingReset, loadingSetError, loadingSetState } from "./util"
 import { SoftError } from "./softError"
+import { shell } from "electron"
+import { spawn } from "child_process"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
 
@@ -40,13 +42,12 @@ async function getRemotePackage() {
 
     try {
         remotePackage = await (await axios.get(remotePackageUrl)).data
-    } catch (err) {
-        throw new SoftError(`Error reading the remote package.json file (${err})`)
+    } catch (err: any) {
+        throw new SoftError(`Error reading the remote package.json file (${err.message || err})`)
     }
 
     return remotePackage
 }
-
 
 export async function installGame(overrideUrl?: string) {
     loadingReset("game")
@@ -59,6 +60,7 @@ export async function installGame(overrideUrl?: string) {
     if (!overrideUrl) {
         log.info("Getting remote 'package.json' file...")
         loadingSetState("game", "Getting remote 'package.json' file...")
+
         const remotePackage = await getRemotePackage()
 
         if (!remotePackage.contentUrl) {
@@ -75,11 +77,11 @@ export async function installGame(overrideUrl?: string) {
 
     // Download patched content to a temp file
     log.info("Downloading game content")
-    //await files.downloadTempFile(url, tempFileName, "game")
+    await files.downloadTempFile(url, tempFileName, "game")
 
     // Extract
     log.info("Extracting game content")
-    //await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
+    await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
 
     // Cleanup and mark as patched
     loadingSetState("game", "Finishing up...")
@@ -133,9 +135,9 @@ export async function mountFile(filePath: string, from: string, to: string, modN
         )
     } catch(err: any) {
         if (err.code === "EPERM") {
-            throw new SoftError(`Mounting permissions error! ${err}`)
+            throw new SoftError(`Mounting permissions error - make sure you are running this program as Administrator! ${err.message}`)
         } else {
-            throw new SoftError(`Error mounting file! ${err}`)
+            throw new SoftError(`Error mounting file! ${err.message}`)
         }
     }
 
@@ -216,8 +218,12 @@ export function mountContent(content: ContentType, from: string, to: string): [E
             emitter.emit("start", entries.length)
 
             for (const [filePath, modName] of entries) {
-                // eslint-disable-next-line no-await-in-loop
-                await mountFile(filePath, from, to, modName)
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await mountFile(filePath, from, to, modName)
+                } catch (err: any) {
+                    emitter.emit("error", err.message)
+                }
                 emitter.emit("progress", i++)
             }
 
@@ -240,12 +246,13 @@ export async function unMountContent(content: ContentType, from: string, to: str
 export async function mountBaseContent() {
     const baseContentFs = jetpack.cwd(appPath.baseContentDir)
     const mountFs = jetpack.cwd(appPath.mountDir)
-    const contentsTemp = baseContentFs.find(".", {directories: false, recursive: true})
+    const contentsTemp = await baseContentFs.findAsync(".", {directories: false, recursive: true})
     const contents: any = {}
     let completed = 0
 
     for (const filePath of contentsTemp) {
-        if (mountFs.exists(filePath) !== "file") {
+        // eslint-disable-next-line no-await-in-loop
+        if (await mountFs.existsAsync(filePath) !== "file") {
             contents[filePath] = "_BaseGameContent"
         }
 
@@ -256,6 +263,7 @@ export async function mountBaseContent() {
     loadingSetState("game", "Starting mount...")
 
     emitter.on("progress", (totalCompleted) => loadingSetState("game", "Mounting", totalCompleted, totalFiles))
+    emitter.once("error", (errMessage) => {throw new SoftError(errMessage, "game")})
 
     return new Promise<void>(function (resolve, reject) {
         emitter.once("end", () => resolve())
@@ -274,21 +282,21 @@ export async function setUsername(username: string) {
     }
 }
 
-export async function setCfg(content: string) {
-    log.info(`Setting revived.cfg to:\nSTART CFG\n${content}\nEND CFG`)
+export async function setCfg(content: string, filename: string = "revived.cfg") {
+    log.info(`Setting ${filename} to:\nSTART CFG\n${content}\nEND CFG`)
 
     try {
-        jetpack.write(appPath.cfgPath, content)
+        jetpack.write(path.resolve(appPath.cfgDir, filename), content)
     } catch(err) {
-        throw new SoftError(`Failed to set revived.cfg! ${err}`)
+        throw new SoftError(`Failed to set ${filename}! ${err}`)
     }
 }
 
-export async function getCfg() {
+export async function getCfg(filename: string = "revived.cfg") {
     try {
-        return jetpack.read(appPath.cfgPath)
+        return jetpack.read(path.resolve(appPath.cfgDir, filename))
     } catch(err) {
-        throw new SoftError(`Failed to read revived.cfg! ${err}`)
+        throw new SoftError(`Failed to read ${filename}! ${err}`)
     }
 }
 
@@ -337,4 +345,28 @@ export async function createSteamShortcuts() {
             log.error(`Failed to make ${shortcutPath}`, err)
         }
     }
+}
+
+export async function setTempCfg(content: string) {
+    let baseCfg = await getCfg("default.cfg")
+    const includeTemp = `exec "_temp.cfg"`
+
+    if (baseCfg && !baseCfg.includes(includeTemp)) {
+        baseCfg = `${includeTemp}\n${baseCfg}`
+        await setCfg(baseCfg, "default.cfg")
+    }
+
+    await setCfg(content, "_temp.cfg")
+}
+
+export async function start(args: string = "") {
+    log.info(`Attempting to start game with args: ${args}`)
+
+    await setTempCfg(args)
+    const instance = spawn(`${appPath.gamePath}`)
+
+    instance.on("exit", (code) => {
+        //setTempCfg("")
+        //console.log("game closed")
+    })
 }

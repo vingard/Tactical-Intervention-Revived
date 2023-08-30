@@ -1,5 +1,5 @@
-import { ProgressBar } from "@blueprintjs/core";
-import { useEffect, useState } from "react";
+import { ProgressBar } from "@blueprintjs/core"
+import { useEffect, useState } from "react"
 
 export function LoadingBar({loadStateId, useProgress = true, usePercent = true}: {loadStateId: string, useProgress?: boolean, usePercent?: boolean}) {
     const [loaderInfo, setLoaderInfo]: any = useState({})
@@ -7,19 +7,17 @@ export function LoadingBar({loadStateId, useProgress = true, usePercent = true}:
     useEffect(() => {
         window.electron.ipcRenderer.on("loading:setState", (inboundKey: any, completedItems, totalItems, message) => {
             if (loadStateId !== inboundKey) return
-
             setLoaderInfo({...loaderInfo, ...{completedItems, totalItems, message}})
         })
 
         window.electron.ipcRenderer.on("loading:setError", (inboundKey: any, error) => {
             if (loadStateId !== inboundKey) return
-
             setLoaderInfo({...loaderInfo, ...{error}})
+            // this value is not set? investigate!!
         })
 
         window.electron.ipcRenderer.on("loading:reset", (inboundKey: any) => {
             if (loadStateId !== inboundKey) return
-
             setLoaderInfo({})
         })
     }, [])

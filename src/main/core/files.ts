@@ -64,6 +64,8 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
     let downloadedLength = 0
     const totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // Wild guess??
 
+    if (totalLength <= 0) throw new SoftError(`Download failed - could find archive`)
+
     try {
         const writer = fs.createWriteStream(path.resolve(appPath.tempDir, name))
 
@@ -102,11 +104,10 @@ export async function extractArchive(archive: string, destination: string, loadS
     }
 
     extract.once("error", (err: any) => {
-        throw new SoftError(`Error extracting archive! ${err}`)
+        throw new SoftError(`Error extracting archive! ${err}`, loadStateId)
     })
 
     extract.on("progress", (perc: number) => {
-        //progressBar.update(perc / 100)
         loadingSetState(loadStateId, "Extracting", perc / 100, 1)
     })
 
@@ -165,17 +166,10 @@ export async function cleanupModContentLeftovers(from: string, to: string) {
 }
 
 export async function findSteamDir() {
-    // const drives = await drivelist.list()
+    const drives = ["C:", "D:", "E:", "F:", "G:", "H:"]
 
-    // for (const drive of drives) {
-    //     console.log(drive)
-
-    //     if (!drive.mountpoints) continue
-    //     for (const mountPoint of drive.mountpoints) {
-    //         const dirPath = path.resolve(mountPoint.path, "Program Files (x86)", "Steam")
-    //         if (jetpack.exists(path.resolve(dirPath, "steam.exe"))) return dirPath
-    //     }
-    // }
-
-    return "lol"
+    for (const drive of drives) {
+        const dirPath = path.resolve(drive, "Program Files (x86)", "Steam")
+        if (jetpack.exists(path.resolve(dirPath, "steam.exe"))) return dirPath
+    }
 }

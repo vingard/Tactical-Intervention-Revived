@@ -70,6 +70,7 @@
     "dependencies": {
         "@blueprintjs/core": "^5.2.1",
         "@blueprintjs/icons": "^5.1.5",
+        "@blueprintjs/select": "^5.0.10",
         "axios": "^1.5.0",
         "byte-size": "^8.1.1",
         "classnames": "^2.3.2",
@@ -82,7 +83,8 @@
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.45.4",
         "react-router-dom": "^6.11.2",
-        "steam-binary-vdf": "^0.1.0"
+        "steam-binary-vdf": "^0.1.0",
+        "tcp-ping-port": "^1.0.1"
     },
     "devDependencies": {
         "@electron/notarize": "^1.2.3",

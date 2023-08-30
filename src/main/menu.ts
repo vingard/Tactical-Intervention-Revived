@@ -6,6 +6,8 @@ import {
     MenuItemConstructorOptions
 } from "electron"
 
+import * as appPath from "./core/appPath"
+
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
     submenu?: DarwinMenuItemConstructorOptions[] | Menu;
@@ -122,7 +124,20 @@ export default class MenuBuilder {
         const templateGame = [
             {
                 label: "Game",
-                submenu: []
+                submenu: [
+                    {
+                        label: "Open Game Directory",
+                        click: () => {
+                            shell.openPath(appPath.workingDir)
+                        }
+                    },
+                    {
+                        label: "Start Dedicated Server",
+                        click: () => {
+                            shell.openPath(appPath.srcdsPath)
+                        }
+                    }
+                ]
             }
         ]
 

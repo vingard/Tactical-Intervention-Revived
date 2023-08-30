@@ -1,4 +1,4 @@
-import { Callout, Card, NonIdealState } from "@blueprintjs/core"
+import { Button, Callout, Card, NonIdealState, Popover } from "@blueprintjs/core"
 import { useCallback, useContext, useEffect, useState } from "react"
 import { GameInstaller } from "renderer/components/installer"
 import { Toolbar } from "renderer/components/toolbar"
