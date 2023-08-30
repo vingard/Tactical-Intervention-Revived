@@ -6,6 +6,8 @@ import {
     MenuItemConstructorOptions
 } from "electron"
 
+import * as appPath from "./core/appPath"
+
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
     submenu?: DarwinMenuItemConstructorOptions[] | Menu;
@@ -50,38 +52,8 @@ export default class MenuBuilder {
     }
 
     buildDefaultTemplate() {
-        const templateDefault = [
-            {
-                label: "&View",
-                submenu:
-                    process.env.NODE_ENV === "development" ||
-                    process.env.DEBUG_PROD === "true"
-                        ? [
-                              {
-                                  label: "&Reload",
-                                  accelerator: "Ctrl+R",
-                                  click: () => {
-                                      this.mainWindow.webContents.reload()
-                                  }
-                              },
-                              {
-                                  label: "Toggle &Full Screen",
-                                  accelerator: "F11",
-                                  click: () => {
-                                      this.mainWindow.setFullScreen(
-                                          !this.mainWindow.isFullScreen()
-                                      )
-                                  }
-                              },
-                              {
-                                  label: "Toggle &Developer Tools",
-                                  accelerator: "Alt+Ctrl+I",
-                                  click: () => {
-                                      this.mainWindow.webContents.toggleDevTools()
-                                  }
-                              }
-                          ] : []
-            },
+        const isDebug = process.env.NODE_ENV === "development" || process.env.DEBUG_PROD === "true"
+        const templateHelp = [
             {
                 label: "Help",
                 submenu: [
@@ -95,7 +67,7 @@ export default class MenuBuilder {
                         label: "GitHub Repository",
                         click() {
                             shell.openExternal(
-                                "https://github.com/electron/electron/tree/main/docs#readme"
+                                "https://github.com/vingard/Tactical-Intervention-Revived"
                             )
                         }
                     },
@@ -103,7 +75,7 @@ export default class MenuBuilder {
                         label: "Making a Mod",
                         click() {
                             shell.openExternal(
-                                "https://github.com/electron/electron/tree/main/docs#readme"
+                                "https://github.com/vingard/Tactical-Intervention-Revived/wiki"
                             )
                         }
                     }
@@ -111,6 +83,69 @@ export default class MenuBuilder {
             }
         ]
 
-        return templateDefault
+        const templateDebug = [
+            {
+                label: "Debug",
+                submenu: [
+                    {
+                        label: "&Reload",
+                        accelerator: "Ctrl+R",
+                        click: () => {
+                            this.mainWindow.webContents.reload()
+                        }
+                    },
+                    {
+                        label: "Toggle &Full Screen",
+                        accelerator: "F11",
+                        click: () => {
+                            this.mainWindow.setFullScreen(
+                                !this.mainWindow.isFullScreen()
+                            )
+                        }
+                    },
+                    {
+                        label: "Toggle &Developer Tools",
+                        accelerator: "Alt+Ctrl+I",
+                        click: () => {
+                            this.mainWindow.webContents.toggleDevTools()
+                        }
+                    }
+                ]
+            }
+        ]
+
+        const templateMods = [
+            {
+                label: "Mods",
+                submenu: []
+            }
+        ]
+
+        const templateGame = [
+            {
+                label: "Game",
+                submenu: [
+                    {
+                        label: "Open Game Directory",
+                        click: () => {
+                            shell.openPath(appPath.workingDir)
+                        }
+                    },
+                    {
+                        label: "Start Dedicated Server",
+                        click: () => {
+                            shell.openPath(appPath.srcdsPath)
+                        }
+                    }
+                ]
+            }
+        ]
+
+        return [
+            ...templateGame,
+            ...templateMods,
+            ...(isDebug ? templateDebug : []),
+            ...templateHelp
+        ]
     }
 }

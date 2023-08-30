@@ -1,0 +1,14 @@
+diff --git a/node_modules/@blueprintjs/core/src/components/dialog/multistepDialog.tsx b/node_modules/@blueprintjs/core/src/components/dialog/multistepDialog.tsx
+index 77d9c2e..c5a057b 100644
+--- a/node_modules/@blueprintjs/core/src/components/dialog/multistepDialog.tsx
++++ b/node_modules/@blueprintjs/core/src/components/dialog/multistepDialog.tsx
+@@ -167,7 +167,8 @@ export class MultistepDialog extends AbstractPureComponent<MultistepDialogProps,
+         );
+     }
+ 
+-    private renderDialogStep = (step: DialogStepElement, index: number) => {
++    /** Patch applied */
++    protected renderDialogStep = (step: DialogStepElement, index: number) => {
+         const stepNumber = index + 1;
+         const hasBeenViewed = this.state.lastViewedIndex >= index;
+         const currentlySelected = this.state.selectedIndex === index;

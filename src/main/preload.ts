@@ -2,7 +2,20 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"
 
-export type Channels = "ipc-example";
+export type Channels =
+    | "game:checkState"
+    | "game:startInstall"
+    | "game:setStartConfig"
+    | "game:setCfg"
+    | "game:getCfg"
+    | "game:queryServer"
+    | "game:connectServer"
+    | "game:start"
+    | "game:getSettings"
+    | "game:setSettings"
+    | "loading:setState"
+    | "loading:setError"
+    | "loading:reset"
 
 const electronHandler = {
     ipcRenderer: {
@@ -22,10 +35,13 @@ const electronHandler = {
         },
         once(channel: Channels, func: (...args: unknown[]) => void) {
             ipcRenderer.once(channel, (_event, ...args) => func(...args))
+        },
+        async invoke(channel: Channels, ...args: unknown[]) {
+            return ipcRenderer.invoke(channel, ...args)
         }
     }
 }
 
 contextBridge.exposeInMainWorld("electron", electronHandler)
 
-export type ElectronHandler = typeof electronHandler;
+export type ElectronHandler = typeof electronHandler

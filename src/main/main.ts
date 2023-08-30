@@ -12,8 +12,14 @@ import path from "path"
 import { app, BrowserWindow, shell, ipcMain } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
+import tccp from "tcp-ping"
+//import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
+import * as config from "./core/config"
+import * as game from "./core/game"
+import { loadingSetError } from "./core/util"
+import { SoftError } from "./core/softError"
 
 class AppUpdater {
     constructor() {
@@ -36,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
     sourceMapSupport.install()
 }
 
-const isDebug =
+export const isDebug =
     process.env.NODE_ENV === "development" || process.env.DEBUG_PROD === "true"
 
 if (isDebug) {
@@ -58,7 +64,8 @@ const installExtensions = async () => {
 
 const createWindow = async () => {
     if (isDebug) {
-        await installExtensions()
+        //await installExtensions()
+        // TODO: FIXME broken right now
     }
 
     const RESOURCES_PATH = app.isPackaged
@@ -124,8 +131,142 @@ app.on("window-all-closed", () => {
     }
 })
 
+export function getWindow() {
+    return mainWindow
+}
+
+async function handleGameCheckState() {
+    try {
+        console.log(game.checkInstalled())
+        return game.checkInstalled()
+    } catch(err: any) {
+        config.create(true)
+    }
+}
+
+async function handleGameStartInstall() {
+    try {
+        await game.installGame()
+        return true
+    } catch (err: any) {
+        console.error("InstallGameCaughtError", err)
+        log.error(err.message)
+        loadingSetError("game", err.message)
+        return false
+    }
+}
+
+async function handleSetStartConfig(event: any, data: any) {
+    let cfg = ""
+    cfg += data.goreEnabled && "ti_low_violence 0\n" || ""
+    cfg += data.maxFps && `fps_max ${data.maxFps}\n` || ""
+
+    await game.setCfg(cfg)
+    await game.setUsername(data.username)
+
+    // Try to find Steam and put the Steam shortcut in
+    if (data.steamShortcut) {
+        await game.createSteamShortcuts()
+    }
+}
+
+async function handleQueryServer(event: any, ip: string, port: number) {
+    // MasterServer({
+    //     quantity: 100,
+    //     region: "EUROPE",
+    //     timeout: 3000,
+    //     filter
+    // }).then(servers => {
+    //     console.log(servers)
+    // })
+
+    // let server
+    // try {
+    //     console.log(ip, port)
+    //     server = await Server({
+    //         ip,
+    //         port,
+    //         timeout: 2000,
+    //         debug: true,
+    //         enableWarns: true
+    //     })
+    // } catch(err) {
+    //     console.log(err)
+    //     return {error: "Server not found"}
+    // }
+
+
+    // const server = await tcpPingPort(ip, port)
+    // return server.online || false
+
+    return new Promise<void>(function(resolve: any) {
+        tccp.ping({address: ip, port, attempts: 3, timeout: 2000}, function(err, data) {
+            if (err) return resolve(false)
+
+            return resolve(true)
+        })
+    })
+}
+
+async function handleConnectServer(event: any, addr: string) {
+    try {
+        await game.start(`connect ${addr}`)
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
+async function handleGameStart(event: any) {
+    try {
+        await game.start()
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
+async function handleGetSettings() {
+    const settings: any = {}
+    try {
+        settings.username = await game.getUsername()
+        settings.cfg = await game.getCfg()
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return settings
+}
+
+async function handleSetSettings(event: any, data: any) {
+    try {
+        await game.setUsername(data.username)
+        await game.setCfg(data.cfg, "revived.cfg")
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
 app.whenReady()
     .then(() => {
+        ipcMain.handle("game:checkState", handleGameCheckState)
+        ipcMain.handle("game:startInstall", handleGameStartInstall)
+        ipcMain.handle("game:setStartConfig", handleSetStartConfig)
+        ipcMain.handle("game:queryServer", handleQueryServer)
+        ipcMain.handle("game:connectServer", handleConnectServer)
+        ipcMain.handle("game:start", handleGameStart)
+        ipcMain.handle("game:getSettings", handleGetSettings)
+        ipcMain.handle("game:setSettings", handleSetSettings)
+
+        config.create()
+
         createWindow()
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the
