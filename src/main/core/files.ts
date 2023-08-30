@@ -64,7 +64,7 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
     let downloadedLength = 0
     const totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // Wild guess??
 
-    if (totalLength <= 0) throw new SoftError(`Download failed - could find archive`)
+    if (totalLength <= 0) throw new SoftError("Download failed - could find archive")
 
     try {
         const writer = fs.createWriteStream(path.resolve(appPath.tempDir, name))

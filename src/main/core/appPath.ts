@@ -1,5 +1,6 @@
 import {app} from "electron"
 import path from "path"
+import log from "electron-log"
 // eslint-disable-next-line import/no-cycle
 import * as files from "./files"
 

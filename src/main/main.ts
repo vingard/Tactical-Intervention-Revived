@@ -221,7 +221,7 @@ async function handleGameStart(event: any) {
 }
 
 async function handleGetSettings() {
-    let settings: any = {}
+    const settings: any = {}
     try {
         settings.username = await game.getUsername()
         settings.cfg = await game.getCfg()

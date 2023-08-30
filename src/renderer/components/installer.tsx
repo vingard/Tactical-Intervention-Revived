@@ -13,7 +13,7 @@ function StartPanel() {
 
                 <div className="fade">
                     <p>
-                        <b>The game is currently not installed, {`Before you can start playing you'll need to download the game files.`}</b>
+                        <b>The game is currently not installed, Before you can start playing you'll need to download the game files.</b>
                         <br/>The game will be installed to the same location as this program.
                     </p>
 
@@ -135,7 +135,7 @@ function SetupPanel({form}: {form: any}) {
                     </form>
 
                     <div className="muted">
-                        You can always change your preferences later in the {`'Settings'`} menu
+                        You can always change your preferences later in the 'Settings' menu
                     </div>
                 </div>
             </div>

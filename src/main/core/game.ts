@@ -6,6 +6,8 @@ import EventEmitter from "events"
 import log from "electron-log"
 import { readVdf, writeVdf } from "steam-binary-vdf"
 
+import { shell } from "electron"
+import { spawn } from "child_process"
 import * as appPath from "./appPath"
 import * as config from "./config"
 import * as files from "./files"
@@ -17,8 +19,6 @@ import * as game from "./game"
 import { isDebug } from "../main"
 import { loadingReset, loadingSetError, loadingSetState } from "./util"
 import { SoftError } from "./softError"
-import { shell } from "electron"
-import { spawn } from "child_process"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
 
@@ -359,7 +359,7 @@ export async function createSteamShortcuts() {
 
 export async function setTempCfg(content: string) {
     let baseCfg = await getCfg("default.cfg")
-    const includeTemp = `exec "_temp.cfg"`
+    const includeTemp = "exec \"_temp.cfg\""
 
     if (baseCfg && !baseCfg.includes(includeTemp)) {
         baseCfg = `${includeTemp}\n${baseCfg}`

@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core";
-import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Button, Dialog, DialogBody, DialogFooter, FormGroup, InputGroup } from "@blueprintjs/core"
+import { useState } from "react"
+import { Controller, useForm } from "react-hook-form"
 
 export function ConnectDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const {register, handleSubmit, control, formState: {errors}} = useForm()
