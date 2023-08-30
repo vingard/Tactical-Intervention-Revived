@@ -12,7 +12,8 @@ import path from "path"
 import { app, BrowserWindow, shell, ipcMain } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
-import { tcpPingPort } from "tcp-ping-port"
+import tccp from "tcp-ping"
+//import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
@@ -194,8 +195,17 @@ async function handleQueryServer(event: any, ip: string, port: number) {
     //     return {error: "Server not found"}
     // }
 
-    const server = await tcpPingPort(ip, port)
-    return server.online || false
+
+    // const server = await tcpPingPort(ip, port)
+    // return server.online || false
+
+    return new Promise<void>(function(resolve: any) {
+        tccp.ping({address: ip, port, attempts: 3, timeout: 2000}, function(err, data) {
+            if (err) return resolve(false)
+
+            return resolve(true)
+        })
+    })
 }
 
 async function handleConnectServer(event: any, addr: string) {
