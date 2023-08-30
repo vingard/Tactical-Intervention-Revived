@@ -92,3 +92,7 @@ body {
     margin-bottom: 2;
     margin-left: 3;
 }
+
+.noScroll {
+    overflow: hidden;
+}
