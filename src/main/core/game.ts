@@ -282,6 +282,16 @@ export async function setUsername(username: string) {
     }
 }
 
+export async function getUsername() {
+    const settingFs = jetpack.cwd(appPath.settingsDir)
+
+    try {
+        return settingFs.read("account_name.txt")
+    } catch(err) {
+        throw new SoftError(`Failed to get username! ${err}`)
+    }
+}
+
 export async function setCfg(content: string, filename: string = "revived.cfg") {
     log.info(`Setting ${filename} to:\nSTART CFG\n${content}\nEND CFG`)
 

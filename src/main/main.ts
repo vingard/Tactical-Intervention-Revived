@@ -220,6 +220,30 @@ async function handleGameStart(event: any) {
     return false
 }
 
+async function handleGetSettings() {
+    let settings: any = {}
+    try {
+        settings.username = await game.getUsername()
+        settings.cfg = await game.getCfg()
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return settings
+}
+
+async function handleSetSettings(event: any, data: any) {
+    try {
+        await game.setUsername(data.username)
+        await game.setCfg(data.cfg, "revived.cfg")
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
+
+    return false
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -228,6 +252,8 @@ app.whenReady()
         ipcMain.handle("game:queryServer", handleQueryServer)
         ipcMain.handle("game:connectServer", handleConnectServer)
         ipcMain.handle("game:start", handleGameStart)
+        ipcMain.handle("game:getSettings", handleGetSettings)
+        ipcMain.handle("game:setSettings", handleSetSettings)
 
         config.create()
 

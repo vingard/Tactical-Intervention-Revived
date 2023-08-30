@@ -1,6 +1,7 @@
 import { Button, ButtonGroup, Classes, ContextMenu, Divider, Menu, MenuDivider, MenuItem, Popover } from "@blueprintjs/core"
 import { useState } from "react"
 import { ConnectDialog } from "./connect_dialog"
+import { SettingsDialog } from "./settings_dialog"
 
 function PlayDropdown() {
     return (
@@ -12,12 +13,8 @@ function PlayDropdown() {
 }
 
 export function Toolbar() {
-    const [connectPopup, setConnectPopup] = useState(false)
+    const [openPopup, setOpenPopup] = useState("")
     const [playDropdownOpen, setPlayDropdownOpen] = useState(false)
-
-    function doPlay() {
-        setConnectPopup(true)
-    }
 
     return (
         <>
@@ -35,9 +32,9 @@ export function Toolbar() {
 
                 <div className="toolbar play">
                     <ButtonGroup>
-                        <Button icon="cog">Settings</Button>
+                        <Button icon="cog" onClick={() => setOpenPopup("settings")}>Settings</Button>
                         <Divider/>
-                        <Button intent="primary" icon="play" large onClick={() => doPlay()}>
+                        <Button intent="primary" icon="play" large onClick={() => setOpenPopup("connect")}>
                             Play
                         </Button>
                         <Popover content={<PlayDropdown/>} placement="bottom-end">
@@ -47,7 +44,8 @@ export function Toolbar() {
                 </div>
             </div>
 
-            <ConnectDialog open={connectPopup} onClosed={() => setConnectPopup(false)}/>
+            <SettingsDialog open={openPopup === "settings"} onClosed={() => setOpenPopup("")}/>
+            <ConnectDialog open={openPopup === "connect"} onClosed={() => setOpenPopup("")}/>
         </>
     )
 }

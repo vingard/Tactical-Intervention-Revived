@@ -178,6 +178,7 @@ export function GameInstaller() {
     }
 
     async function setupFormSubmit(data: any, event: any) {
+        data.username = data.username.trim()
         const success = await window.electron.ipcRenderer.invoke("game:setStartConfig", data)
         if (!success) console.error(success)
 

@@ -11,6 +11,8 @@ export type Channels =
     | "game:queryServer"
     | "game:connectServer"
     | "game:start"
+    | "game:getSettings"
+    | "game:setSettings"
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"
