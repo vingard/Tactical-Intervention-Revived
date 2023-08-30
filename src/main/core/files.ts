@@ -3,20 +3,24 @@ import path from "path"
 import axios from "axios"
 import onezip from "onezip"
 import jetpack from "fs-jetpack"
+import byteSize from "byte-size"
+//import drivelist from "drivelist"
 // eslint-disable-next-line import/no-cycle
 import * as appPath from "./appPath"
+import { loadingSetState } from "./util"
+import { SoftError } from "./softError"
 
 export function createDirIfNotExists(dirPath: string) {
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true })
     }
 
-    return path
+    return dirPath
 }
 
 export function errorIfDirNotExists(dirPath: string) {
     if (!fs.existsSync(dirPath)) {
-        throw new Error(`The '${dirPath}' folder is missing!`)
+        throw new SoftError(`The '${dirPath}' folder is missing!`)
     }
 
     return dirPath
@@ -35,12 +39,13 @@ export function tryToRemoveDirectory(dirPath: string) {
 }
 
 export function getDirectories(dirPath: string) {
-    return fs.readdirSync(dirPath).filter(function (fileName) {
+    return fs.readdirSync(dirPath).filter(function(fileName) {
         return fs.statSync(path.resolve(dirPath, fileName)).isDirectory()
     })
 }
 
-export async function downloadTempFile(url: string, name: string) {
+export async function downloadTempFile(url: string, name: string, loadStateId: string) {
+    loadingSetState(loadStateId, "Starting download...")
     let resp
 
     try {
@@ -51,30 +56,27 @@ export async function downloadTempFile(url: string, name: string) {
             headers: { "Accept-Encoding": null }
         })
     } catch (err) {
-        throw new Error(`Download failed! ${err}`)
+        throw new SoftError(`Download failed! ${err}`)
     }
 
     // extract from response
     const { data, headers } = resp
-    const totalLength = headers["content-length"] || headers["Content-Length"] || 564276 // Wild guess??
-    // const progressBar = new ProgressBar("-> Downloading [:bar] (:curSize/:maxSize) :percent complete  (:etas seconds remaining)", {
-    //     width: 44,
-    //     complete: "=",
-    //     incomplete: " ",
-    //     renderThrottle: 1,
-    //     total: parseInt(totalLength)
-    // })
+    let downloadedLength = 0
+    const totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // Wild guess??
 
     try {
         const writer = fs.createWriteStream(path.resolve(appPath.tempDir, name))
 
-        // data.on("data", (chunk) => progressBar.tick(chunk.length, {
-        //     maxSize: byteSize(progressBar.total),
-        //     curSize: byteSize(progressBar.curr)
-        // }))
+        data.on("data", (chunk: any) => loadingSetState(
+            loadStateId,
+            `Downloading ${byteSize(downloadedLength)}/${byteSize(totalLength)}`,
+            (downloadedLength += chunk.length) / totalLength,
+            1
+        ))
+
         data.pipe(writer)
     } catch (err) {
-        throw new Error(`Download failed! ${err}`)
+        throw new SoftError(`Download failed! ${err}`)
     }
 
     // eslint-disable-next-line func-names
@@ -89,29 +91,23 @@ export async function deleteTempFile(name: string) {
     } catch (err) { /* empty */ }
 }
 
-export async function extractArchive(archive: string, destination: string) {
+export async function extractArchive(archive: string, destination: string, loadStateId: string) {
+    loadingSetState(loadStateId, "Starting extraction...")
     let extract: any
 
     try {
         extract = onezip.extract(archive, destination)
     } catch (err) {
-        throw new Error(`Error extracting archive! ${err}`)
+        throw new SoftError(`Error extracting archive! ${err}`)
     }
 
-    // const progressBar = new ProgressBar("-> Extracting [:bar] :percent complete  (:etas seconds remaining)", {
-    //     width: 44,
-    //     complete: "=",
-    //     incomplete: " ",
-    //     renderThrottle: 1,
-    //     total: 100
-    // })
-
     extract.once("error", (err: any) => {
-        throw new Error(`Error extracting archive! ${err}`)
+        throw new SoftError(`Error extracting archive! ${err}`)
     })
 
     extract.on("progress", (perc: number) => {
         //progressBar.update(perc / 100)
+        loadingSetState(loadStateId, "Extracting", perc / 100, 1)
     })
 
     return new Promise<void>(function(resolve) {
@@ -126,7 +122,7 @@ export async function gitFileFix(dirPath: string) {
     const dirs = getDirectories(dirPath)
 
     if (!dirs[0]) {
-        throw new Error("Git file fix has gone wrong!")
+        throw new SoftError("Git file fix has gone wrong!")
     }
 
     const source = dirs[0]
@@ -143,10 +139,10 @@ export async function cleanupModContentLeftovers(from: string, to: string) {
     const toFs = jetpack.cwd(to)
 
     if(!fromFs || !toFs) {
-        throw new Error("Failed to")
+        throw new SoftError("Failed to")
     }
 
-    let fromDirs = fromFs.find(".", {directories: true, files: false, recursive: false})
+    const fromDirs = fromFs.find(".", {directories: true, files: false, recursive: false})
 
     for (const dirPath of fromDirs) {
         // If toFs dir is not empty...
@@ -166,4 +162,20 @@ export async function cleanupModContentLeftovers(from: string, to: string) {
         // Remove empty folder
         toFs.remove(dirPath)
     }
+}
+
+export async function findSteamDir() {
+    // const drives = await drivelist.list()
+
+    // for (const drive of drives) {
+    //     console.log(drive)
+
+    //     if (!drive.mountpoints) continue
+    //     for (const mountPoint of drive.mountpoints) {
+    //         const dirPath = path.resolve(mountPoint.path, "Program Files (x86)", "Steam")
+    //         if (jetpack.exists(path.resolve(dirPath, "steam.exe"))) return dirPath
+    //     }
+    // }
+
+    return "lol"
 }

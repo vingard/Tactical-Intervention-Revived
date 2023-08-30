@@ -16,6 +16,8 @@ import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
 import * as game from "./core/game"
+import { loadingSetError } from "./core/util"
+import { SoftError } from "./core/softError"
 
 class AppUpdater {
     constructor() {
@@ -38,7 +40,7 @@ if (process.env.NODE_ENV === "production") {
     sourceMapSupport.install()
 }
 
-const isDebug =
+export const isDebug =
     process.env.NODE_ENV === "development" || process.env.DEBUG_PROD === "true"
 
 if (isDebug) {
@@ -132,17 +134,43 @@ export function getWindow() {
 }
 
 async function handleGameCheckState() {
-    return game.checkInstalled()
+    try {
+        return game.checkInstalled()
+    } catch(err: any) {
+        config.create(true)
+    }
 }
 
 async function handleGameStartInstall() {
-    return game.installGame()
+    try {
+        await game.installGame()
+        return true
+    } catch (err: any) {
+        console.error(err)
+        loadingSetError("game", err.message)
+        return false
+    }
+}
+
+async function handleSetStartConfig(event: any, data: any) {
+    let cfg = ""
+    cfg += data.goreEnabled && "ti_low_violence 0\n"
+    cfg += data.maxFps && `fps_max ${data.maxFps}\n`
+
+    await game.setCfg(cfg)
+    await game.setUsername(data.username)
+
+    // Try to find Steam and put the Steam shortcut in
+    if (data.steamShortcut) {
+        await game.createSteamShortcuts()
+    }
 }
 
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
         ipcMain.handle("game:startInstall", handleGameStartInstall)
+        ipcMain.handle("game:setStartConfig", handleSetStartConfig)
 
         config.create()
 

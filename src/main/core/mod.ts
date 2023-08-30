@@ -1,11 +1,14 @@
 import axios from "axios"
 import path from "path"
 import jetpack from "fs-jetpack"
+import log from "electron-log"
 import * as config from "./config"
 import * as files from "./files"
 // eslint-disable-next-line import/no-cycle
 import * as game from "./game"
 import * as appPath from "./appPath"
+import { SoftError } from "./softError"
+import { loadingReset, loadingSetState } from "./util"
 
 async function getInfo(url: string) {
     let modInfo
@@ -14,19 +17,19 @@ async function getInfo(url: string) {
     try {
         modInfo = await (await axios.get(modInfoUrl)).data
     } catch (err) {
-        throw new Error(`Could not find a valid mod at ${url} (${err})`)
+        throw new SoftError(`Could not find a valid mod at ${url} (${err})`)
     }
 
     if (!modInfo.name) {
-        throw new Error("This mod does not provide a 'name' in its mod.json file, this is required!")
+        throw new SoftError("This mod does not provide a 'name' in its mod.json file, this is required!")
     }
 
     if (typeof modInfo.name !== "string") {
-        throw new Error("Mod 'name' must be a string!")
+        throw new SoftError("Mod 'name' must be a string!")
     }
 
     if (modInfo.version && typeof modInfo.version !== "string") {
-        throw new Error("Mod 'version' must be a string!")
+        throw new SoftError("Mod 'version' must be a string!")
     }
 
     modInfo.name = modInfo.name.toLowerCase()
@@ -57,7 +60,7 @@ export function getLoadOrder(mod: any) {
     return mod.priority || 0
 }
 
-export function getModIndex(conf: any, modName: string) {
+export function getIndex(conf: any, modName: string) {
     return conf.mods.findIndex((x: any) => x.name === modName)
 }
 
@@ -69,27 +72,34 @@ export async function install(url: string) {
     const modPath = path.resolve(appPath.modsDir, mod.name)
     const modTempFileName = `${mod.name}.zip`
 
+    const modLoadStateId = `m_${mod.name}_install`
+    loadingReset(modLoadStateId)
+
     // If mod is already installed prompt?
 
-    console.log(`Installing ${mod.name} (${mod.version}):`)
+    log.info(`Installing ${mod.name} (${mod.version}):`)
 
     // Download archive
-    console.log(`Downloading...`)
-    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName)
+    log.info(`Downloading from ${mod.url}`)
+    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId)
 
     // Make mods folder and remove old install
     await files.tryToRemoveDirectory(modPath)
     await files.createDirIfNotExists(modPath)
 
+    const archivePath = path.resolve(appPath.tempDir, modTempFileName)
+
     // Extract to mods folder
-    console.log(`Extracting...`)
-    await files.extractArchive(path.resolve(appPath.tempDir, modTempFileName), modPath)
+    log.info(`Extracting ${archivePath} to ${modPath}`)
+    await files.extractArchive(archivePath, modPath, modLoadStateId)
 
     // Move all files up one directory and cleanup the mess
     await files.gitFileFix(modPath)
 
     // Remove mod info and git files from mod
-    console.log("Finishing up...")
+    log.info("Finishing up...")
+    loadingSetState(modLoadStateId, "Finishing up...")
+
     files.tryToRemoveFile(path.resolve(modPath, ".gitignore"))
     files.tryToRemoveFile(path.resolve(modPath, ".gitattributes"))
     files.tryToRemoveFile(path.resolve(modPath, "mod.json"))
@@ -113,7 +123,9 @@ export async function install(url: string) {
 
     config.update(conf)
 
-    //console.log(successColor(`${mod.name} (${mod.version}) was installed succesfully!`))
+    const succMsg = `${mod.name} (${mod.version}) was installed succesfully!`
+    log.info(succMsg)
+    loadingSetState(modLoadStateId, succMsg, 1, 1)
 
     return mod
 }
@@ -140,7 +152,7 @@ export async function mountMod(mod: any) {
 
         // If the mounted file has conflict
         if (manifest[k]) {
-            const ownerMod = mods[getModIndex(conf, manifest[k])]
+            const ownerMod = mods[getIndex(conf, manifest[k])]
 
             if (ownerMod && ownerMod.name !== mod.name) {
                 // If the owner mod has greater or (equal to load order - however equal to should never happen ideally)
@@ -179,7 +191,7 @@ export async function mountMod(mod: any) {
     })()
 
     conf = config.read()
-    const modIndex = getModIndex(conf, mod.name)
+    const modIndex = getIndex(conf, mod.name)
     conf.mountManifest = manifest
     conf.mods[modIndex].mounted = true
     conf.mods[modIndex].claims = claims
@@ -209,51 +221,9 @@ export async function unMountMod(mod: any) {
     }
 
     const conf = config.read()
-    const modIndex = getModIndex(config, mod.name)
+    const modIndex = getIndex(config, mod.name)
     //config.mountManifest = manifest
     conf.mods[modIndex].mounted = false
     conf.mods[modIndex].claims = undefined
     config.update(conf)
-}
-
-
-export async function mountBaseContent() {
-    const baseContentFs = jetpack.cwd(appPath.baseContentDir)
-    const mountFs = jetpack.cwd(appPath.mountDir)
-    const contentsTemp = baseContentFs.find(".", {directories: false, recursive: true})
-    const contents: any = {}
-
-    // const progressBarPrep = new ProgressBar("-> Preparing to mount [:bar] :percent complete  (:etas seconds remaining)", {
-    //     width: 44,
-    //     complete: "=",
-    //     incomplete: " ",
-    //     renderThrottle: 1,
-    //     total: contentsTemp.length
-    // })
-
-    for (const filePath of contentsTemp) {
-        if (mountFs.exists(filePath) !== "file") {
-            contents[filePath] = "_BaseGameContent"
-        }
-
-        //progressBarPrep.tick(1)
-    }
-
-    const [emitter, totalFiles] = game.mountContent(contents, appPath.baseContentDir, appPath.mountDir)
-    // const progressBar = new ProgressBar("-> Mounting [:bar] (:curSize/:maxSize) :percent complete  (:etas seconds remaining)", {
-    //     width: 44,
-    //     complete: "=",
-    //     incomplete: " ",
-    //     renderThrottle: 1,
-    //     total: totalFiles
-    // })
-
-    // emitter.on("progress", (totalCompleted) => progressBar.tick(1, {
-    //     maxSize: totalFiles,
-    //     curSize: totalCompleted
-    // }))
-
-    return new Promise<void>(function (resolve, reject) {
-        emitter.once("end", () => resolve())
-    })
 }

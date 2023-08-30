@@ -6,11 +6,10 @@ import { GameContext } from "renderer/providers/game.provider"
 
 export function LauncherPage() {
     //const [installerOpen, setInstallerOpen] = useState(false)
-    const {gameInfo} = useContext(GameContext)
 
     return (
         <div className="content">
-            <GameInstaller open={!gameInfo.gameInstalled}/>
+            <GameInstaller/>
 
             <Card>
                 <Toolbar/>

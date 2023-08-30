@@ -5,7 +5,12 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"
 export type Channels =
     | "game:checkState"
     | "game:startInstall"
+    | "game:setStartConfig"
+    | "game:setCfg"
+    | "game:getCfg"
     | "loading:setState"
+    | "loading:setError"
+    | "loading:reset"
 
 const electronHandler = {
     ipcRenderer: {

@@ -3,19 +3,27 @@ import axios from "axios"
 import path from "path"
 import jetpack from "fs-jetpack"
 import EventEmitter from "events"
+import log from "electron-log"
+import { readVdf, writeVdf } from "steam-binary-vdf"
 
 import * as appPath from "./appPath"
 import * as config from "./config"
 import * as files from "./files"
 // eslint-disable-next-line import/no-cycle
 import * as mod from "./mod"
+// eslint-disable-next-line import/no-self-import
+import * as game from "./game"
+// eslint-disable-next-line import/no-cycle
+import { isDebug } from "../main"
+import { loadingReset, loadingSetState } from "./util"
+import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
 
 export function checkInstalled() {
     let patchMark = false
     try {
-        fs.readFileSync(`${appPath.mountDir}/PATCHED`)
+        fs.readFileSync(path.resolve(appPath.mountDir, "PATCHED"))
         patchMark = true
     } catch (err) { /* empty */ }
 
@@ -28,12 +36,12 @@ export function checkInstalled() {
 
 async function getRemotePackage() {
     let remotePackage
-    const remotePackageUrl = `${REPO_URL.replace("github.com", "raw.githubusercontent.com")}/main/package.json`
+    const remotePackageUrl = `${REPO_URL.replace("github.com", "raw.githubusercontent.com")}/${isDebug && "dev" || "main"}/package.json`
 
     try {
         remotePackage = await (await axios.get(remotePackageUrl)).data
     } catch (err) {
-        throw new Error(`Error reading the remote package.json file (${err})`)
+        throw new SoftError(`Error reading the remote package.json file (${err})`)
     }
 
     return remotePackage
@@ -41,71 +49,61 @@ async function getRemotePackage() {
 
 
 export async function installGame(overrideUrl?: string) {
-    console.log("Patching game...")
+    loadingReset("game")
+
+    log.info("Installing game")
 
     let url = overrideUrl
 
     // Get content download URL from remote
     if (!overrideUrl) {
-        console.log("Getting remote 'package.json' file...")
+        log.info("Getting remote 'package.json' file...")
+        loadingSetState("game", "Getting remote 'package.json' file...")
         const remotePackage = await getRemotePackage()
 
         if (!remotePackage.contentUrl) {
-            throw new Error("No 'contentUrl' in remote package.json!")
+            throw new SoftError("No 'contentUrl' in remote package.json!")
         }
 
         url = remotePackage.contentUrl
     }
 
-    if (!url) throw new Error("Failed to get game content download URL")
+    if (!url) throw new SoftError("Failed to get game content download URL")
 
-    const destination = appPath.baseContentDir
+    const destination = appPath.workingDir
     const tempFileName = "game_content.zip"
 
-    // Wait 1 second to prevent spam
-    //await new Promise(resolve => setTimeout(resolve, 1000))
-
     // Download patched content to a temp file
-    console.log("Downloading patched content:")
-    await files.downloadTempFile(url, tempFileName)
+    log.info("Downloading game content")
+    //await files.downloadTempFile(url, tempFileName, "game")
 
     // Extract
-    console.log("Extracting patched content...")
-    await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination)
-
-    // Remove old content
-    console.log("Removing old content...")
-
-    // Remove all the default .fpx files from /tacint dir
-    fs.readdirSync(appPath.tacintDir).forEach(file => {
-        if (file.endsWith(".fpx")) {
-            try {
-                fs.unlinkSync(path.resolve(appPath.tacintDir, file)) // remove file
-            } catch (err) {
-                throw new Error(`Failed to remove ${file}! ${err}`)
-            }
-        }
-    })
+    log.info("Extracting game content")
+    //await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
 
     // Cleanup and mark as patched
-    console.log("Finishing up...")
+    loadingSetState("game", "Finishing up...")
     await files.deleteTempFile(tempFileName)
 
     // Write PATCHED file
     try {
-        fs.writeFileSync(path.resolve(appPath.mountDir, "PATCHED"), "PATCHED BY Tactical Intervention Mod Manager")
+        fs.writeFileSync(path.resolve(appPath.baseContentDir, "PATCHED"), "PATCHED BY Tactical Intervention Mod Manager")
     } catch (err) {
-        throw new Error(`Failed to write the PATCHED file! ${err}`)
+        throw new SoftError(`Failed to write the PATCHED file! ${err}`)
     }
+
+    // Mount
+    log.info("Mounting base game content")
+    await game.mountBaseContent()
 
     // Final check
     const isPatched = checkInstalled()
 
     if (!isPatched) {
-        throw new Error("Something went wrong, please retry the patch :(")
+        throw new SoftError("Something went wrong, please retry the install :(")
     }
 
-    //console.log(successColor("Game patched successfully!"))
+    loadingSetState("game", "Game installed successfully!", 1, 1)
 }
 
 export function getMountManifest() {
@@ -135,9 +133,9 @@ export async function mountFile(filePath: string, from: string, to: string, modN
         )
     } catch(err: any) {
         if (err.code === "EPERM") {
-            throw new Error(`Mounting permissions error! ${err}`)
+            throw new SoftError(`Mounting permissions error! ${err}`)
         } else {
-            throw new Error(`Error mounting file! ${err}`)
+            throw new SoftError(`Error mounting file! ${err}`)
         }
     }
 
@@ -211,7 +209,7 @@ export type ContentType = Record<string, string>
 export function mountContent(content: ContentType, from: string, to: string): [EventEmitter, number] {
     const emitter = new EventEmitter()
     const entries = Object.entries(content)
-    let i = 1
+    let i = 0
 
     process.nextTick(() => {(
         async () => {
@@ -237,4 +235,106 @@ export async function unMountContent(content: ContentType, from: string, to: str
     }
 
     files.cleanupModContentLeftovers(from, to)
+}
+
+export async function mountBaseContent() {
+    const baseContentFs = jetpack.cwd(appPath.baseContentDir)
+    const mountFs = jetpack.cwd(appPath.mountDir)
+    const contentsTemp = baseContentFs.find(".", {directories: false, recursive: true})
+    const contents: any = {}
+    let completed = 0
+
+    for (const filePath of contentsTemp) {
+        if (mountFs.exists(filePath) !== "file") {
+            contents[filePath] = "_BaseGameContent"
+        }
+
+        loadingSetState("game", "Preparing to mount game files", completed++, contentsTemp.length)
+    }
+
+    const [emitter, totalFiles] = game.mountContent(contents, appPath.baseContentDir, appPath.mountDir)
+    loadingSetState("game", "Starting mount...")
+
+    emitter.on("progress", (totalCompleted) => loadingSetState("game", "Mounting", totalCompleted, totalFiles))
+
+    return new Promise<void>(function (resolve, reject) {
+        emitter.once("end", () => resolve())
+    })
+}
+
+export async function setUsername(username: string) {
+    const settingFs = jetpack.cwd(appPath.settingsDir)
+
+    log.info(`Attempting to set username to ${username}`)
+
+    try {
+        settingFs.write("account_name.txt", username)
+    } catch(err) {
+        throw new SoftError(`Failed to set username! ${err}`)
+    }
+}
+
+export async function setCfg(content: string) {
+    log.info(`Setting revived.cfg to:\nSTART CFG\n${content}\nEND CFG`)
+
+    try {
+        jetpack.write(appPath.cfgPath, content)
+    } catch(err) {
+        throw new SoftError(`Failed to set revived.cfg! ${err}`)
+    }
+}
+
+export async function getCfg() {
+    try {
+        return jetpack.read(appPath.cfgPath)
+    } catch(err) {
+        throw new SoftError(`Failed to read revived.cfg! ${err}`)
+    }
+}
+
+export async function createSteamShortcuts() {
+    const steamPath = await files.findSteamDir()
+    if (!steamPath) return log.warn("Failed to find Steam directory!")
+
+    const userDataPath = path.resolve(steamPath, "userdata")
+    if (!jetpack.exists(userDataPath)) return log.warn("Failed to find Steam/userdata directory!")
+    const userDirs = jetpack.find(userDataPath, {directories: true, files: false, recursive: false})
+
+    for (const dirPath of userDirs) {
+        const shortcutPath = path.resolve(dirPath, "config", "shortcuts.vdf")
+        if (!jetpack.exists(shortcutPath)) jetpack.write(shortcutPath, writeVdf({shortcuts: {}}))
+        // eslint-disable-next-line no-await-in-loop
+        const inBuffer = await jetpack.readAsync(shortcutPath, "buffer")
+        if (!inBuffer) {
+            log.warn("Failed to read .vdf buffer!")
+            continue
+        }
+
+        const shortcuts: any = readVdf(inBuffer)
+        if (!shortcuts.shortcuts) continue
+
+        let alreadyExists = false
+        // eslint-disable-next-line guard-for-in
+        for (const key in shortcuts.shortcuts) {
+            // If shortcut already exists, skip creation
+            if (shortcuts.shortcuts[key].exe === appPath.exePath) alreadyExists = true
+        }
+
+        if (alreadyExists) continue
+
+        const shortcut = {
+            AppName: `Tactical Intervention Revived ${isDebug && "(dev)"}`,
+            exe: appPath.exePath,
+            StartDir: appPath.workingDir
+        }
+
+        shortcuts.shortcuts.tacint_revived = shortcut
+
+        try {
+            log.info(`Creating Steam shortcut at ${shortcutPath}`)
+            jetpack.write(shortcutPath, writeVdf(shortcuts))
+        } catch(err) {
+            log.error(`Failed to make ${shortcutPath}`, err)
+        }
+    }
 }

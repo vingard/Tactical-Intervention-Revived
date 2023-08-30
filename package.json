@@ -10,7 +10,7 @@
         "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
         "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
         "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
-        "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
+        "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && patch-package && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
         "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx --fix",
         "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
         "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
@@ -80,7 +80,9 @@
         "onezip": "^5.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-router-dom": "^6.11.2"
+        "react-hook-form": "^7.45.4",
+        "react-router-dom": "^6.11.2",
+        "steam-binary-vdf": "^0.1.0"
     },
     "devDependencies": {
         "@electron/notarize": "^1.2.3",
@@ -90,6 +92,7 @@
         "@teamsupercell/typings-for-css-modules-loader": "^2.5.2",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^14.0.0",
+        "@types/byte-size": "^8.1.0",
         "@types/jest": "^29.5.2",
         "@types/node": "20.2.5",
         "@types/react": "^18.2.8",
@@ -129,6 +132,8 @@
         "jest": "^29.5.0",
         "jest-environment-jsdom": "^29.5.0",
         "mini-css-extract-plugin": "^2.7.6",
+        "node-loader": "^2.0.0",
+        "patch-package": "^8.0.0",
         "prettier": "^2.8.8",
         "react-refresh": "^0.14.0",
         "react-test-renderer": "^18.2.0",

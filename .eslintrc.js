@@ -22,7 +22,13 @@ module.exports = {
         "no-restricted-syntax": "off",
         "no-continue": "off",
         "no-plusplus": "off",
-        "react/require-default-props": "off"
+        "react/require-default-props": "off",
+        "no-return-assign": "off",
+        "import/no-cycle": "off",
+        "consistent-return": "off",
+        "no-param-reassign": "off",
+        "react/jsx-props-no-spreading": "off",
+        "react/no-unstable-nested-components": "off"
     },
     parserOptions: {
         ecmaVersion: 2020,

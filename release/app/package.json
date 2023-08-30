@@ -1,6 +1,6 @@
 {
     "name": "tactical-intervention-revived",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "",
     "license": "MIT",
     "author": "vin",
@@ -10,5 +10,7 @@
         "postinstall": "npm run rebuild && npm run link-modules",
         "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
     },
-    "dependencies": {}
+    "dependencies": {
+        "drivelist": "^11.1.0"
+    }
 }
