@@ -18,17 +18,17 @@ export function SettingsDialog({open, onClosed}: {open: boolean, onClosed: any})
         if (success) onClosed()
     }
 
-    async function getSettings() {
-        const settings = await window.electron.ipcRenderer.invoke("game:getSettings")
-        console.log(settings)
-        setValue("username", settings.username)
-        setValue("cfg", settings.cfg)
-        setSettingsReceived(true)
-    }
-
     useEffect(() => {
-        getSettings()
-    }, [])
+        async function getSettings() {
+            const settings = await window.electron.ipcRenderer.invoke("game:getSettings")
+            console.log(settings)
+            setValue("username", settings.username)
+            setValue("cfg", settings.cfg)
+            setSettingsReceived(true)
+        }
+
+        if (open === true) getSettings()
+    }, [open, setValue])
 
     return (
         <div className={settingsReceived && "bp5-skeleton" || ""}>
@@ -62,7 +62,7 @@ export function SettingsDialog({open, onClosed}: {open: boolean, onClosed: any})
                         </FormGroup>
 
                         <FormGroup
-                            helperText="Edit your cfg file here"
+                            helperText="Edit your .cfg file parameters"
                             label="Config file"
                             intent={errors.cfg && "danger"}
                         >
@@ -78,6 +78,7 @@ export function SettingsDialog({open, onClosed}: {open: boolean, onClosed: any})
                                         small
                                         autoResize
                                         spellCheck={false}
+                                        className="noScroll"
                                     />
                                 )}
                             />

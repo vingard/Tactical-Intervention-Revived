@@ -18,6 +18,7 @@ import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
 import * as game from "./core/game"
+import * as server from "./core/server"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
 
@@ -137,7 +138,6 @@ export function getWindow() {
 
 async function handleGameCheckState() {
     try {
-        console.log(game.checkInstalled())
         return game.checkInstalled()
     } catch(err: any) {
         config.create(true)
@@ -170,47 +170,33 @@ async function handleSetStartConfig(event: any, data: any) {
     }
 }
 
+
 async function handleQueryServer(event: any, ip: string, port: number) {
-    // MasterServer({
-    //     quantity: 100,
-    //     region: "EUROPE",
-    //     timeout: 3000,
-    //     filter
-    // }).then(servers => {
-    //     console.log(servers)
-    // })
+    try {
+        const info = await server.query(ip, port)
+        return info
+    } catch(err) {
+        return false
+    }
 
-    // let server
-    // try {
-    //     console.log(ip, port)
-    //     server = await Server({
-    //         ip,
-    //         port,
-    //         timeout: 2000,
-    //         debug: true,
-    //         enableWarns: true
+
+    // OLD METHOD, this is left in incase server queries dont work reliably
+    // return new Promise<void>(function(resolve: any) {
+    //     tccp.ping({address: ip, port, attempts: 3, timeout: 2000}, function(err, data) {
+    //         if (err) return resolve(false)
+    //         //console.log(data)
+    //         if (data.min === undefined) resolve(false)
+
+    //         return resolve(true)
     //     })
-    // } catch(err) {
-    //     console.log(err)
-    //     return {error: "Server not found"}
-    // }
-
-
-    // const server = await tcpPingPort(ip, port)
-    // return server.online || false
-
-    return new Promise<void>(function(resolve: any) {
-        tccp.ping({address: ip, port, attempts: 3, timeout: 2000}, function(err, data) {
-            if (err) return resolve(false)
-
-            return resolve(true)
-        })
-    })
+    // })
 }
 
-async function handleConnectServer(event: any, addr: string) {
+async function handleConnectServer(event: any, addr: string, password?: string) {
     try {
-        await game.start(`connect ${addr}`)
+        let args = `connect ${addr}`
+        args += password && `\npassword "${password}"` || ""
+        await game.start(args)
         return true
     } catch(err: any) {
         throw new SoftError(err.message)

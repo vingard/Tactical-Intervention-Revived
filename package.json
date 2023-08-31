@@ -1,5 +1,5 @@
 {
-    "contentUrl": "https://www.dropbox.com/scl/fi/0joot5lz7f6wdxdv6xy7o/tacint_revived.zip?rlkey=xe85npwth3vqif36m4abmjovf&dl=1",
+    "contentUrl": "https://ti-revived-dl.2i.games/tacint_revived.zip",
     "description": "A foundation for scalable desktop apps",
     "license": "MIT",
     "author": {
@@ -13,6 +13,7 @@
         "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && patch-package && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
         "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx --fix",
         "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
+        "package:debug": "npx cross-env DEBUG_PROD=true npm run package",
         "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
         "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
         "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
@@ -83,6 +84,7 @@
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.45.4",
         "react-router-dom": "^6.11.2",
+        "source-server-query": "^3.0.3",
         "steam-binary-vdf": "^0.1.0",
         "tcp-ping": "^0.1.1"
     },

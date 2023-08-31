@@ -109,7 +109,7 @@ function SetupPanel({form}: {form: any}) {
                             />
                         </FormGroup>
 
-                        <FormGroup
+                        {/* <FormGroup
                             label="Add to Steam Library"
                             helperText="After finishing this install, you must restart Steam to see Tactical Intervention Revived in your library"
                             intent={errors.steamShortcut && "danger"}
@@ -118,7 +118,7 @@ function SetupPanel({form}: {form: any}) {
                                 intent={errors.steamShortcut && "danger"}
                                 {...register("steamShortcut")}
                             />
-                        </FormGroup>
+                        </FormGroup> */}
 
                         <FormGroup
                             label="FPS limit"
