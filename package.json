@@ -163,7 +163,14 @@
         "productName": "Tactical Intervention Revived",
         "appId": "org.erb.TacticalInterventionRevived",
         "asar": true,
-        "asarUnpack": "**\\*.{node,dll}",
+        "asarUnpack": [
+            "**\\*.{node,dll}",
+            "_revived/*",
+            "bin/*",
+            "mapkit/*",
+            "mods/*",
+            "tacint/*"
+        ],
         "files": [
             "dist",
             "node_modules",
