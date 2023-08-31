@@ -164,12 +164,7 @@
         "appId": "org.erb.TacticalInterventionRevived",
         "asar": true,
         "asarUnpack": [
-            "**\\*.{node,dll}",
-            "_revived/*",
-            "bin/*",
-            "mapkit/*",
-            "mods/*",
-            "tacint/*"
+            "**\\*.{node,dll}"
         ],
         "files": [
             "dist",
@@ -207,8 +202,9 @@
         },
         "nsis": {
             "oneClick": false,
-            "allowToChangeInstallationDirectory": true,
-            "perMachine": true
+            "allowToChangeInstallationDirectory": false,
+            "perMachine": true,
+            "include": ".erb/scripts/installer.nsh"
         },
         "win": {
             "requestedExecutionLevel": "requireAdministrator",
