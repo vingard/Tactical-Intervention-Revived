@@ -7,6 +7,7 @@ import {
 } from "electron"
 
 import * as appPath from "./core/appPath"
+import * as server from "./core/server"
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
@@ -134,7 +135,7 @@ export default class MenuBuilder {
                     {
                         label: "Start Dedicated Server",
                         click: () => {
-                            shell.openPath(appPath.srcdsPath)
+                            server.start()
                         }
                     }
                 ]

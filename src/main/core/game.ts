@@ -14,7 +14,7 @@ import * as files from "./files"
 // eslint-disable-next-line import/no-cycle
 import * as mod from "./mod"
 // eslint-disable-next-line import/no-self-import
-import * as game from "./game"
+
 // eslint-disable-next-line import/no-cycle
 import { isDebug } from "../main"
 import { loadingReset, loadingSetError, loadingSetState } from "./util"
@@ -259,7 +259,7 @@ export async function mountBaseContent() {
         loadingSetState("game", "Preparing to mount game files", completed++, contentsTemp.length)
     }
 
-    const [emitter, totalFiles] = game.mountContent(contents, appPath.baseContentDir, appPath.mountDir)
+    const [emitter, totalFiles] = mountContent(contents, appPath.baseContentDir, appPath.mountDir)
     loadingSetState("game", "Starting mount...")
 
     emitter.on("progress", (totalCompleted) => loadingSetState("game", "Mounting", totalCompleted, totalFiles))
