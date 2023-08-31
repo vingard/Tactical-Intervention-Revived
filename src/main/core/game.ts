@@ -49,70 +49,6 @@ async function getRemotePackage() {
     return remotePackage
 }
 
-export async function installGame(overrideUrl?: string) {
-    loadingReset("game")
-
-    log.info("Installing game")
-
-    let url = overrideUrl
-
-    // Get content download URL from remote
-    if (!overrideUrl) {
-        log.info("Getting remote 'package.json' file...")
-        loadingSetState("game", "Getting remote 'package.json' file...")
-
-        const remotePackage = await getRemotePackage()
-
-        if (!remotePackage.contentUrl) {
-            throw new SoftError("No 'contentUrl' in remote package.json!")
-        }
-
-        url = remotePackage.contentUrl
-    }
-
-    if (!url) throw new SoftError("Failed to get game content download URL")
-
-    const destination = appPath.workingDir
-    const tempFileName = "game_content.zip"
-
-    // Download patched content to a temp file
-    log.info("Downloading game content")
-    await files.downloadTempFile(url, tempFileName, "game")
-
-    // Extract
-    log.info("Extracting game content")
-    await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
-
-    // Cleanup and mark as patched
-    loadingSetState("game", "Finishing up...")
-    await files.deleteTempFile(tempFileName)
-
-    // Write PATCHED file
-    try {
-        fs.writeFileSync(path.resolve(appPath.baseContentDir, "PATCHED"), "PATCHED BY Tactical Intervention Mod Manager")
-    } catch (err) {
-        throw new SoftError(`Failed to write the PATCHED file! ${err}`)
-    }
-
-    // Mount
-    log.info("Mounting base game content")
-    await game.mountBaseContent()
-
-    // Final check
-    const isPatched = checkInstalled()
-
-    if (!isPatched) {
-        throw new SoftError("Something went wrong, please retry the install :(")
-    }
-
-    loadingSetState("game", "Game installed successfully!", 1, 1)
-}
-
-export function getMountManifest() {
-    const conf = config.read()
-    return conf.mountManifest || {}
-}
-
 
 export async function mountFile(filePath: string, from: string, to: string, modName?: string) {
     await jetpack.dirAsync(path.resolve(to, path.dirname(filePath))) // creates a directory to this file in the to dir
@@ -268,6 +204,70 @@ export async function mountBaseContent() {
     return new Promise<void>(function (resolve, reject) {
         emitter.once("end", () => resolve())
     })
+}
+
+export async function installGame(overrideUrl?: string) {
+    loadingReset("game")
+
+    log.info("Installing game")
+
+    let url = overrideUrl
+
+    // Get content download URL from remote
+    if (!overrideUrl) {
+        log.info("Getting remote 'package.json' file...")
+        loadingSetState("game", "Getting remote 'package.json' file...")
+
+        const remotePackage = await getRemotePackage()
+
+        if (!remotePackage.contentUrl) {
+            throw new SoftError("No 'contentUrl' in remote package.json!")
+        }
+
+        url = remotePackage.contentUrl
+    }
+
+    if (!url) throw new SoftError("Failed to get game content download URL")
+
+    const destination = appPath.workingDir
+    const tempFileName = "game_content.zip"
+
+    // Download patched content to a temp file
+    log.info("Downloading game content")
+    await files.downloadTempFile(url, tempFileName, "game")
+
+    // Extract
+    log.info("Extracting game content")
+    await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
+
+    // Cleanup and mark as patched
+    loadingSetState("game", "Finishing up...")
+    await files.deleteTempFile(tempFileName)
+
+    // Write PATCHED file
+    try {
+        fs.writeFileSync(path.resolve(appPath.baseContentDir, "PATCHED"), "PATCHED BY Tactical Intervention Mod Manager")
+    } catch (err) {
+        throw new SoftError(`Failed to write the PATCHED file! ${err}`)
+    }
+
+    // Mount
+    log.info("Mounting base game content")
+    await mountBaseContent()
+
+    // Final check
+    const isPatched = checkInstalled()
+
+    if (!isPatched) {
+        throw new SoftError("Something went wrong, please retry the install :(")
+    }
+
+    loadingSetState("game", "Game installed successfully!", 1, 1)
+}
+
+export function getMountManifest() {
+    const conf = config.read()
+    return conf.mountManifest || {}
 }
 
 export async function setUsername(username: string) {
