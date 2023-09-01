@@ -79,6 +79,10 @@ export default class MenuBuilder {
                                 "https://github.com/vingard/Tactical-Intervention-Revived/wiki"
                             )
                         }
+                    },
+                    {
+                        label: `Version`,
+                        sublabel: isDebug && "dev" || app.getVersion()
                     }
                 ]
             }

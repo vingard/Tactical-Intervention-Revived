@@ -10,7 +10,7 @@ import * as appPath from "./appPath"
 import { SoftError } from "./softError"
 import { loadingReset, loadingSetState } from "./util"
 
-async function getInfo(url: string) {
+export async function getInfo(url: string) {
     let modInfo
     const modInfoUrl = `${url.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`
 

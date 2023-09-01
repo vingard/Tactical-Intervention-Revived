@@ -19,6 +19,7 @@ import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
 import * as game from "./core/game"
 import * as server from "./core/server"
+import * as mod from "./core/mod"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
 
@@ -240,6 +241,22 @@ async function handleSetSettings(event: any, data: any) {
     return false
 }
 
+async function handleQueryMod(event: any, url: string) {
+    try {
+        return await mod.getInfo(url)
+    } catch(err) {
+        console.log(err)
+    }
+}
+
+async function handleInstallMod(event: any, url: string, mount: boolean = false) {
+    try {
+        return await mod.install(url)
+    } catch(err) {
+        console.log(err)
+    }
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -250,6 +267,8 @@ app.whenReady()
         ipcMain.handle("game:start", handleGameStart)
         ipcMain.handle("game:getSettings", handleGetSettings)
         ipcMain.handle("game:setSettings", handleSetSettings)
+        ipcMain.handle("mod:query", handleQueryMod)
+        ipcMain.handle("mod:install", handleInstallMod)
 
         config.create()
 

@@ -135,7 +135,7 @@ function SetupPanel({form}: {form: any}) {
                     </form>
 
                     <div className="muted">
-                        You can always change your preferences later in the 'Settings' menu
+                        {`You can always change your preferences later in the 'Settings' menu`}
                     </div>
                 </div>
             </div>
