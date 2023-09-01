@@ -1,7 +1,7 @@
 import { ProgressBar } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 
-export function LoadingBar({loadStateId, useProgress = true, usePercent = true}: {loadStateId: string, useProgress?: boolean, usePercent?: boolean}) {
+export function LoadingBar({loadStateId, useProgress = true, usePercent = true, idle = false}: {loadStateId: string, useProgress?: boolean, usePercent?: boolean, idle?: boolean}) {
     const [loaderInfo, setLoaderInfo]: any = useState({})
 
     useEffect(() => {
@@ -31,6 +31,12 @@ export function LoadingBar({loadStateId, useProgress = true, usePercent = true}:
     }
 
     const isWorking = !loaderInfo.error && progress !== 1
+
+    if (idle) {
+        return (
+            <ProgressBar intent="none" animate={false} value={0}/>
+        )
+    }
 
     return (
         <div className="installer progressInfo">

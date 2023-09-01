@@ -16,6 +16,8 @@ export type Channels =
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"
+    | "mod:query"
+    | "mod:install"
 
 const electronHandler = {
     ipcRenderer: {
