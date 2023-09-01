@@ -202,7 +202,7 @@
         },
         "nsis": {
             "oneClick": false,
-            "allowToChangeInstallationDirectory": false,
+            "allowToChangeInstallationDirectory": true,
             "perMachine": true,
             "include": ".erb/scripts/installer.nsh"
         },
