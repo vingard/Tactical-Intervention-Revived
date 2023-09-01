@@ -1,5 +1,5 @@
 import log from "electron-log"
-import { execFile, spawn, exec } from "child_process"
+import { shell } from "electron"
 import srcdsQuery from "source-server-query"
 
 import * as appPath from "./appPath"
@@ -21,19 +21,7 @@ export async function start(args: string = "") {
     }
 
     await game.setTempCfg(`${baseArgs}\n\n${args}`)
-
-    let instance
-
-    try {
-        instance = execFile(`${appPath.srcdsPath}`, {shell: true})
-    } catch(err) {
-        throw new SoftError(`Failed to create dedicated server - ${err}`)
-    }
-
-    instance.on("exit", (code) => {
-        //setTempCfg("")
-        console.log("server closed")
-    })
+    shell.openPath(`${appPath.srcdsPath}`)
 }
 
 export async function query(ip: string, port: number = 27015, getPlayers: boolean = true) {
