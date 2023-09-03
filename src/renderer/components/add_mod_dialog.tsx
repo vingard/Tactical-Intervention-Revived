@@ -1,7 +1,8 @@
-import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
+import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, H5, H6, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { LoadingBar } from "./loadingbar"
+import { WorkerDialog } from "./worker_dialog"
 
 export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const {register, handleSubmit, control, setValue, formState: {errors}} = useForm()
@@ -27,9 +28,10 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     async function addModFormSubmit(data: any, event: any) {
         if (!modData) return
 
+        setInstalling(true)
         const success = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
-        if (success) setInstalling(true)
-        //if (success) onClosed() // TODO: Add loader
+        setInstalling(false)
+        onClosed()
     }
 
     useEffect(() => {
@@ -37,8 +39,15 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
 
     return (
         <div>
+            {modData && <WorkerDialog
+                open={installing}
+                title={`Installing ${modData.prettyName || modData.name}`}
+                icon="cloud-download"
+                loadingStateId={`mod_${modData.name}`}
+            />}
+
             <Dialog
-                isOpen={open}
+                isOpen={open && !installing}
                 onClose={onClosed}
                 className="bp5-dark"
                 title="Add a Mod"
@@ -81,10 +90,12 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                         <Card>
                             <H4>{modData.name}</H4>
                             <p className="muted">
-                                <Icon icon="upload"/> {modData.version}
+                                <Icon icon="changes"/> Version: {modData.version}
                             </p>
 
-                            <LoadingBar loadStateId={`mod_${modData.name}`} idle={!installing}/>
+                            <p className="muted">
+                                <Icon icon="cloud-download"/> Already downloaded
+                            </p>
                         </Card>
                     )}
 

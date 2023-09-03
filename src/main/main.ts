@@ -22,6 +22,7 @@ import * as server from "./core/server"
 import * as mod from "./core/mod"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
+import { devToolsPath } from "./core/appPath"
 
 class AppUpdater {
     constructor() {
@@ -202,8 +203,6 @@ async function handleConnectServer(event: any, addr: string, password?: string) 
     } catch(err: any) {
         throw new SoftError(err.message)
     }
-
-    return false
 }
 
 async function handleGameStart(event: any) {
@@ -213,8 +212,15 @@ async function handleGameStart(event: any) {
     } catch(err: any) {
         throw new SoftError(err.message)
     }
+}
 
-    return false
+async function handleGmeStartDevTools() {
+    try {
+        shell.openPath(devToolsPath)
+        return true
+    } catch(err: any) {
+        throw new SoftError(err.message)
+    }
 }
 
 async function handleGetSettings() {
@@ -257,6 +263,22 @@ async function handleInstallMod(event: any, url: string, mount: boolean = false)
     }
 }
 
+async function handleSetMounted(event: any, modName: string, isMounted: boolean) {
+    try {
+        const modData = await mod.get(modName)
+
+        if (isMounted) {
+            await mod.mountMod(modData)
+        } else {
+            await mod.unMountMod(modData)
+        }
+
+        return true
+    } catch(err) {
+        console.log(err)
+    }
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -265,10 +287,12 @@ app.whenReady()
         ipcMain.handle("game:queryServer", handleQueryServer)
         ipcMain.handle("game:connectServer", handleConnectServer)
         ipcMain.handle("game:start", handleGameStart)
+        ipcMain.handle("game:startDevTools", handleGmeStartDevTools)
         ipcMain.handle("game:getSettings", handleGetSettings)
         ipcMain.handle("game:setSettings", handleSetSettings)
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)
+        ipcMain.handle("mod:setMounted", handleSetMounted)
 
         config.create()
 

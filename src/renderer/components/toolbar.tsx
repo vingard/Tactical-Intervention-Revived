@@ -3,12 +3,13 @@ import { useState } from "react"
 import { ConnectDialog } from "./connect_dialog"
 import { SettingsDialog } from "./settings_dialog"
 import { AddModDialog } from "./add_mod_dialog"
+import { WorkerDialog } from "./worker_dialog"
 
 function PlayDropdown() {
     return (
         <Menu>
             <MenuItem icon="play" text="Play Offline" onClick={() => (window.electron.ipcRenderer.invoke("game:start"))}/>
-            <MenuItem icon="map-create" text="Start Hammer Level Editor"/>
+            <MenuItem icon="code" text="Start Dev Tools" onClick={() => (window.electron.ipcRenderer.invoke("game:startDevTools"))}/>
         </Menu>
     )
 }
@@ -25,7 +26,7 @@ export function Toolbar() {
                         <img src={icon} alt="" width="40"/>
                     </Button> */}
 
-                    <Button icon="add" onClick={() => {/** setOpenPopup("mod_add") */}}>Add Mod</Button>
+                    <Button icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
                     <Button icon="updated">Update Mods</Button>
                     <Divider/>
                     <Button icon="git-merge">Remount Mods</Button>

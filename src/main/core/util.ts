@@ -18,3 +18,8 @@ export function loadingReset(key: string) {
     win.webContents.send("loading:reset", key)
 }
 
+export function loadingSuccess(key: string) {
+    const win = getWindow()!
+    if (!win) return
+    win.webContents.send("loading:success", key)
+}

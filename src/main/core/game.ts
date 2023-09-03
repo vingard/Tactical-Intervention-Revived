@@ -17,7 +17,7 @@ import * as mod from "./mod"
 
 // eslint-disable-next-line import/no-cycle
 import { isDebug } from "../main"
-import { loadingReset, loadingSetError, loadingSetState } from "./util"
+import { loadingReset, loadingSetError, loadingSetState, loadingSuccess } from "./util"
 import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
@@ -263,6 +263,7 @@ export async function installGame(overrideUrl?: string) {
     }
 
     loadingSetState("game", "Game installed successfully!", 1, 1)
+    loadingSuccess("game")
 }
 
 export function getMountManifest() {

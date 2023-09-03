@@ -11,13 +11,17 @@ export type Channels =
     | "game:queryServer"
     | "game:connectServer"
     | "game:start"
+    | "game:startDevTools"
     | "game:getSettings"
     | "game:setSettings"
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"
+    | "loading:success"
     | "mod:query"
     | "mod:install"
+    | "mod:setState"
+    | "mod:setMounted"
 
 const electronHandler = {
     ipcRenderer: {

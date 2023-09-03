@@ -2,13 +2,20 @@ import axios from "axios"
 import path from "path"
 import jetpack from "fs-jetpack"
 import log from "electron-log"
+import { getWindow } from "../main"
 import * as config from "./config"
 import * as files from "./files"
 // eslint-disable-next-line import/no-cycle
 import * as game from "./game"
 import * as appPath from "./appPath"
 import { SoftError } from "./softError"
-import { loadingReset, loadingSetState } from "./util"
+import { loadingReset, loadingSetState, loadingSuccess } from "./util"
+
+async function setState(mod: any) {
+    const win = getWindow()!
+    if (!win) return
+    win.webContents.send("mod:setState", mod)
+}
 
 export async function getInfo(url: string) {
     let modInfo
@@ -72,7 +79,7 @@ export async function install(url: string) {
     const modPath = path.resolve(appPath.modsDir, mod.name)
     const modTempFileName = `${mod.name}.zip`
 
-    const modLoadStateId = `m_${mod.name}_install`
+    const modLoadStateId = `mod_${mod.name}`
     loadingReset(modLoadStateId)
 
     // If mod is already installed prompt?
@@ -81,7 +88,7 @@ export async function install(url: string) {
 
     // Download archive
     log.info(`Downloading from ${mod.url}`)
-    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId)
+    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true)
 
     // Make mods folder and remove old install
     await files.tryToRemoveDirectory(modPath)
@@ -126,6 +133,8 @@ export async function install(url: string) {
     const succMsg = `${mod.name} (${mod.version}) was installed succesfully!`
     log.info(succMsg)
     loadingSetState(modLoadStateId, succMsg, 1, 1)
+    loadingSuccess(modLoadStateId)
+    setState(mod)
 
     return mod
 }
@@ -196,6 +205,7 @@ export async function mountMod(mod: any) {
     conf.mods[modIndex].mounted = true
     conf.mods[modIndex].claims = claims
     config.update(conf)
+    setState(conf.mods[modIndex])
 }
 
 export async function unMountMod(mod: any) {
@@ -226,4 +236,5 @@ export async function unMountMod(mod: any) {
     conf.mods[modIndex].mounted = false
     conf.mods[modIndex].claims = undefined
     config.update(conf)
+    setState(conf.mods[modIndex])
 }

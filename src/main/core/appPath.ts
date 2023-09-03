@@ -14,6 +14,7 @@ export const binDir = files.createDirIfNotExists(path.resolve(workingDir, "bin")
 export const configPath = path.resolve(workingDir, "_revived", "data.json")
 export const cfgPath = path.resolve(tacintDir, "cfg", "revived.cfg")
 export const gamePath = path.resolve(binDir, "tacint_mapkit.exe")
+export const devToolsPath = path.resolve(binDir, "TacintMapkitLauncher.exe")
 export const srcdsPath = path.resolve(binDir, "tacint_ds.exe")
 
 export const commonRedistDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived", "_CommonRedist"))
