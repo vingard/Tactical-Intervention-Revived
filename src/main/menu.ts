@@ -122,7 +122,17 @@ export default class MenuBuilder {
         const templateMods = [
             {
                 label: "Mods",
-                submenu: []
+                submenu: [
+                    {
+                        label: "Check all mods for updates"
+                    },
+                    {
+                        label: "Install mod from .zip"
+                    },
+                    {
+                        label: "Create new mod..."
+                    }
+                ]
             }
         ]
 
@@ -140,6 +150,18 @@ export default class MenuBuilder {
                         label: "Start Dedicated Server",
                         click: () => {
                             server.start()
+                        }
+                    },
+                    {
+                        label: "Re-Mount Game",
+                        click: () => {
+
+                        }
+                    },
+                    {
+                        label: "Uninstall Game",
+                        click: () => {
+
                         }
                     }
                 ]

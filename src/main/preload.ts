@@ -21,7 +21,17 @@ export type Channels =
     | "mod:query"
     | "mod:install"
     | "mod:setState"
+    | "mod:setDeleted"
     | "mod:setMounted"
+    | "mod:init"
+    | "mod:openRemoteURL"
+    | "mod:openDirectory"
+    | "mod:delete"
+    | "mod:setPriority"
+    | "mod:installManual"
+    | "mod:new"
+    | "mod:update"
+    | "mod:checkForUpdate"
 
 const electronHandler = {
     ipcRenderer: {

@@ -170,13 +170,32 @@ export function mountContent(content: ContentType, from: string, to: string): [E
     return [emitter, entries.length]
 }
 
-export async function unMountContent(content: ContentType, from: string, to: string) {
-    for (const [filePath, modName] of Object.entries(content)) {
-        // eslint-disable-next-line no-await-in-loop
-        await unMountFile(filePath, from, to, modName)
-    }
+export function unMountContent(content: ContentType, from: string, to: string): [EventEmitter, number] {
+    const emitter = new EventEmitter()
+    const entries = Object.entries(content)
+    let i = 0
 
-    files.cleanupModContentLeftovers(from, to)
+    process.nextTick(() => {(
+        async () => {
+            emitter.emit("start", entries.length)
+
+            for (const [filePath, modName] of entries) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await unMountFile(filePath, from, to, modName)
+                } catch (err: any) {
+                    emitter.emit("error", err.message)
+                }
+                emitter.emit("progress", i++)
+            }
+
+            emitter.emit("cleanupDirs")
+            files.cleanupModContentLeftovers(from, to)
+            emitter.emit("end", i)
+        }
+    )()})
+
+    return [emitter, entries.length]
 }
 
 export async function mountBaseContent() {

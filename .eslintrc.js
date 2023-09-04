@@ -27,7 +27,8 @@ module.exports = {
         "import/no-cycle": "off",
         "consistent-return": "off",
         "no-param-reassign": "off",
-        "react/jsx-props-no-spreading": "off"
+        "react/jsx-props-no-spreading": "off",
+        "react/destructuring-assignment": "off"
     },
     parserOptions: {
         ecmaVersion: 2020,

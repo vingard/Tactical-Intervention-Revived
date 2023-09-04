@@ -3,13 +3,23 @@ import { useState } from "react"
 import { ConnectDialog } from "./connect_dialog"
 import { SettingsDialog } from "./settings_dialog"
 import { AddModDialog } from "./add_mod_dialog"
-import { WorkerDialog } from "./worker_dialog"
+import { LoadoutDialog } from "./loadout_dialog"
+import { NewModDialog } from "./new_mod_dialog"
 
 function PlayDropdown() {
     return (
         <Menu>
             <MenuItem icon="play" text="Play Offline" onClick={() => (window.electron.ipcRenderer.invoke("game:start"))}/>
-            <MenuItem icon="code" text="Start Dev Tools" onClick={() => (window.electron.ipcRenderer.invoke("game:startDevTools"))}/>
+            <MenuItem icon="wrench" text="Start Map Kit" onClick={() => (window.electron.ipcRenderer.invoke("game:startDevTools"))}/>
+        </Menu>
+    )
+}
+
+function AddModDropdown({onAddModFromFolder, onCreateNewMod}: {onAddModFromFolder: any, onCreateNewMod: any}) {
+    return (
+        <Menu>
+            <MenuItem icon="folder-open" text="Add mod from folder" onClick={() => onAddModFromFolder()}/>
+            <MenuItem icon="new-object" text="Create new mod" onClick={() => onCreateNewMod()}/>
         </Menu>
     )
 }
@@ -21,19 +31,22 @@ export function Toolbar() {
     return (
         <>
             <div className="toolbar container">
-                <ButtonGroup large>
+                <ButtonGroup>
                     {/* <Button>
                         <img src={icon} alt="" width="40"/>
                     </Button> */}
 
-                    <Button icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
-                    <Button icon="updated">Update Mods</Button>
-                    <Divider/>
-                    <Button icon="git-merge">Remount Mods</Button>
+                    <ButtonGroup>
+                        <Button large icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
+                        <Popover content={<AddModDropdown onAddModFromFolder={() => console.log("folder")} onCreateNewMod={() => setOpenPopup("mod_new")}/>} placement="bottom-end">
+                            <Button icon="caret-down"/>
+                        </Popover>
+                    </ButtonGroup>
                 </ButtonGroup>
 
                 <div className="toolbar play">
                     <ButtonGroup>
+                        <Button icon="ammunition" onClick={() => setOpenPopup("loadout")}>Loadout</Button>
                         <Button icon="cog" onClick={() => setOpenPopup("settings")}>Settings</Button>
                         <Divider/>
                         <Button intent="primary" icon="play" large onClick={() => setOpenPopup("connect")}>
@@ -49,6 +62,8 @@ export function Toolbar() {
             <SettingsDialog open={openPopup === "settings"} onClosed={() => setOpenPopup("")}/>
             <ConnectDialog open={openPopup === "connect"} onClosed={() => setOpenPopup("")}/>
             <AddModDialog open={openPopup === "mod_add"} onClosed={() => setOpenPopup("")}/>
+            <NewModDialog open={openPopup === "mod_new"} onClosed={() => setOpenPopup("")}/>
+            <LoadoutDialog open={openPopup === "loadout"} onClosed={() => setOpenPopup("")}/>
         </>
     )
 }

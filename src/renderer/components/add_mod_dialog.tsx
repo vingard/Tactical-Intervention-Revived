@@ -44,6 +44,7 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                 title={`Installing ${modData.prettyName || modData.name}`}
                 icon="cloud-download"
                 loadingStateId={`mod_${modData.name}`}
+                onClosed={() => setInstalling(false)}
             />}
 
             <Dialog

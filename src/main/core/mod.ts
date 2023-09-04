@@ -17,6 +17,12 @@ async function setState(mod: any) {
     win.webContents.send("mod:setState", mod)
 }
 
+async function setStateDeleted(modName: string) {
+    const win = getWindow()!
+    if (!win) return
+    win.webContents.send("mod:setDeleted", modName)
+}
+
 export async function getInfo(url: string) {
     let modInfo
     const modInfoUrl = `${url.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`
@@ -140,6 +146,9 @@ export async function install(url: string) {
 }
 
 export async function mountMod(mod: any) {
+    const modLoadingStateId = `mod_${mod.name}`
+    loadingReset(modLoadingStateId)
+
     const modFolder = path.resolve(appPath.modsDir, mod.name)
     const modFs = jetpack.cwd(modFolder)
     const modContentsTemp = modFs.find(".", {directories: false, recursive: true})
@@ -155,8 +164,11 @@ export async function mountMod(mod: any) {
     const claims: any = {}
     const myPriority = getLoadOrder(mod)
     let conf = config.read()
+    let completed = 0
+    const modFiles = Object.entries(modContents)
 
-    for (const [k, v] of Object.entries(modContents)) {
+    for (const [k, v] of modFiles) {
+        loadingSetState(modLoadingStateId, "Preparing to mount game files", completed++, modFiles.length)
         claims[k] = false
 
         // If the mounted file has conflict
@@ -179,25 +191,22 @@ export async function mountMod(mod: any) {
     }
 
     // Mount the difference from the mods local folder into the mountDir
-    await (async () => {
-        const [emitter, totalFiles] = game.mountContent(manifestDiff, modFolder, appPath.mountDir)
-        // const progressBar = new ProgressBar("-> Mounting [:bar] (:curSize/:maxSize) :percent complete  (:etas seconds remaining)", {
-        //     width: 44,
-        //     complete: "=",
-        //     incomplete: " ",
-        //     renderThrottle: 1,
-        //     total: totalFiles
-        // })
+    try {
+        await (async () => {
+            const [emitter, totalFiles] = game.mountContent(manifestDiff, modFolder, appPath.mountDir)
+            loadingSetState(modLoadingStateId, "Starting mount...")
 
-        // emitter.on("progress", (totalCompleted) => progressBar.tick(1, {
-        //     maxSize: totalFiles,
-        //     curSize: totalCompleted
-        // }))
+            emitter.on("progress", (totalCompleted) => loadingSetState(modLoadingStateId, "Mounting", totalCompleted, totalFiles))
+            emitter.once("error", (errMessage) => {throw new SoftError(errMessage, modLoadingStateId)})
 
-        return new Promise<void>(function(resolve, reject) {
-            emitter.once("end", () => resolve())
-        })
-    })()
+            return new Promise<void>(function(resolve, reject) {
+                emitter.once("end", () => resolve())
+            })
+        })()
+    } catch(err: any) {
+        console.log(err)
+    }
+
 
     conf = config.read()
     const modIndex = getIndex(conf, mod.name)
@@ -206,35 +215,101 @@ export async function mountMod(mod: any) {
     conf.mods[modIndex].claims = claims
     config.update(conf)
     setState(conf.mods[modIndex])
+
+    loadingSuccess(modLoadingStateId)
 }
 
 export async function unMountMod(mod: any) {
+    const modLoadingStateId = `mod_${mod.name}`
+    loadingReset(modLoadingStateId)
+
     const modFolder = path.resolve(appPath.modsDir, mod.name)
     const modFs = jetpack.cwd(modFolder)
 
     const manifest = game.getMountManifest()
+    const manifestArray = Object.entries(manifest)
     const content: any = {}
+    let completed = 0
 
-    for (const [k, v] of Object.entries(manifest)) {
+    for (const [k, v] of manifestArray) {
+        loadingSetState(modLoadingStateId, "Preparing to un-mount game files", completed++, manifestArray.length)
         if (v === mod.name) {
             content[k] = v
         }
     }
 
     await game.unMountContent(content, modFolder, appPath.mountDir)
+    try {
+        await (async () => {
+            const [emitter, totalFiles] = game.unMountContent(content, modFolder, appPath.mountDir)
+            loadingSetState(modLoadingStateId, "Starting un-mount...")
 
+            emitter.on("progress", (totalCompleted) => loadingSetState(modLoadingStateId, "Un-Mounting", totalCompleted, totalFiles))
+            emitter.on("cleanupDirs", () => loadingSetState(modLoadingStateId, "Cleaning up leftovers"))
+            emitter.once("error", (errMessage) => {throw new SoftError(errMessage, modLoadingStateId)})
+
+            return new Promise<void>(function(resolve, reject) {
+                emitter.once("end", () => resolve())
+            })
+        })()
+    } catch(err: any) {
+        console.log(err)
+    }
+
+
+    completed = 0
     // TODO: Fix this so it loops through a sorted array of claims to see
-    for (const [k, v] of Object.entries(manifest)) {
+    for (const [k, v] of manifestArray) {
+        loadingSetState(modLoadingStateId, "Cleaning up manifest", completed++, manifestArray.length)
         if (v === mod.name) {
             manifest[k] = undefined
         }
     }
 
     const conf = config.read()
-    const modIndex = getIndex(config, mod.name)
+    const modIndex = getIndex(conf, mod.name)
     //config.mountManifest = manifest
     conf.mods[modIndex].mounted = false
     conf.mods[modIndex].claims = undefined
     config.update(conf)
     setState(conf.mods[modIndex])
+
+    loadingSuccess(modLoadingStateId)
+}
+
+export async function init() {
+    const mods = getAll()
+
+    for (const mod of mods) {
+        setState(mod)
+    }
+}
+
+export async function remove(mod: any) {
+    const modLoadingStateId = `mod_${mod.name}`
+    loadingReset(modLoadingStateId)
+
+    loadingSetState(modLoadingStateId, "Preparing to delete")
+    await unMountMod(mod)
+
+    loadingSetState(modLoadingStateId, "Deleting files")
+
+    const modPath = path.resolve(appPath.modsDir, mod.name)
+
+    if (jetpack.exists(modPath) === "dir") {
+        try {
+            jetpack.remove(path.resolve(appPath.modsDir, mod.name))
+        } catch(err: any) {
+            throw new Error("Failed to remove mod directory")
+        }
+    }
+
+    const conf = config.read()
+    const modIndex = getIndex(conf, mod.name)
+    conf.mods.splice(modIndex, 1)
+    console.log("new confg", conf.mods)
+    config.update(conf)
+
+    setStateDeleted(mod.name)
+    loadingSuccess(modLoadingStateId)
 }

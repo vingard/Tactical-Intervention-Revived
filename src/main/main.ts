@@ -22,7 +22,7 @@ import * as server from "./core/server"
 import * as mod from "./core/mod"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
-import { devToolsPath } from "./core/appPath"
+import { devToolsPath, modsDir } from "./core/appPath"
 
 class AppUpdater {
     constructor() {
@@ -274,10 +274,49 @@ async function handleSetMounted(event: any, modName: string, isMounted: boolean)
         }
 
         return true
-    } catch(err) {
-        console.log(err)
+    } catch(err: any) {
+        console.error("MountModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modName}`, err.message)
     }
 }
+
+async function handleModInit() {
+    await mod.init()
+    return true
+}
+
+async function handleModOpenRemoteURL(event: any, modName: string) {
+    try {
+        const thisMod = mod.get(modName)
+        await shell.openExternal(thisMod.url)
+    } catch(err: any) {
+        console.error("OpenRemoteURLModError", err)
+    }
+}
+
+async function handleModOpenDirectory(event: any, modName: string) {
+    try {
+        const thisMod = mod.get(modName)
+        await shell.openPath(path.resolve(modsDir, modName))
+    } catch(err: any) {
+        console.error("OpenDirectoryModError", err)
+    }
+}
+
+async function handleModDelete(event: any, modName: string) {
+    try {
+        console.log(modName)
+        const thisMod = mod.get(modName)
+        if (!thisMod) throw new Error(`Failed to find mod '${modName}'`)
+        await mod.remove(thisMod)
+    } catch(err: any) {
+        console.error("DeleteModError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modName}`, err.message)
+    }
+}
+
 
 app.whenReady()
     .then(() => {
@@ -293,14 +332,22 @@ app.whenReady()
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)
         ipcMain.handle("mod:setMounted", handleSetMounted)
+        ipcMain.handle("mod:init", handleModInit)
+        ipcMain.handle("mod:openRemoteURL", handleModOpenRemoteURL)
+        ipcMain.handle("mod:openDirectory", handleModOpenDirectory)
+        ipcMain.handle("mod:delete", handleModDelete)
 
         config.create()
 
-        createWindow()
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
             if (mainWindow === null) createWindow()
-        })
+        });
+
+        (async () => {
+            await createWindow()
+            //mod.init() We do this through an IPC now
+        })()
     })
     .catch(console.log)

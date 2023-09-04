@@ -1,14 +1,67 @@
-import { Button, ButtonGroup, H6, Menu, MenuItem, NonIdealState, Popover, Section, SectionCard, Tag } from "@blueprintjs/core"
+import { Button, ButtonGroup, Dialog, DialogBody, DialogFooter, H6, Menu, MenuItem, NonIdealState, Popover, Section, SectionCard, Tag } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 import { WorkerDialog } from "./worker_dialog"
 
-function ModDropdown() {
+function ModDropdown({mod}: {mod: any}) {
+    const [deleting, setDeleting] = useState(false)
+    const [deletePopup, setDeletePopup] = useState(false)
+    const loadingStateId = `mod_${mod.name}`
+
+    async function deleteMod() {
+        setDeleting(true)
+        const success = await window.electron.ipcRenderer.invoke("mod:delete", mod.name)
+        if (success) setDeleting(false)
+    }
+
+    console.log(deletePopup)
+
     return (
-        <Menu>
-            <MenuItem icon="refresh" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("game:start"))}/>
-            <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("game:startDevTools"))}/>
-            <MenuItem icon="trash" text="Delete" intent="danger" onClick={() => (window.electron.ipcRenderer.invoke("game:startDevTools"))}/>
-        </Menu>
+        <>
+            <Popover
+                content={
+                    <Menu>
+                        <MenuItem icon="refresh" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate"))}/>
+                        <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("mod:openRemoteURL", mod.name))}/>
+                        <MenuItem icon="folder-shared-open" text="Open mod directory" onClick={() => (window.electron.ipcRenderer.invoke("mod:openDirectory", mod.name))}/>
+                        <MenuItem icon="trash" text="Delete" intent="danger" onClick={() => setDeletePopup(true)}/>
+                    </Menu>
+                }
+                placement="bottom-end"
+            >
+                <Button icon="caret-down"/>
+            </Popover>
+
+            <WorkerDialog
+                open={deleting}
+                title={`Deleting ${mod.prettyName || mod.name}`}
+                icon="trash"
+                loadingStateId={loadingStateId}
+                onClosed={() => setDeleting(false)}
+            />
+
+            <Dialog
+                className="bp5-dark"
+                title="Confirm Deletion"
+                icon="trash"
+                isOpen={deletePopup}
+                onClose={() => setDeletePopup(false)}
+            >
+                <DialogBody>
+                    Are you sure you want to delete {mod.prettyName || mod.name}?
+                </DialogBody>
+
+                <DialogFooter actions={(
+                    <>
+                        <Button onClick={() => setDeletePopup(false)}>
+                            Cancel
+                        </Button>
+                        <Button intent="danger" onClick={() => deleteMod()}>
+                            Delete
+                        </Button>
+                    </>
+                )}/>
+            </Dialog>
+        </>
     )
 }
 
@@ -22,6 +75,15 @@ export function ModList() {
         window.electron.ipcRenderer.on("mod:setState", (modData: any) => {
             setMods({...mods, ...{[modData.name]: modData}})
         })
+
+        window.electron.ipcRenderer.on("mod:setDeleted", (modName: any) => {
+            const temp: any = {...mods}
+            delete temp[modName]
+
+            setMods(temp)
+        })
+
+        window.electron.ipcRenderer.invoke("mod:init")
     }, [])
 
 
@@ -30,7 +92,7 @@ export function ModList() {
         setLoadingStateId(`mod_${mod.name}`)
         setMounting(true)
         const success = await window.electron.ipcRenderer.invoke("mod:setMounted", mod.name, isMounted)
-        setMounting(false)
+        if (success) setMounting(false)
     }
 
     const modsArray = Object.values(mods)
@@ -42,6 +104,7 @@ export function ModList() {
                 title={workerTitle}
                 icon="cloud-download"
                 loadingStateId={loadingStateId}
+                onClosed={() => setMounting(false)}
             />}
 
             <div className="modList container">
@@ -64,10 +127,7 @@ export function ModList() {
                                     <ButtonGroup style={{float: "right"}}>
                                         {mod.needsUpdate && <Button icon="cloud-download" intent="primary">Update</Button>}
                                         <Button icon={mod.mounted && "switch" || "one-to-one"} onClick={() => (setModMounted(mod, !mod.mounted))}>{mod.mounted && "Un-Mount" || "Mount"}</Button>
-
-                                        <Popover content={<ModDropdown/>} placement="bottom-end">
-                                            <Button icon="caret-down"/>
-                                        </Popover>
+                                        <ModDropdown mod={mod}/>
                                     </ButtonGroup>
                                 </div>
 

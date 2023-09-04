@@ -18,7 +18,7 @@ export function WorkerDialog({open, onClosed, loadingStateId, title, icon, autoC
                 className="bp5-dark"
                 title={title}
                 icon={icon}
-                isCloseButtonShown={working}
+                isCloseButtonShown={!working}
             >
                 <DialogBody>
                     <LoadingBar
