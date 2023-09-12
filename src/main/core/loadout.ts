@@ -33,15 +33,16 @@ export async function setBackpack(strPrimaries: string[], strSecondaries: string
     const primaries: number[] = []
     const secondaries: number[] = []
 
+
     // eslint-disable-next-line guard-for-in
-    for (const itemName in strPrimaries) {
+    for (const itemName of strPrimaries) {
         const item = getItem(itemName)
         if (!item) throw new Error(`Invalid item '${item}'`)
         primaries.push(item.id)
     }
 
     // eslint-disable-next-line guard-for-in
-    for (const itemName in strSecondaries) {
+    for (const itemName of strSecondaries) {
         const item = getItem(itemName)
         if (!item) throw new Error(`Invalid item '${item}'`)
         secondaries.push(item.id)
@@ -84,7 +85,7 @@ export async function setBackpack(strPrimaries: string[], strSecondaries: string
 
 
     try {
-        await jetpack.writeAsync(path.resolve(appPath.backpackDir, "backpack.dat"), data, {mode: "binary"})
+        await jetpack.writeAsync(path.resolve(appPath.backpackDir, "backpack.dat"), data)
     } catch(err) {
         throw new Error(`Error saving backpack.dat - ${err}`)
     }

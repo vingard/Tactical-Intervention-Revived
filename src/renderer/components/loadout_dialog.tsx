@@ -41,7 +41,19 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
     async function loadoutFormSubmit(data: any, event: any) {
         console.log("loadout submit!", data)
-        //const success = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
+
+        const primaries = []
+        const secondaries = []
+
+        for (const item of data.primaries) {
+            primaries.push(item.key)
+        }
+
+        for (const item of data.secondaries) {
+            secondaries.push(item.key)
+        }
+
+        const success = await window.electron.ipcRenderer.invoke("game:setLoadout", {primaries, secondaries}, [])
         onClosed()
     }
 
@@ -61,8 +73,17 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     useEffect(() => {
         async function getLoadoutData() {
             const data = await window.electron.ipcRenderer.invoke("game:getLoadout")
-            setValue("primaries", data.backpack.primaries || [])
-            setValue("secondaries", data.backpack.secondaries || [])
+            console.log("inbound", data)
+
+            const primaries = []
+
+            for (const i of data.backpack.primaries) {
+                primaries.push(loadoutData?.primaries.find(x => x.key === i))
+            }
+
+            console.log("prim", primaries)
+            //setValue("primaries", primaries)
+            //setValue("secondaries", data.backpack.secondaries || [])
             // TODO: Set slots!
             setLoadoutReceived(true)
         }

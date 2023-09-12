@@ -393,8 +393,9 @@ export async function setTempCfg(content: string) {
 export async function setBackpackAndLoadout() {
     const conf = config.read()
 
+    console.log("bp start")
     await loadout.setBackpack(conf.backpack?.primaries || [], conf.backpack?.secondaries || [])
-
+    console.log("bp set")
     let slotId = 1
     // eslint-disable-next-line guard-for-in, no-await-in-loop
     for (const loadoutSlot of (conf.loadouts || [])) {

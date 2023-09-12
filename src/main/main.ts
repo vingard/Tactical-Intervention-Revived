@@ -207,12 +207,12 @@ async function handleConnectServer(event: any, addr: string, password?: string) 
 }
 
 async function handleGameStart(event: any) {
-    try {
+    //try {
         await game.start()
         return true
-    } catch(err: any) {
-        throw new SoftError(err.message)
-    }
+    // } catch(err: any) {
+    //     throw new SoftError(err.message)
+    // }
 }
 
 async function handleGmeStartDevTools() {
@@ -355,7 +355,7 @@ app.whenReady()
         ipcMain.handle("game:setSettings", handleSetSettings)
         ipcMain.handle("game:getLoadoutData", handleGetLoadoutData)
         ipcMain.handle("game:getLoadout", handleGetLoadout)
-        ipcMain.handle("game:setLoadoutData", handleSetLoadout)
+        ipcMain.handle("game:setLoadout", handleSetLoadout)
 
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)

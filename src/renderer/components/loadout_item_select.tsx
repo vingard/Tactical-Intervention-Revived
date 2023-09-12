@@ -41,11 +41,15 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
     }
 
     const selectItem = (item: LoadoutItem) => {
-        setSelectedLoadoutItems([...selectedLoadoutItems || [], item])
+        const newItems = [...selectedLoadoutItems || [], item]
+        setSelectedLoadoutItems(newItems)
+        field.onChange(newItems)
     }
 
     const deselectItem = (item: LoadoutItem) => {
-        setSelectedLoadoutItems(selectedLoadoutItems?.filter((_, i) => i !== getSelectedItemIndex(item)))
+        const newItems = selectedLoadoutItems?.filter((_, i) => i !== getSelectedItemIndex(item))
+        setSelectedLoadoutItems(newItems)
+        field.onChange(newItems)
     }
 
     const handleItemSelect = (item: LoadoutItem) => {
@@ -79,10 +83,6 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
     const LoadoutTagRender = (item: LoadoutItem) => {
         return itemGetName(item)
     }
-
-    useEffect(() => {
-        field.onChange(selectedLoadoutItems)
-    }, [selectedLoadoutItems, field])
 
     return (
         <MultiSelect<LoadoutItem>
