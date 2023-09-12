@@ -53,7 +53,8 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
             url,
             method: "GET",
             responseType: "stream",
-            headers: { "Accept-Encoding": null }
+            headers: { "Accept-Encoding": null },
+            timeout: (60000 * 8)
         })
     } catch (err) {
         throw new SoftError(`Download failed! ${err}`)
@@ -80,6 +81,10 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
     } catch (err) {
         throw new SoftError(`Download failed! ${err}`)
     }
+
+    data.on("error", (err: any) => {
+        throw new SoftError(`Download failed - ${err.message}`)
+    })
 
     // eslint-disable-next-line func-names
     return new Promise<void>(function(resolve) {

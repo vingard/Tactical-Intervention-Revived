@@ -11,6 +11,7 @@ import { spawn } from "child_process"
 import * as appPath from "./appPath"
 import * as config from "./config"
 import * as files from "./files"
+import * as loadout from "./loadout"
 // eslint-disable-next-line import/no-cycle
 import * as mod from "./mod"
 // eslint-disable-next-line import/no-self-import
@@ -389,10 +390,26 @@ export async function setTempCfg(content: string) {
     await setCfg(content, "_temp.cfg")
 }
 
+export async function setBackpackAndLoadout() {
+    const conf = config.read()
+
+    await loadout.setBackpack(conf.backpack?.primaries || [], conf.backpack?.secondaries || [])
+
+    let slotId = 1
+    // eslint-disable-next-line guard-for-in, no-await-in-loop
+    for (const loadoutSlot of (conf.loadouts || [])) {
+        if (!loadoutSlot.CT || !loadoutSlot.T) continue
+        // eslint-disable-next-line no-await-in-loop
+        await loadout.setLoadoutSlot(slotId, loadoutSlot.T, loadoutSlot.CT)
+        slotId++
+    }
+}
+
 export async function start(args: string = "") {
     log.info(`Attempting to start game with args: ${args}`)
 
     await setTempCfg(args)
+    await setBackpackAndLoadout()
     const instance = spawn(`${appPath.gamePath}`)
 
     instance.on("exit", (code) => {

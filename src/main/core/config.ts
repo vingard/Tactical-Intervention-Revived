@@ -4,7 +4,9 @@ import { SoftError } from "./softError"
 
 const CONFIG_DEFAULT = {
     gameDownloaded: false,
-    mods: []
+    mods: [],
+    backpack: {primaries: [], secondaries: []},
+    loadouts: []
 }
 
 export function update(config: any) {

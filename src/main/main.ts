@@ -23,6 +23,7 @@ import * as mod from "./core/mod"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
 import { devToolsPath, modsDir } from "./core/appPath"
+import { LOADOUTS } from "./loadout_data"
 
 class AppUpdater {
     constructor() {
@@ -317,6 +318,29 @@ async function handleModDelete(event: any, modName: string) {
     }
 }
 
+async function handleGetLoadoutData() {
+    return LOADOUTS
+}
+
+async function handleGetLoadout() {
+    try {
+        const conf = config.read()
+        return {backpack: conf.backpack || {}, loadouts: conf.loadouts || []}
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
+
+async function handleSetLoadout(event: any, backpack: any, loadouts: any) {
+    try {
+        const conf = config.read()
+        conf.backpack = backpack
+        conf.loadouts = loadouts
+        config.update(conf)
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
 
 app.whenReady()
     .then(() => {
@@ -329,6 +353,10 @@ app.whenReady()
         ipcMain.handle("game:startDevTools", handleGmeStartDevTools)
         ipcMain.handle("game:getSettings", handleGetSettings)
         ipcMain.handle("game:setSettings", handleSetSettings)
+        ipcMain.handle("game:getLoadoutData", handleGetLoadoutData)
+        ipcMain.handle("game:getLoadout", handleGetLoadout)
+        ipcMain.handle("game:setLoadoutData", handleSetLoadout)
+
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)
         ipcMain.handle("mod:setMounted", handleSetMounted)
