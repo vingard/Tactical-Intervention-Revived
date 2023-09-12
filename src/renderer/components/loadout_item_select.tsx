@@ -13,8 +13,7 @@ export interface LoadoutItem {
 }
 
 function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name: string, availableItems: LoadoutItem[], maxItems?: number, minItems?: number}, ref: any) {
-    const [selectedLoadoutItems, setSelectedLoadoutItems] = useState<LoadoutItem[]>([])
-    const {field, fieldState} = useController({name})
+    const {field, fieldState, formState} = useController({name})
 
     function itemGetName(item: LoadoutItem): string {
         return (item.name && item.name !== "" && item.name) || item.key
@@ -33,7 +32,7 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
     }
 
     const getSelectedItemIndex = (item: LoadoutItem) => {
-        return selectedLoadoutItems?.indexOf(item)
+        return (field.value || [])?.indexOf(item)
     }
 
     const isItemSelected = (item: LoadoutItem) => {
@@ -41,19 +40,17 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
     }
 
     const selectItem = (item: LoadoutItem) => {
-        const newItems = [...selectedLoadoutItems || [], item]
-        setSelectedLoadoutItems(newItems)
+        const newItems = [...(field.value || []) || [], item]
         field.onChange(newItems)
     }
 
     const deselectItem = (item: LoadoutItem) => {
-        const newItems = selectedLoadoutItems?.filter((_, i) => i !== getSelectedItemIndex(item))
-        setSelectedLoadoutItems(newItems)
+        const newItems = (field.value || [])?.filter((_: any, i: any) => i !== getSelectedItemIndex(item))
         field.onChange(newItems)
     }
 
     const handleItemSelect = (item: LoadoutItem) => {
-        if (maxItems && selectedLoadoutItems.length >= maxItems) return
+        if (maxItems && (field.value || []).length >= maxItems) return
         if (!isItemSelected(item)) return selectItem(item)
         deselectItem(item)
     }
@@ -84,6 +81,8 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
         return itemGetName(item)
     }
 
+    console.log(field)
+
     return (
         <MultiSelect<LoadoutItem>
             {...props}
@@ -95,7 +94,7 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
             noResults={<MenuItem disabled text="No results" roleStructure="listoption"/>}
             onItemSelect={handleItemSelect}
             onRemove={handleItemRemove}
-            selectedItems={selectedLoadoutItems}
+            selectedItems={field.value || []}
             popoverProps={{position: "bottom-left", matchTargetWidth: true}}
             tagRenderer={LoadoutTagRender}
             fill

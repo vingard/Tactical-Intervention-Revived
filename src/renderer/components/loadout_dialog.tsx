@@ -81,9 +81,14 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                 primaries.push(loadoutData?.primaries.find(x => x.key === i))
             }
 
-            console.log("prim", primaries)
-            //setValue("primaries", primaries)
-            //setValue("secondaries", data.backpack.secondaries || [])
+            const secondaries = []
+
+            for (const i of data.backpack.secondaries) {
+                secondaries.push(loadoutData?.secondaries.find(x => x.key === i))
+            }
+
+            setValue("primaries", primaries)
+            setValue("secondaries", secondaries)
             // TODO: Set slots!
             setLoadoutReceived(true)
         }
