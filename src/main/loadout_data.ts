@@ -1946,6 +1946,7 @@ export const LOADOUTS = {
         "tags": [
             "pet",
             "dog",
+            "equipment",
             "terrorist"
         ]
     },
