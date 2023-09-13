@@ -1,4 +1,4 @@
-import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup, InputGroup, H2, H3, H4 } from "@blueprintjs/core"
+import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup, InputGroup, H2, H3, H4, H5 } from "@blueprintjs/core"
 import { useEffect, useRef, useState } from "react"
 import { Controller, FormProvider, useForm } from "react-hook-form"
 import { preventEnterKeySubmission } from "renderer/util"
@@ -447,8 +447,8 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                         <DialogBody>
                             <div>
                                 <FormGroup
-                                    helperText="Primaries (max 9)"
-                                    label="Primary Weapons"
+                                    helperText="Primary weapons (max. 9)"
+                                    label={<H4>Primaries</H4>}
                                     intent={errors.primaries && "danger"}
                                 >
                                     <Controller
@@ -467,8 +467,8 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                 </FormGroup>
 
                                 <FormGroup
-                                    helperText="Secondaries (max 4)"
-                                    label="Secondary Weapons"
+                                    helperText="Secondary weapons (max. 4)"
+                                    label={<H4>Secondaries</H4>}
                                     intent={errors.secondaries && "danger"}
                                 >
                                     <Controller
@@ -489,10 +489,11 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                 {/* <Button fill text={selectedLoadoutItem && itemGetName(selectedLoadoutItem) || "Select an item..."} rightIcon="double-caret-vertical" placeholder="Select an item"/> */}
                             </div>
 
+                            <H4>Slots</H4>
                             <Tabs id="slots">
-                                <Tab id="slot1" title="Slot 1" panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot2" title="Slot 2" panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot3" title="Slot 3" panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot1" title={<H4>1</H4>} panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot2" title={<H4>2</H4>} panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot3" title={<H4>3</H4>} panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                             </Tabs>
                         </DialogBody>
 

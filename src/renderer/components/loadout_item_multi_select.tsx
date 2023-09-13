@@ -81,7 +81,7 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, big = false, ...
     const LoadoutTagRender = (item: LoadoutItem) => {
         if (big) {
             return (
-                <H5 style={{color: "black", fontWeight: "bold"}}>{itemGetName(item)}</H5>
+                <H5 style={{color: "black", fontWeight: "bold", margin: "0"}}>{itemGetName(item)}</H5>
             )
         }
 

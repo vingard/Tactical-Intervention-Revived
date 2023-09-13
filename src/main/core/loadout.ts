@@ -14,7 +14,7 @@ export interface LoadoutSlot {
     gloves?: string
     boots?: string
     holster?: string
-    equipment?: string[] /** Armor and special weapons? */
+    equipment?: string /** Armor, pets, NVGs etc */
     requisitions?: string[] /** Grenades, unlocked as you play a round */
     perks?: string[] /** Pet perks */
     pet?: string
