@@ -7,12 +7,11 @@ export interface LoadoutItem {
     id: number
     name: string
     tags?: string[]
-    rank: number
     key: string
     type?: string
 }
 
-function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, availableItems: LoadoutItem[]}, ref: any) {
+function LoadoutItemSelectTemp({name, availableItems, noneOption = false, ...props}: {name: string, availableItems: LoadoutItem[], noneOption?: boolean}, ref: any) {
     const {field, fieldState, formState} = useController({name})
 
     function itemGetName(item: LoadoutItem): string {
@@ -36,6 +35,7 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
     }
 
     const selectItem = (item: LoadoutItem) => {
+        if (item.key === "none") return field.onChange(null)
         field.onChange(item)
     }
 
@@ -70,7 +70,7 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
         <Select<LoadoutItem>
             {...props}
             ref={ref}
-            items={availableItems}
+            items={noneOption && [...[{id: 0, key: "none", name: "None"}], ...availableItems] || availableItems}
             itemsEqual={itemIsEqual}
             itemPredicate={filterItem}
             itemRenderer={LoadoutItemRender}
@@ -78,7 +78,7 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
             onItemSelect={handleItemSelect}
             popoverProps={{position: "bottom-left", matchTargetWidth: true}}
         >
-            <Button text={field.value && itemGetName(field.value)} rightIcon="double-caret-vertical" placeholder="Select a item"/>
+            <Button text={field.value && itemGetName(field.value) || "None"} rightIcon="double-caret-vertical" placeholder="Select a item"/>
         </Select>
     )
 }

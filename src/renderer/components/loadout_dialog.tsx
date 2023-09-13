@@ -1,4 +1,4 @@
-import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup, InputGroup } from "@blueprintjs/core"
+import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup, InputGroup, H2, H3, H4 } from "@blueprintjs/core"
 import { useEffect, useRef, useState } from "react"
 import { Controller, FormProvider, useForm } from "react-hook-form"
 import { preventEnterKeySubmission } from "renderer/util"
@@ -23,7 +23,7 @@ interface LoadoutDataStruct {
 }
 
 function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" | "T", slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
-    const key = `slots.${team}.${slot}`
+    const key = `slots[${slot}].${team}`
 
     return (
         <div>
@@ -72,10 +72,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.helmet`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.helmets || []}
                         />
                     )}
@@ -90,10 +91,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.mask`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.masks || []}
                         />
                     )}
@@ -108,10 +110,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.gloves`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.gloves || []}
                         />
                     )}
@@ -126,10 +129,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.boots`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.boots || []}
                         />
                     )}
@@ -144,10 +148,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.holster`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.holsters || []}
                         />
                     )}
@@ -162,10 +167,11 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.equipment`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
+                            noneOption
                             availableItems={loadoutData?.equipment || []}
                         />
                     )}
@@ -199,59 +205,45 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                 <Controller
                     name={`${key}.perks`}
                     control={control}
-                    rules={{required: true}}
+                    rules={{required: false}}
                     render={({field}) => (
                         <LoadoutItemMultiSelect
                             {...field}
-                            availableItems={loadoutData?.perks || []}
+                            availableItems={loadoutData?.perks}
                             maxItems={3}
                         />
                     )}
                 />
             </FormGroup>
-
-            <FormGroup
-                helperText=""
-                label="Pet"
-                intent={errors[`${key}.pet`] && "danger"}
-            >
-                <Controller
-                    name={`${key}.pet`}
-                    control={control}
-                    rules={{required: true}}
-                    render={({field}) => (
-                        <LoadoutItemSelect
-                            {...field}
-                            availableItems={loadoutData?.[`dogs${team}`] || []}
-                        />
-                    )}
-                />
-            </FormGroup>
-
         </div>
     )
 }
 
 function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
     return (
-        <Card>
-            <TeamSlotPanel
-                team="CT"
-                slot={slot}
-                control={control}
-                errors={errors}
-                loadoutData={loadoutData}
-            />
+        <div style={{display: "flex"}}>
+            <Card className="ctBackground">
+                <H4>Counter-Terrorist</H4>
+                <TeamSlotPanel
+                    team="CT"
+                    slot={slot}
+                    control={control}
+                    errors={errors}
+                    loadoutData={loadoutData}
+                />
+            </Card>
 
-            <p>t:</p>
-            <TeamSlotPanel
-                team="T"
-                slot={slot}
-                control={control}
-                errors={errors}
-                loadoutData={loadoutData}
-            />
-        </Card>
+            <Card className="tBackground">
+                <H4>Terrorist</H4>
+                <TeamSlotPanel
+                    team="T"
+                    slot={slot}
+                    control={control}
+                    errors={errors}
+                    loadoutData={loadoutData}
+                />
+            </Card>
+        </div>
     )
 }
 
@@ -272,6 +264,10 @@ function sortByType(a: LoadoutItem, b: LoadoutItem) {
     return 0
 }
 
+function itemToItemKey(item: LoadoutItem) {
+    return item?.key
+}
+
 export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const formMethods = useForm()
     const {register, handleSubmit, control, setValue, formState: {errors}} = formMethods
@@ -283,6 +279,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
         const primaries = []
         const secondaries = []
+        const slots = []
 
         for (const item of data.primaries) {
             primaries.push(item.key)
@@ -292,7 +289,51 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
             secondaries.push(item.key)
         }
 
-        const success = await window.electron.ipcRenderer.invoke("game:setLoadout", {primaries, secondaries}, [])
+        function teamSlotToKeys(team: "CT" | "T", inSlot: any) {
+            const slot: any = {}
+
+            slot.name = inSlot[team].name
+            slot.model = itemToItemKey(inSlot[team].model)
+            slot.helmet = itemToItemKey(inSlot[team].helmet)
+            slot.mask = itemToItemKey(inSlot[team].mask)
+            slot.gloves = itemToItemKey(inSlot[team].gloves)
+            slot.boots = itemToItemKey(inSlot[team].boots)
+            slot.holster = itemToItemKey(inSlot[team].holster)
+            slot.equipment = itemToItemKey(inSlot[team].equipment)
+
+            const requisitions = []
+            for (const i of inSlot[team].requisitions || []) {
+                requisitions.push(i.key)
+            }
+
+            slot.requisitions = requisitions
+
+            const perks = []
+            for (const i of inSlot[team].perks || []) {
+                perks.push(i.key)
+            }
+
+            slot.perks = perks
+            console.log("pperk")
+
+            return slot
+        }
+
+        console.log("hm")
+
+        for (const slot of data.slots) {
+            console.log("loop slots")
+            slots.push({
+                CT: teamSlotToKeys("CT", slot),
+                T: teamSlotToKeys("T", slot)
+            })
+            console.log("slot")
+        }
+
+
+        console.log("setLoadout to:", data)
+
+        const success = await window.electron.ipcRenderer.invoke("game:setLoadout", {primaries, secondaries}, slots)
         onClosed()
     }
 
@@ -347,8 +388,9 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
             setValue("secondaries", secondaries)
 
             function setSlotValues(team: "CT" | "T", slotId: number, slot: any) {
-                const key = `slots.${team}.${slotId}`
+                const key = `slots[${slotId}].${team}`
                 console.log(key)
+
                 setValue(`${key}.name`, slot.name)
                 setValue(`${key}.model`, loadoutData?.[`models${team}`].find(x => x.key === slot.model))
                 setValue(`${key}.helmet`, loadoutData?.helmets.find(x => x.key === slot.helmet))
@@ -357,9 +399,18 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                 setValue(`${key}.boots`, loadoutData?.boots.find(x => x.key === slot.boots))
                 setValue(`${key}.holster`, loadoutData?.holsters.find(x => x.key === slot.holster))
                 setValue(`${key}.equipment`, loadoutData?.equipment.find(x => x.key === slot.equipment))
-                setValue(`${key}.requisitions`, loadoutData?.requisitions.find(x => x.key === slot.requisitions))
-                setValue(`${key}.perks`, loadoutData?.perks.find(x => x.key === slot.perks))
-                setValue(`${key}.pet`, loadoutData?.[`dogs${team}`].find(x => x.key === slot.pet))
+
+                const requisitions = []
+                for (const i of slot.requisitions || []) {
+                    requisitions.push(loadoutData?.requisitions.find(x => x.key === i))
+                }
+                setValue(`${key}.requisitions`, requisitions)
+
+                const perks = []
+                for (const i of slot.perks || []) {
+                    perks.push(loadoutData?.perks.find(x => x.key === i))
+                }
+                setValue(`${key}.perks`, perks)
             }
 
             let slotId = 0
@@ -388,7 +439,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                 title="Edit Loadout"
                 icon="ammunition"
                 canOutsideClickClose={false}
-                style={{width: "50rem"}}
+                style={{width: "56rem"}}
             >
                 <FormProvider {...formMethods}>
                     {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -409,6 +460,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                                 {...field}
                                                 availableItems={loadoutData?.primaries || []}
                                                 maxItems={9}
+                                                big
                                             />
                                         )}
                                     />
@@ -428,6 +480,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                                 {...field}
                                                 availableItems={loadoutData?.secondaries || []}
                                                 maxItems={4}
+                                                big
                                             />
                                         )}
                                     />
@@ -440,7 +493,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                 <Tab id="slot1" title="Slot 1" panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                                 <Tab id="slot2" title="Slot 2" panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                                 <Tab id="slot3" title="Slot 3" panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot4" title="Slot 4" panel={<SlotPanel slot={3} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                             </Tabs>
                         </DialogBody>
 

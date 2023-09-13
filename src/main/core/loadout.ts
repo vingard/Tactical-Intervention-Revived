@@ -122,7 +122,7 @@ function makeLoadoutSlot(parser: Parser, input: any, team: "T" | "CT", data: Loa
     .string(`name${team}`, {
         encoding: "utf-8",
         zeroTerminated: true,
-        length: data.name.length + 1,
+        length: data.name.length + 1
     })
 
     input[`header${team}`] = 770
@@ -143,7 +143,7 @@ function makeLoadoutSlot(parser: Parser, input: any, team: "T" | "CT", data: Loa
     input[`perks${team}`] = [
         getItem(data.perks?.[0])?.id || 0,
         getItem(data.perks?.[1])?.id || 0,
-        getItem(data.perks?.[2])?.id || 0,
+        getItem(data.perks?.[2])?.id || 0
     ]
 
     input[`nameLen${team}`] = (data.name || "").length + 1

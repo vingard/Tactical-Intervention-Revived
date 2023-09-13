@@ -1,4 +1,4 @@
-import { MenuItem } from "@blueprintjs/core"
+import { H5, MenuItem } from "@blueprintjs/core"
 import { ItemRenderer, ItemPredicate, MultiSelect } from "@blueprintjs/select"
 import { forwardRef, useEffect, useState } from "react"
 import { useController } from "react-hook-form"
@@ -12,7 +12,7 @@ export interface LoadoutItem {
     type?: string
 }
 
-function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name: string, availableItems: LoadoutItem[], maxItems?: number, minItems?: number}, ref: any) {
+function LoadoutItemSelectTemp({name, availableItems, maxItems, big = false, ...props}: {name: string, availableItems: LoadoutItem[], maxItems?: number, minItems?: number, big?: boolean}, ref: any) {
     const {field, fieldState, formState} = useController({name})
 
     function itemGetName(item: LoadoutItem): string {
@@ -77,7 +77,14 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name
         )
     }
 
+    // eslint-disable-next-line react/function-component-definition, react/no-unstable-nested-components
     const LoadoutTagRender = (item: LoadoutItem) => {
+        if (big) {
+            return (
+                <H5 style={{color: "black", fontWeight: "bold"}}>{itemGetName(item)}</H5>
+            )
+        }
+
         return itemGetName(item)
     }
 

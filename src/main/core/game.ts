@@ -416,8 +416,8 @@ export async function getBackpackAndLoadout() {
 
     return {
         backpack: {
-            primaries: conf.backpack.primaries || DEFAULT_PRIMARIES,
-            secondaries: conf.backpack.secondaries || DEFAULT_SECONDARIES
+            primaries: conf.backpack?.primaries || DEFAULT_PRIMARIES,
+            secondaries: conf.backpack?.secondaries || DEFAULT_SECONDARIES
         },
         loadouts
     }
