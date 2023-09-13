@@ -14,9 +14,10 @@ export interface LoadoutSlot {
     gloves?: string
     boots?: string
     holster?: string
-    equipment?: string[]
-    requisitions?: string[]
-    perks?: string[]
+    equipment?: string[] /** Armor and special weapons? */
+    requisitions?: string[] /** Grenades, unlocked as you play a round */
+    perks?: string[] /** Pet perks */
+    pet?: string
 }
 
 export function getItem(itemClass: any) {
@@ -37,14 +38,14 @@ export async function setBackpack(strPrimaries: string[], strSecondaries: string
     // eslint-disable-next-line guard-for-in
     for (const itemName of strPrimaries) {
         const item = getItem(itemName)
-        if (!item) throw new Error(`Invalid item '${item}'`)
+        if (!item) throw new Error(`Invalid item '${itemName}'`)
         primaries.push(item.id)
     }
 
     // eslint-disable-next-line guard-for-in
     for (const itemName of strSecondaries) {
         const item = getItem(itemName)
-        if (!item) throw new Error(`Invalid item '${item}'`)
+        if (!item) throw new Error(`Invalid item '${itemName}'`)
         secondaries.push(item.id)
     }
 
@@ -91,7 +92,7 @@ export async function setBackpack(strPrimaries: string[], strSecondaries: string
     }
 }
 
-function makeLoadoutSlot(parser: Parser, input: any, team: string, data: LoadoutSlot) {
+function makeLoadoutSlot(parser: Parser, input: any, team: "T" | "CT", data: LoadoutSlot) {
     parser
     .uint16(`header${team}`)
     .uint16(`model${team}`)
@@ -105,14 +106,11 @@ function makeLoadoutSlot(parser: Parser, input: any, team: string, data: Loadout
         length: 3
     })
 
-    .array(`equipment${team}`, {
-        type: "uint16le",
-        length: 2
-    })
+    .uint16(`equipment${team}`)
 
     .array(`requisitions${team}`, {
         type: "uint16le",
-        length: 2
+        length: 3
     })
 
     .array(`perks${team}`, {
@@ -135,22 +133,23 @@ function makeLoadoutSlot(parser: Parser, input: any, team: string, data: Loadout
     input[`boots${team}`] = getItem(data.boots)?.id || 0
     input[`holster${team}`] = getItem(data.holster)?.id || 0
     input[`unknown${team}`] = [0, 0, 0]
-    input[`equipment${team}`] = [
-        getItem(data.equipment?.[0]) || 0,
-        getItem(data.equipment?.[1]) || 0
-    ]
+    input[`equipment${team}`] = getItem(data.equipment)?.id || 0
+
     input[`requisitions${team}`] = [
-        getItem(data.requisitions?.[0]) || 0,
-        getItem(data.requisitions?.[1]) || 0
+        getItem(data.requisitions?.[0])?.id || 0,
+        getItem(data.requisitions?.[1])?.id || 0,
+        getItem(data.requisitions?.[2])?.id || 0
     ]
     input[`perks${team}`] = [
-        getItem(data.perks?.[0]) || 0,
-        getItem(data.perks?.[1]) || 0,
-        getItem(data.perks?.[2]) || 0
+        getItem(data.perks?.[0])?.id || 0,
+        getItem(data.perks?.[1])?.id || 0,
+        getItem(data.perks?.[2])?.id || 0,
     ]
 
     input[`nameLen${team}`] = (data.name || "").length + 1
     input[`name${team}`] = data.name || ""
+
+    console.log("slot out", input)
 
     return input
 }
@@ -160,13 +159,13 @@ export async function setLoadoutSlot(slotId: number, slotCT: LoadoutSlot, slotT:
     .endianess("little")
 
     let input = {}
-    input = makeLoadoutSlot(slot, input, "CT", slotCT)
     input = makeLoadoutSlot(slot, input, "T", slotT)
+    input = makeLoadoutSlot(slot, input, "CT", slotCT)
 
     const data = slot.encode(input)
 
     try {
-        await jetpack.writeAsync(path.resolve(appPath.backpackDir, "loadouts", `slot_${slotId}.dat`), data, {mode: "binary"})
+        await jetpack.writeAsync(path.resolve(appPath.backpackDir, "loadouts", `slot_${slotId}.dat`), data)
     } catch(err) {
         throw new Error(`Error saving slot_${slotId}.dat - ${err}`)
     }

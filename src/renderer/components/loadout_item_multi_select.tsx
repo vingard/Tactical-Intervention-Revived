@@ -1,5 +1,5 @@
-import { Button, MenuItem } from "@blueprintjs/core"
-import { ItemRenderer, ItemPredicate, MultiSelect, Select } from "@blueprintjs/select"
+import { MenuItem } from "@blueprintjs/core"
+import { ItemRenderer, ItemPredicate, MultiSelect } from "@blueprintjs/select"
 import { forwardRef, useEffect, useState } from "react"
 import { useController } from "react-hook-form"
 
@@ -12,7 +12,7 @@ export interface LoadoutItem {
     type?: string
 }
 
-function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, availableItems: LoadoutItem[]}, ref: any) {
+function LoadoutItemSelectTemp({name, availableItems, maxItems, ...props}: {name: string, availableItems: LoadoutItem[], maxItems?: number, minItems?: number}, ref: any) {
     const {field, fieldState, formState} = useController({name})
 
     function itemGetName(item: LoadoutItem): string {
@@ -31,20 +31,31 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
         return itemA.key === itemB.key
     }
 
+    const getSelectedItemIndex = (item: LoadoutItem) => {
+        return (field.value || [])?.indexOf(item)
+    }
+
     const isItemSelected = (item: LoadoutItem) => {
-        return field.value === item
+        return getSelectedItemIndex(item) !== -1
     }
 
     const selectItem = (item: LoadoutItem) => {
-        field.onChange(item)
+        const newItems = [...(field.value || []) || [], item]
+        field.onChange(newItems)
     }
 
     const deselectItem = (item: LoadoutItem) => {
-        field.onChange(undefined)
+        const newItems = (field.value || [])?.filter((_: any, i: any) => i !== getSelectedItemIndex(item))
+        field.onChange(newItems)
     }
 
     const handleItemSelect = (item: LoadoutItem) => {
+        if (maxItems && (field.value || []).length >= maxItems) return
         if (!isItemSelected(item)) return selectItem(item)
+        deselectItem(item)
+    }
+
+    const handleItemRemove = (item: LoadoutItem) => {
         deselectItem(item)
     }
 
@@ -66,8 +77,12 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
         )
     }
 
+    const LoadoutTagRender = (item: LoadoutItem) => {
+        return itemGetName(item)
+    }
+
     return (
-        <Select<LoadoutItem>
+        <MultiSelect<LoadoutItem>
             {...props}
             ref={ref}
             items={availableItems}
@@ -76,11 +91,13 @@ function LoadoutItemSelectTemp({name, availableItems, ...props}: {name: string, 
             itemRenderer={LoadoutItemRender}
             noResults={<MenuItem disabled text="No results" roleStructure="listoption"/>}
             onItemSelect={handleItemSelect}
+            onRemove={handleItemRemove}
+            selectedItems={field.value || []}
             popoverProps={{position: "bottom-left", matchTargetWidth: true}}
-        >
-            <Button text={field.value && itemGetName(field.value)} rightIcon="double-caret-vertical" placeholder="Select a item"/>
-        </Select>
+            tagRenderer={LoadoutTagRender}
+            fill
+        />
     )
 }
 
-export const LoadoutItemSelect = forwardRef(LoadoutItemSelectTemp)
+export const LoadoutItemMultiSelect = forwardRef(LoadoutItemSelectTemp)

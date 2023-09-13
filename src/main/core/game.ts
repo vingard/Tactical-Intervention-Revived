@@ -390,16 +390,50 @@ export async function setTempCfg(content: string) {
     await setCfg(content, "_temp.cfg")
 }
 
-export async function setBackpackAndLoadout() {
+const DEFAULT_PRIMARIES = ["skorpion", "bekas", "m1"]
+const DEFAULT_SECONDARIES = ["p2000", "gsr1911"]
+const DEFAULT_REQUSITIONS = ["flashbang", "grenade", "incendiary"]
+const DEFAULT_SLOTS = [
+    {
+        CT: {name: "Medic", model: "ctmodel1", equipment: "medikit", requisitions: ["smoke", "smoke", "flashbang"]},
+        T: {name: "Medic", model: "tmodel1", equipment: "medikit", requisitions: ["smoke", "smoke", "flashbang"]}
+    },
+    {
+        CT: {name: "Assault", model: "ctmodel2", equipment: "light_armor", requisitions: DEFAULT_REQUSITIONS},
+        T: {name: "Assault", model: "tmodel2", equipment: "light_armor", requisitions: DEFAULT_REQUSITIONS}
+    },
+    {
+        CT: {name: "Heavy", model: "ctmodel3", equipment: "heavy_armor", requisitions: DEFAULT_REQUSITIONS},
+        T: {name: "Heavy", model: "tmodel3", equipment: "heavy_armor", requisitions: DEFAULT_REQUSITIONS}
+    }
+]
+
+export async function getBackpackAndLoadout() {
     const conf = config.read()
 
-    console.log("bp start")
-    await loadout.setBackpack(conf.backpack?.primaries || [], conf.backpack?.secondaries || [])
-    console.log("bp set")
+    let loadouts = DEFAULT_SLOTS
+    if (conf.loadouts && conf.loadouts.length > 0) loadouts = conf.loadouts
+
+    return {
+        backpack: {
+            primaries: conf.backpack.primaries || DEFAULT_PRIMARIES,
+            secondaries: conf.backpack.secondaries || DEFAULT_SECONDARIES
+        },
+        loadouts
+    }
+}
+
+export async function setTempBackpackAndLoadout() {
+    const dat = await getBackpackAndLoadout()
+    await loadout.setBackpack(dat.backpack.primaries, dat.backpack.secondaries)
+
     let slotId = 1
     // eslint-disable-next-line guard-for-in, no-await-in-loop
-    for (const loadoutSlot of (conf.loadouts || [])) {
-        if (!loadoutSlot.CT || !loadoutSlot.T) continue
+    for (const loadoutSlot of (dat.loadouts || [])) {
+        if (!loadoutSlot.CT || !loadoutSlot.T) {
+            log.error(`Invalid loadout provided for slot ${slotId}!`)
+            continue
+        }
         // eslint-disable-next-line no-await-in-loop
         await loadout.setLoadoutSlot(slotId, loadoutSlot.T, loadoutSlot.CT)
         slotId++
@@ -410,7 +444,7 @@ export async function start(args: string = "") {
     log.info(`Attempting to start game with args: ${args}`)
 
     await setTempCfg(args)
-    await setBackpackAndLoadout()
+    await setTempBackpackAndLoadout()
     const instance = spawn(`${appPath.gamePath}`)
 
     instance.on("exit", (code) => {

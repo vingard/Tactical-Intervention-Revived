@@ -324,8 +324,7 @@ async function handleGetLoadoutData() {
 
 async function handleGetLoadout() {
     try {
-        const conf = config.read()
-        return {backpack: conf.backpack || {}, loadouts: conf.loadouts || []}
+        return await game.getBackpackAndLoadout()
     } catch(err: any) {
         log.error(err.message)
     }

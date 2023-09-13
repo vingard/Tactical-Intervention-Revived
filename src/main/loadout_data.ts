@@ -123,7 +123,8 @@ export const LOADOUTS = {
         "grenade",
         "unequippable",
         "fragmentation",
-        "explosive"
+        "explosive",
+        "requisition"
       ]
     },
     "flashbang": {
@@ -132,7 +133,8 @@ export const LOADOUTS = {
       "tags": [
         "grenade",
         "unequippable",
-        "flashbang"
+        "flashbang",
+        "requisition"
       ]
     },
     "smoke": {
@@ -141,7 +143,8 @@ export const LOADOUTS = {
       "tags": [
         "grenade",
         "unequippable",
-        "smoke"
+        "smoke",
+        "requisition"
       ]
     },
     "incendiary": {
@@ -150,7 +153,8 @@ export const LOADOUTS = {
       "tags": [
         "grenade",
         "unequippable",
-        "incendiary"
+        "incendiary",
+        "requisition"
       ]
     },
     "tear_gas": {
@@ -159,7 +163,8 @@ export const LOADOUTS = {
       "tags": [
         "grenade",
         "unequippable",
-        "tear_gas"
+        "tear_gas",
+        "requisition"
       ]
     },
     "k1a": {
@@ -202,7 +207,7 @@ export const LOADOUTS = {
     },
     "mr96": {
       "id": 210,
-      "name": "MR91",
+      "name": "MR96",
       "tags": [
         "weapon",
         "pistol",
@@ -1856,30 +1861,38 @@ export const LOADOUTS = {
       "id": 2000,
       "name": "",
       "tags": [
-        "shield"
+        "shield",
+        "equipment"
       ]
     },
     "shield_plexi": {
       "id": 2001,
       "name": "",
       "tags": [
-        "shield"
+        "shield",
+        "equipment"
       ]
     },
     "nvg": {
       "id": 2010,
       "name": "Night Vision Goggles",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "breach": {
       "id": 2020,
       "name": "Breaching Charge",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "c4": {
       "id": 2021,
       "name": "C4",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "m14": {
       "id": 2100,
@@ -1956,137 +1969,190 @@ export const LOADOUTS = {
     "light_armor": {
       "id": 3000,
       "name": "Light Armor",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "med_armor": {
       "id": 3001,
       "name": "Medium Armor",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "heavy_armor": {
       "id": 3002,
       "name": "Heavy Armor",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "ris_pack1": {
       "id": 3010,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "ris_pack2": {
       "id": 3011,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "ris_pack3": {
       "id": 3012,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "short_respawn": {
       "id": 3021,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "xp_plus": {
       "id": 3022,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "gp_plus": {
       "id": 3023,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "double_plus": {
       "id": 3024,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "medikit": {
       "id": 3025,
       "name": "Medkit",
-      "tags": []
+      "tags": [
+        "equipment"
+      ]
     },
     "short_respawn2": {
       "id": 3026,
       "name": "Short Respawn",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "extra_slot": {
       "id": 3028,
       "name": "Extra Slot",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "pet_lives": {
       "id": 3030,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "primary_ammo_pack": {
       "id": 3040,
       "name": "Primary Ammo Pack",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "secondary_ammo_pack": {
       "id": 3041,
       "name": "Secondary Ammo Pack",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "primary_super_ammo_pack": {
       "id": 3042,
       "name": "Primary Super Ammo Pack",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "secondary_super_ammo_pack": {
       "id": 3043,
       "name": "Secondary Super Ammo Pack",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "mega_ammo_pack": {
       "id": 3044,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_lighta": {
       "id": 3050,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_lightb": {
       "id": 3051,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_mediuma": {
       "id": 3052,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_mediumb": {
       "id": 3053,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_heavya": {
       "id": 3054,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_heavyb": {
       "id": 3055,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "crate_quick_start": {
       "id": 3056,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "pack_all_weapons": {
       "id": 3070,
       "name": "",
       "tags": [
+        "perk",
         "pack"
       ]
     },
@@ -2094,6 +2160,7 @@ export const LOADOUTS = {
       "id": 3071,
       "name": "",
       "tags": [
+        "perk",
         "pack"
       ]
     },
@@ -2101,6 +2168,7 @@ export const LOADOUTS = {
       "id": 3072,
       "name": "",
       "tags": [
+        "perk",
         "pack"
       ]
     },
@@ -2108,6 +2176,7 @@ export const LOADOUTS = {
       "id": 3073,
       "name": "",
       "tags": [
+        "perk",
         "pack"
       ]
     },
@@ -2115,23 +2184,30 @@ export const LOADOUTS = {
       "id": 3074,
       "name": "",
       "tags": [
+        "perk",
         "pack"
       ]
     },
     "dog_perk_dmg": {
       "id": 3100,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "dog_perk_hlt": {
       "id": 3101,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "dog_perk_spd": {
       "id": 3102,
       "name": "",
-      "tags": []
+      "tags": [
+        "perk"
+      ]
     },
     "silencer_for_gsr1911": {
       "id": 4201,

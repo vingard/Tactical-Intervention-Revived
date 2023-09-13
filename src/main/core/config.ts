@@ -5,7 +5,7 @@ import { SoftError } from "./softError"
 const CONFIG_DEFAULT = {
     gameDownloaded: false,
     mods: [],
-    backpack: {primaries: [], secondaries: []},
+    backpack: {},
     loadouts: []
 }
 

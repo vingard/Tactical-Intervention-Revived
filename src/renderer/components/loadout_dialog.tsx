@@ -1,18 +1,258 @@
-import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup } from "@blueprintjs/core"
+import { Button, Card, MenuItem, Dialog, DialogBody, DialogFooter, Tab, Tabs, FormGroup, InputGroup } from "@blueprintjs/core"
 import { useEffect, useRef, useState } from "react"
 import { Controller, FormProvider, useForm } from "react-hook-form"
 import { preventEnterKeySubmission } from "renderer/util"
-import { LoadoutItem, LoadoutItemSelect } from "./loadout_item_select"
-
-function SlotPanel({slot}: {slot: number}) {
-    return (
-        <p>{slot}</p>
-    )
-}
+import { LoadoutItem, LoadoutItemMultiSelect } from "./loadout_item_multi_select"
+import { LoadoutItemSelect } from "./loadout_item_select"
 
 interface LoadoutDataStruct {
     secondaries: LoadoutItem[]
     primaries: LoadoutItem[]
+    modelsCT: LoadoutItem[]
+    modelsT: LoadoutItem[]
+    helmets: LoadoutItem[]
+    masks: LoadoutItem[]
+    gloves: LoadoutItem[]
+    boots: LoadoutItem[]
+    holsters: LoadoutItem[]
+    equipment: LoadoutItem[]
+    requisitions: LoadoutItem[]
+    perks: LoadoutItem[]
+    dogsCT: LoadoutItem[]
+    dogsT: LoadoutItem[]
+}
+
+function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" | "T", slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
+    const key = `slots.${team}.${slot}`
+
+    return (
+        <div>
+            <FormGroup
+                helperText="The display name for this slot"
+                label="Name"
+                intent={errors[`${key}.name`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.name`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <InputGroup
+                            {...field}
+                            placeholder="Name"
+                            intent={errors[`${key}.name`] && "danger"}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText="Your character model"
+                label="Model"
+                intent={errors[`${key}.model`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.model`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.[`models${team}`] || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Helmet"
+                intent={errors[`${key}.helmet`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.helmet`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.helmets || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Mask"
+                intent={errors[`${key}.mask`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.mask`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.masks || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Gloves"
+                intent={errors[`${key}.gloves`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.gloves`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.gloves || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Boots"
+                intent={errors[`${key}.boots`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.boots`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.boots || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Holster"
+                intent={errors[`${key}.holster`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.holster`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.holsters || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Equipment"
+                intent={errors[`${key}.equipment`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.equipment`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.equipment || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Requisitions"
+                intent={errors[`${key}.requisitions`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.requisitions`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemMultiSelect
+                            {...field}
+                            availableItems={loadoutData?.requisitions || []}
+                            maxItems={3}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Perks"
+                intent={errors[`${key}.perks`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.perks`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemMultiSelect
+                            {...field}
+                            availableItems={loadoutData?.perks || []}
+                            maxItems={3}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+            <FormGroup
+                helperText=""
+                label="Pet"
+                intent={errors[`${key}.pet`] && "danger"}
+            >
+                <Controller
+                    name={`${key}.pet`}
+                    control={control}
+                    rules={{required: true}}
+                    render={({field}) => (
+                        <LoadoutItemSelect
+                            {...field}
+                            availableItems={loadoutData?.[`dogs${team}`] || []}
+                        />
+                    )}
+                />
+            </FormGroup>
+
+        </div>
+    )
+}
+
+function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
+    return (
+        <Card>
+            <TeamSlotPanel
+                team="CT"
+                slot={slot}
+                control={control}
+                errors={errors}
+                loadoutData={loadoutData}
+            />
+
+            <p>t:</p>
+            <TeamSlotPanel
+                team="T"
+                slot={slot}
+                control={control}
+                errors={errors}
+                loadoutData={loadoutData}
+            />
+        </Card>
+    )
 }
 
 function getItemClassType(item: LoadoutItem) {
@@ -37,7 +277,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     const {register, handleSubmit, control, setValue, formState: {errors}} = formMethods
     const [loadoutData, setLoadoutData] = useState<LoadoutDataStruct>()
     const [loadoutReceived, setLoadoutReceived] = useState(false)
-    const inputRef = useRef(null)
 
     async function loadoutFormSubmit(data: any, event: any) {
         console.log("loadout submit!", data)
@@ -60,13 +299,30 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     useEffect(() => {
         (async () => {
             const data = await window.electron.ipcRenderer.invoke("game:getLoadoutData")
-            let loadoutDataArr: LoadoutItem[] = Object.entries(data).map(([key, value]: any) => ({...value, key, type: getItemClassType(value)}))
-            loadoutDataArr = loadoutDataArr.filter((x) => !x.tags?.includes("unequippable"))
+            const loadoutDataArr: LoadoutItem[] = Object.entries(data).map(([key, value]: any) => ({...value, key, type: getItemClassType(value)}))
+            const equippables = loadoutDataArr.filter((x) => !x.tags?.includes("unequippable"))
+
+            const models = loadoutDataArr.filter((x) => x.tags?.includes("model"))
+            const dogs = loadoutDataArr.filter((x) => x.tags?.includes("dog"))
 
             setLoadoutData({
-                primaries: loadoutDataArr.filter((x) => x.tags?.includes("primary")).sort(sortByType),
-                secondaries: loadoutDataArr.filter((x) => x.tags?.includes("secondary")).sort(sortByType)
+                primaries: equippables.filter((x) => x.tags?.includes("primary")).sort(sortByType),
+                secondaries: equippables.filter((x) => x.tags?.includes("secondary")).sort(sortByType),
+                modelsCT: models.filter((x) => x.tags?.includes("counter_terrorist")),
+                modelsT: models.filter((x) => x.tags?.includes("terrorist")),
+                helmets: equippables.filter((x) => x.tags?.includes("helmet")),
+                masks: equippables.filter((x) => x.tags?.includes("mask")),
+                gloves: equippables.filter((x) => x.tags?.includes("gloves")),
+                boots: equippables.filter((x) => x.tags?.includes("boots")),
+                holsters: equippables.filter((x) => x.tags?.includes("holster")),
+                equipment: equippables.filter((x) => x.tags?.includes("equipment")),
+                requisitions: loadoutDataArr.filter((x) => x.tags?.includes("requisition")),
+                perks: equippables.filter((x) => x.tags?.includes("perk")),
+                dogsCT: dogs.filter((x) => x.tags?.includes("counter_terrorist")),
+                dogsT: dogs.filter((x) => x.tags?.includes("terrorist"))
             })
+
+            console.warn("loadoutData recalculated [EXPENSIVE]")
         })()
     }, [])
 
@@ -89,6 +345,29 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
             setValue("primaries", primaries)
             setValue("secondaries", secondaries)
+
+            function setSlotValues(team: "CT" | "T", slotId: number, slot: any) {
+                const key = `slots.${team}.${slotId}`
+                console.log(key)
+                setValue(`${key}.name`, slot.name)
+                setValue(`${key}.model`, loadoutData?.[`models${team}`].find(x => x.key === slot.model))
+                setValue(`${key}.helmet`, loadoutData?.helmets.find(x => x.key === slot.helmet))
+                setValue(`${key}.mask`, loadoutData?.masks.find(x => x.key === slot.mask))
+                setValue(`${key}.gloves`, loadoutData?.gloves.find(x => x.key === slot.gloves))
+                setValue(`${key}.boots`, loadoutData?.boots.find(x => x.key === slot.boots))
+                setValue(`${key}.holster`, loadoutData?.holsters.find(x => x.key === slot.holster))
+                setValue(`${key}.equipment`, loadoutData?.equipment.find(x => x.key === slot.equipment))
+                setValue(`${key}.requisitions`, loadoutData?.requisitions.find(x => x.key === slot.requisitions))
+                setValue(`${key}.perks`, loadoutData?.perks.find(x => x.key === slot.perks))
+                setValue(`${key}.pet`, loadoutData?.[`dogs${team}`].find(x => x.key === slot.pet))
+            }
+
+            let slotId = 0
+            for (const slot of data.loadouts) {
+                setSlotValues("T", slotId, slot.T)
+                setSlotValues("CT", slotId, slot.CT)
+                slotId++
+            }
             // TODO: Set slots!
             setLoadoutReceived(true)
         }
@@ -98,6 +377,8 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
     console.log(errors)
 
+    if (!loadoutData) return
+
     return (
         <div>
             <Dialog
@@ -106,6 +387,8 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                 className="bp5-dark"
                 title="Edit Loadout"
                 icon="ammunition"
+                canOutsideClickClose={false}
+                style={{width: "50rem"}}
             >
                 <FormProvider {...formMethods}>
                     {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
@@ -122,7 +405,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                         control={control}
                                         rules={{required: true}}
                                         render={({field}) => (
-                                            <LoadoutItemSelect
+                                            <LoadoutItemMultiSelect
                                                 {...field}
                                                 availableItems={loadoutData?.primaries || []}
                                                 maxItems={9}
@@ -141,9 +424,8 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                                         control={control}
                                         rules={{required: true}}
                                         render={({field}) => (
-                                            <LoadoutItemSelect
+                                            <LoadoutItemMultiSelect
                                                 {...field}
-                                                ref={inputRef}
                                                 availableItems={loadoutData?.secondaries || []}
                                                 maxItems={4}
                                             />
@@ -155,10 +437,10 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                             </div>
 
                             <Tabs id="slots">
-                                <Tab id="slot1" title="Slot 1" panel={<SlotPanel slot={1}/>}/>
-                                <Tab id="slot2" title="Slot 2" panel={<SlotPanel slot={2}/>}/>
-                                <Tab id="slot3" title="Slot 3" panel={<SlotPanel slot={3}/>}/>
-                                <Tab id="slot4" title="Slot 4" panel={<SlotPanel slot={4}/>}/>
+                                <Tab id="slot1" title="Slot 1" panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot2" title="Slot 2" panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot3" title="Slot 3" panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot4" title="Slot 4" panel={<SlotPanel slot={3} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                             </Tabs>
                         </DialogBody>
 
