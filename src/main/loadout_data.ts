@@ -1353,178 +1353,185 @@ export const LOADOUTS = {
     },
     "shoes1": {
         "id": 1100,
-        "name": "",
+        "name": "Shoes (Desert)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "shoes2": {
         "id": 1101,
-        "name": "",
+        "name": "Trainers (Tactical)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "shoes3": {
         "id": 1102,
-        "name": "",
+        "name": "Shoes (Black)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "shoes4": {
         "id": 1103,
-        "name": "",
+        "name": "Hiking Shoes (Orange)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "shoes5": {
         "id": 1104,
-        "name": "",
+        "name": "Hiking Shoes (Brown)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "shoes6": {
         "id": 1105,
-        "name": "",
+        "name": "Trainers (Red)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "xmas_shoes_santa": {
         "id": 1107,
-        "name": "",
+        "name": "Santa Shoes",
         "tags": [
             "boots",
             "holiday",
             "xmas",
-            "santa"
+            "santa",
+            "terrorist"
         ]
     },
     "gloves1": {
         "id": 1200,
-        "name": "",
+        "name": "Gloves (Black)",
         "tags": [
             "gloves"
         ]
     },
     "gloves2": {
         "id": 1201,
-        "name": "",
+        "name": "Fingerless Gloves (Black)",
         "tags": [
             "gloves"
         ]
     },
     "gloves3": {
         "id": 1202,
-        "name": "",
+        "name": "Gloves (Winter)",
         "tags": [
             "gloves"
         ]
     },
     "gloves4": {
         "id": 1203,
-        "name": "",
+        "name": "Gloves (Leather)",
         "tags": [
             "gloves"
         ]
     },
     "gloves5": {
         "id": 1204,
-        "name": "",
+        "name": "Gloves (Tactical)",
         "tags": [
             "gloves"
         ]
     },
     "gloves6": {
         "id": 1205,
-        "name": "",
+        "name": "Racing Gloves (Red)",
         "tags": [
             "gloves"
         ]
     },
     "gloves7": {
         "id": 1206,
-        "name": "",
+        "name": "Racing Gloves (Blue)",
         "tags": [
             "gloves"
         ]
     },
     "gloves8": {
         "id": 1207,
-        "name": "",
+        "name": "Gloves (Beige)",
         "tags": [
             "gloves"
         ]
     },
     "gloves9": {
         "id": 1208,
-        "name": "",
+        "name": "Gloves (Desert)",
         "tags": [
             "gloves"
         ]
     },
     "gloves10": {
         "id": 1209,
-        "name": "",
+        "name": "Gloves (Padded)",
         "tags": [
             "gloves"
         ]
     },
     "gloves11": {
         "id": 1210,
-        "name": "",
+        "name": "Fingerless Gloves (Padded)",
         "tags": [
             "gloves"
         ]
     },
     "helmet1": {
         "id": 1300,
-        "name": "",
+        "name": "NVG Helmet",
         "tags": [
             "helmet"
         ]
     },
     "helmet2": {
         "id": 1301,
-        "name": "",
+        "name": "Riot Helmet (Visor Up)",
         "tags": [
             "helmet"
         ]
     },
     "helmet3": {
         "id": 1302,
-        "name": "",
+        "name": "Ballistic Helmet",
         "tags": [
             "helmet"
         ]
     },
     "helmet4": {
         "id": 1303,
-        "name": "",
+        "name": "Spade Helmet",
         "tags": [
             "helmet"
         ]
     },
     "helmet5": {
         "id": 1304,
-        "name": "",
+        "name": "White Bike Helmet",
         "tags": [
             "helmet"
         ]
     },
     "helmet6": {
         "id": 1305,
-        "name": "",
+        "name": "Riot Helmet (Visor Down)",
         "tags": [
             "helmet"
         ]
     },
     "xmas_santa_hat": {
         "id": 1306,
-        "name": "",
+        "name": "Santa Hat",
         "tags": [
             "helmet",
             "holiday",
@@ -1534,7 +1541,7 @@ export const LOADOUTS = {
     },
     "xmas_elf_hat": {
         "id": 1307,
-        "name": "",
+        "name": "Elf Hat",
         "tags": [
             "helmet",
             "holiday",
@@ -1575,49 +1582,49 @@ export const LOADOUTS = {
     },
     "mask1": {
         "id": 1400,
-        "name": "",
+        "name": "Gas Mask",
         "tags": [
             "mask"
         ]
     },
     "mask2": {
         "id": 1401,
-        "name": "",
+        "name": "Ballistic Mask",
         "tags": [
             "mask"
         ]
     },
     "mask3": {
         "id": 1402,
-        "name": "",
+        "name": "Basic Respirator",
         "tags": [
             "mask"
         ]
     },
     "mask4": {
         "id": 1403,
-        "name": "",
+        "name": "Dual Filter Respirator",
         "tags": [
             "mask"
         ]
     },
     "mask5": {
         "id": 1404,
-        "name": "",
+        "name": "Respirator",
         "tags": [
             "mask"
         ]
     },
     "mask6": {
         "id": 1405,
-        "name": "",
+        "name": "Dark Ballistic Mask",
         "tags": [
             "mask"
         ]
     },
     "mask_halloween": {
         "id": 1406,
-        "name": "",
+        "name": "Pumpkin Mask",
         "tags": [
             "mask",
             "holiday",
@@ -1626,156 +1633,162 @@ export const LOADOUTS = {
     },
     "goggles1": {
         "id": 1450,
-        "name": "",
+        "name": "Tactical Goggles (Red Tinted)",
         "tags": [
             "mask"
         ]
     },
     "goggles2": {
         "id": 1451,
-        "name": "",
+        "name": "Tactical Goggles A",
         "tags": [
             "mask"
         ]
     },
     "goggles3": {
         "id": 1452,
-        "name": "",
+        "name": "Tactical Goggles B",
         "tags": [
             "mask"
         ]
     },
     "goggles4": {
         "id": 1453,
-        "name": "",
+        "name": "Tactical Glasses (Orange Tinted)",
         "tags": [
             "mask"
         ]
     },
     "goggles5": {
         "id": 1454,
-        "name": "",
+        "name": "Tactical Glasses (Green Tinted)",
         "tags": [
             "mask"
         ]
     },
     "goggles6": {
         "id": 1455,
-        "name": "",
+        "name": "Tactical Goggles (Desert A)",
         "tags": [
             "mask"
         ]
     },
     "goggles7": {
         "id": 1456,
-        "name": "",
+        "name": "Tactical Goggles (Desert B)",
         "tags": [
             "mask"
         ]
     },
     "goggles8": {
         "id": 1457,
-        "name": "",
+        "name": "Tactical Goggles (Artic)",
         "tags": [
             "mask"
         ]
     },
     "holster1": {
         "id": 1500,
-        "name": "",
+        "name": "Holster (Beige)",
         "tags": [
             "holster"
         ]
     },
     "holster2": {
         "id": 1501,
-        "name": "",
+        "name": "Holster (Desert)",
         "tags": [
             "holster"
         ]
     },
     "holster3": {
         "id": 1502,
-        "name": "",
+        "name": "Holster (Tactical A)",
         "tags": [
             "holster"
         ]
     },
     "holster4": {
         "id": 1503,
-        "name": "",
+        "name": "Holster (Tactical B)",
         "tags": [
             "holster"
         ]
     },
     "holster5": {
         "id": 1504,
-        "name": "",
+        "name": "Holster (Plastic)",
         "tags": [
             "holster"
         ]
     },
     "holster6": {
         "id": 1505,
-        "name": "",
+        "name": "Holster (Metal)",
         "tags": [
             "holster"
         ]
     },
     "holster7": {
         "id": 1506,
-        "name": "",
+        "name": "Holster (Black A)",
         "tags": [
             "holster"
         ]
     },
     "holster8": {
         "id": 1507,
-        "name": "",
+        "name": "Holster (Black B)",
         "tags": [
             "holster"
         ]
     },
     "boots1": {
         "id": 1508,
-        "name": "",
+        "name": "Boots (Beige)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "boots2": {
         "id": 1509,
-        "name": "",
+        "name": "Boots (Black)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "boots3": {
         "id": 1510,
-        "name": "",
+        "name": "Boots (Padded A)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "boots4": {
         "id": 1511,
-        "name": "",
+        "name": "Boots (Green)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "boots5": {
         "id": 1512,
-        "name": "",
+        "name": "Boots (Padded B)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "boots6": {
         "id": 1513,
-        "name": "",
+        "name": "Boots (Desert)",
         "tags": [
-            "boots"
+            "boots",
+            "counter_terrorist"
         ]
     },
     "headset4": {
@@ -1801,7 +1814,7 @@ export const LOADOUTS = {
     },
     "xmas_boots_santa": {
         "id": 1601,
-        "name": "",
+        "name": "Santa Boots",
         "tags": [
             "boots",
             "holiday",
@@ -1811,7 +1824,7 @@ export const LOADOUTS = {
     },
     "holster_officer": {
         "id": 1605,
-        "name": "",
+        "name": "Officer Holster",
         "tags": [
             "holster",
             "officer"
@@ -1819,7 +1832,7 @@ export const LOADOUTS = {
     },
     "goggles_officer": {
         "id": 1606,
-        "name": "",
+        "name": "Tactical Glasses (John Matrix)",
         "tags": [
             "mask",
             "officer"
@@ -1827,7 +1840,7 @@ export const LOADOUTS = {
     },
     "helmet_officer": {
         "id": 1607,
-        "name": "",
+        "name": "Officer Helmet",
         "tags": [
             "helmet",
             "officer"
@@ -1835,23 +1848,25 @@ export const LOADOUTS = {
     },
     "shoes_officer": {
         "id": 1608,
-        "name": "",
+        "name": "Officer Shoes",
         "tags": [
             "boots",
-            "officer"
+            "officer",
+            "terrorist"
         ]
     },
     "boots_officer": {
         "id": 1609,
-        "name": "",
+        "name": "Officer Boots",
         "tags": [
             "boots",
-            "officer"
+            "officer",
+            "counter_terrorist"
         ]
     },
     "gloves_officer": {
         "id": 1610,
-        "name": "",
+        "name": "Officer Gloves",
         "tags": [
             "gloves",
             "officer"
@@ -1859,18 +1874,20 @@ export const LOADOUTS = {
     },
     "shield": {
         "id": 2000,
-        "name": "",
+        "name": "Ballistic Shield",
         "tags": [
             "shield",
-            "equipment"
+            "equipment",
+            "counter_terrorist"
         ]
     },
     "shield_plexi": {
         "id": 2001,
-        "name": "",
+        "name": "Ballistic Shield (Plexiglass)",
         "tags": [
             "shield",
-            "equipment"
+            "equipment",
+            "counter_terrorist"
         ]
     },
     "nvg": {
@@ -1932,42 +1949,42 @@ export const LOADOUTS = {
     },
     "dog_ct_gp_01": {
         "id": 2200,
-        "name": "",
+        "name": "Dog (Malinois)",
         "tags": [
             "pet",
             "dog",
-            //"equipment",
+            "equipment",
             "counter_terrorist"
         ]
     },
     "dog_c_gp_01": {
         "id": 2201,
-        "name": "",
+        "name": "Dog (Doberman)",
         "tags": [
             "pet",
             "dog",
-            //"equipment",
+            "equipment",
             "terrorist"
         ]
     },
     "dog_ct_cash_01": {
         "id": 2250,
-        "name": "",
+        "name": "Dog (Husky)",
         "tags": [
             "pet",
             "dog",
-            //"equipment",
+            "equipment",
             "counter_terrorist"
         ]
     },
     "dog_t_cash_01": {
         "id": 2251,
-        "name": "",
+        "name": "Dog (Pitbull)",
         "tags": [
             "pet",
             "dog",
             "terrorist",
-            //"equipment"
+            "equipment"
         ]
     },
     "light_armor": {
@@ -2011,28 +2028,28 @@ export const LOADOUTS = {
     },
     "short_respawn": {
         "id": 3021,
-        "name": "",
+        "name": "Short Respawn",
         "tags": [
             "perk"
         ]
     },
     "xp_plus": {
         "id": 3022,
-        "name": "",
+        "name": "XP Plus",
         "tags": [
             "perk"
         ]
     },
     "gp_plus": {
         "id": 3023,
-        "name": "",
+        "name": "GP Plus",
         "tags": [
             "perk"
         ]
     },
     "double_plus": {
         "id": 3024,
-        "name": "",
+        "name": "Double Plus",
         "tags": [
             "perk"
         ]
@@ -2046,7 +2063,7 @@ export const LOADOUTS = {
     },
     "short_respawn2": {
         "id": 3026,
-        "name": "Short Respawn",
+        "name": "Short Respawn 2",
         "tags": [
             "perk"
         ]
@@ -2060,7 +2077,7 @@ export const LOADOUTS = {
     },
     "pet_lives": {
         "id": 3030,
-        "name": "",
+        "name": "Extra Pet Life",
         "tags": [
             "perk"
         ]
@@ -2095,7 +2112,7 @@ export const LOADOUTS = {
     },
     "mega_ammo_pack": {
         "id": 3044,
-        "name": "",
+        "name": "Mega Ammo Pack",
         "tags": [
             "perk"
         ]
@@ -2179,21 +2196,21 @@ export const LOADOUTS = {
     },
     "dog_perk_dmg": {
         "id": 3100,
-        "name": "",
+        "name": "Dog Damage Perk",
         "tags": [
             "perk"
         ]
     },
     "dog_perk_hlt": {
         "id": 3101,
-        "name": "",
+        "name": "Dog Health Perk",
         "tags": [
             "perk"
         ]
     },
     "dog_perk_spd": {
         "id": 3102,
-        "name": "",
+        "name": "Dog Speed Perk",
         "tags": [
             "perk"
         ]
@@ -3252,9 +3269,10 @@ export const LOADOUTS = {
     },
     "shoes_xtrainergold": {
         "id": 5105,
-        "name": "",
+        "name": "Trainers (Gold)",
         "tags": [
-            "boots"
+            "boots",
+            "terrorist"
         ]
     },
     "helmet_valkyrie": {
@@ -3266,7 +3284,7 @@ export const LOADOUTS = {
     },
     "benhat": {
         "id": 10001,
-        "name": "",
+        "name": "Beanie",
         "tags": [
             "helmet"
         ]
@@ -3280,7 +3298,7 @@ export const LOADOUTS = {
     },
     "ctmodel1b": {
         "id": 11000,
-        "name": "",
+        "name": "GIGN (Woodland)",
         "tags": [
             "model",
             "counter_terrorist"
@@ -3288,7 +3306,7 @@ export const LOADOUTS = {
     },
     "ctmodel2b": {
         "id": 11001,
-        "name": "",
+        "name": "GSG-9 (Urban)",
         "tags": [
             "model",
             "counter_terrorist"
@@ -3296,7 +3314,7 @@ export const LOADOUTS = {
     },
     "ctmodel3b": {
         "id": 11002,
-        "name": "",
+        "name": "DEVGRU (Woodland)",
         "tags": [
             "model",
             "counter_terrorist"
@@ -3304,7 +3322,7 @@ export const LOADOUTS = {
     },
     "ctmodel4b": {
         "id": 11003,
-        "name": "",
+        "name": "SDU (Red Lines)",
         "tags": [
             "model",
             "counter_terrorist"
@@ -3341,7 +3359,7 @@ export const LOADOUTS = {
     },
     "tmodel2b": {
         "id": 12001,
-        "name": "",
+        "name": "Arctic (Woodland)",
         "tags": [
             "model",
             "terrorist"
@@ -3349,7 +3367,7 @@ export const LOADOUTS = {
     },
     "tmodel3b": {
         "id": 12002,
-        "name": "",
+        "name": "Snake (Desert)",
         "tags": [
             "model",
             "terrorist"
@@ -3357,7 +3375,7 @@ export const LOADOUTS = {
     },
     "tmodel4b": {
         "id": 12003,
-        "name": "",
+        "name": "Bomber (Artic)",
         "tags": [
             "model",
             "terrorist"

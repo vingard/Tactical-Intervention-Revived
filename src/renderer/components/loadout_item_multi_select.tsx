@@ -7,7 +7,7 @@ export interface LoadoutItem {
     id: number
     name: string
     tags?: string[]
-    rank: number
+    team?: "CT" | "T"
     key: string
     type?: string
 }

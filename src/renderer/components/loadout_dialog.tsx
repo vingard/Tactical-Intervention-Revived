@@ -8,8 +8,7 @@ import { LoadoutItemSelect } from "./loadout_item_select"
 interface LoadoutDataStruct {
     secondaries: LoadoutItem[]
     primaries: LoadoutItem[]
-    modelsCT: LoadoutItem[]
-    modelsT: LoadoutItem[]
+    models: LoadoutItem[]
     helmets: LoadoutItem[]
     masks: LoadoutItem[]
     gloves: LoadoutItem[]
@@ -18,8 +17,6 @@ interface LoadoutDataStruct {
     equipment: LoadoutItem[]
     requisitions: LoadoutItem[]
     perks: LoadoutItem[]
-    dogsCT: LoadoutItem[]
-    dogsT: LoadoutItem[]
 }
 
 function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" | "T", slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
@@ -47,7 +44,6 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
             </FormGroup>
 
             <FormGroup
-                helperText="Your character model"
                 label="Model"
                 intent={errors[`${key}.model`] && "danger"}
             >
@@ -58,7 +54,7 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                     render={({field}) => (
                         <LoadoutItemSelect
                             {...field}
-                            availableItems={loadoutData?.[`models${team}`] || []}
+                            availableItems={loadoutData?.models || []}
                         />
                     )}
                 />
@@ -172,7 +168,7 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                         <LoadoutItemSelect
                             {...field}
                             noneOption
-                            availableItems={[...(loadoutData?.equipment || []), ...(loadoutData?.[`dogs${team}`] || [])]}
+                            availableItems={loadoutData?.equipment || []}
                         />
                     )}
                 />
@@ -219,7 +215,7 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
     )
 }
 
-function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control: any, errors: any, loadoutData: LoadoutDataStruct}) {
+function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control: any, errors: any, loadoutData: any}) {
     return (
         <div style={{display: "flex"}}>
             <Card className="ctBackground">
@@ -229,7 +225,7 @@ function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control:
                     slot={slot}
                     control={control}
                     errors={errors}
-                    loadoutData={loadoutData}
+                    loadoutData={loadoutData.CT}
                 />
             </Card>
 
@@ -240,7 +236,7 @@ function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control:
                     slot={slot}
                     control={control}
                     errors={errors}
-                    loadoutData={loadoutData}
+                    loadoutData={loadoutData.T}
                 />
             </Card>
         </div>
@@ -272,11 +268,10 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     const formMethods = useForm()
     const {register, handleSubmit, control, setValue, formState: {errors}} = formMethods
     const [loadoutData, setLoadoutData] = useState<LoadoutDataStruct>()
+    const [sortedTeamLoadoutData, setSortedTeamLoadoutData] = useState({})
     const [loadoutReceived, setLoadoutReceived] = useState(false)
 
     async function loadoutFormSubmit(data: any, event: any) {
-        console.log("loadout submit!", data)
-
         const primaries = []
         const secondaries = []
         const slots = []
@@ -314,24 +309,16 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
             }
 
             slot.perks = perks
-            console.log("pperk")
 
             return slot
         }
 
-        console.log("hm")
-
         for (const slot of data.slots) {
-            console.log("loop slots")
             slots.push({
                 CT: teamSlotToKeys("CT", slot),
                 T: teamSlotToKeys("T", slot)
             })
-            console.log("slot")
         }
-
-
-        console.log("setLoadout to:", data)
 
         const success = await window.electron.ipcRenderer.invoke("game:setLoadout", {primaries, secondaries}, slots)
         onClosed()
@@ -340,28 +327,50 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     useEffect(() => {
         (async () => {
             const data = await window.electron.ipcRenderer.invoke("game:getLoadoutData")
-            const loadoutDataArr: LoadoutItem[] = Object.entries(data).map(([key, value]: any) => ({...value, key, type: getItemClassType(value)}))
-            const equippables = loadoutDataArr.filter((x) => !x.tags?.includes("unequippable"))
+            const allItems: LoadoutItem[] = Object.entries(data).map(([key, value]: any) => ({...value, key, type: getItemClassType(value)}))
+            const loadoutDataArr: LoadoutDataStruct = {primaries: [], secondaries: [], models: [], helmets: [], masks: [], gloves: [], boots: [], holsters: [], equipment: [], requisitions: [], perks: []}
+            const loadoutTeamSortedDataArr: any = {T: {}, CT: {}}
 
-            const models = loadoutDataArr.filter((x) => x.tags?.includes("model"))
-            const dogs = loadoutDataArr.filter((x) => x.tags?.includes("dog"))
+            for (const item of allItems) {
+                const {tags} = item
+                let itemTeamLock: "CT" | "T" | undefined
 
-            setLoadoutData({
-                primaries: equippables.filter((x) => x.tags?.includes("primary")).sort(sortByType),
-                secondaries: equippables.filter((x) => x.tags?.includes("secondary")).sort(sortByType),
-                modelsCT: models.filter((x) => x.tags?.includes("counter_terrorist")),
-                modelsT: models.filter((x) => x.tags?.includes("terrorist")),
-                helmets: equippables.filter((x) => x.tags?.includes("helmet")),
-                masks: equippables.filter((x) => x.tags?.includes("mask")),
-                gloves: equippables.filter((x) => x.tags?.includes("gloves")),
-                boots: equippables.filter((x) => x.tags?.includes("boots")),
-                holsters: equippables.filter((x) => x.tags?.includes("holster")),
-                equipment: equippables.filter((x) => x.tags?.includes("equipment")),
-                requisitions: loadoutDataArr.filter((x) => x.tags?.includes("requisition")),
-                perks: equippables.filter((x) => x.tags?.includes("perk")),
-                dogsCT: dogs.filter((x) => x.tags?.includes("counter_terrorist")),
-                dogsT: dogs.filter((x) => x.tags?.includes("terrorist"))
-            })
+                if (!tags || tags.includes("hidden")) continue // skip items with hidden tag
+
+                // Work out if item is team locked
+                if (tags.includes("counter_terrorist")) itemTeamLock = "CT"
+                else if (tags.includes("terrorist")) itemTeamLock = "T"
+
+                const newItem = {...item, team: itemTeamLock}
+
+                // Sort into groups
+                if (tags.includes("primary")) loadoutDataArr.primaries.push(newItem)
+                else if (tags.includes("secondary")) loadoutDataArr.secondaries.push(newItem)
+                else if (tags.includes("model")) loadoutDataArr.models.push(newItem)
+                else if (tags.includes("helmet")) loadoutDataArr.helmets.push(newItem)
+                else if (tags.includes("mask")) loadoutDataArr.masks.push(newItem)
+                else if (tags.includes("gloves")) loadoutDataArr.gloves.push(newItem)
+                else if (tags.includes("boots")) loadoutDataArr.boots.push(newItem)
+                else if (tags.includes("holster")) loadoutDataArr.holsters.push(newItem)
+                else if (tags.includes("equipment")) loadoutDataArr.equipment.push(newItem)
+                else if (tags.includes("requisition")) loadoutDataArr.requisitions.push(newItem)
+                else if (tags.includes("perk")) loadoutDataArr.perks.push(newItem)
+            }
+
+            loadoutDataArr.primaries.sort(sortByType)
+            loadoutDataArr.secondaries.sort(sortByType)
+
+            // eslint-disable-next-line guard-for-in
+            for (const category in loadoutDataArr) {
+                const key = category as keyof typeof loadoutDataArr
+                console.log("sort", category, loadoutDataArr[key])
+                // eslint-disable-next-line no-multi-assign
+                loadoutTeamSortedDataArr.T[category] = loadoutDataArr[key].filter((x: LoadoutItem) => !x.team || x.team === "T")
+                loadoutTeamSortedDataArr.CT[category] = loadoutDataArr[key].filter((x: LoadoutItem) => !x.team || x.team === "CT")
+            }
+
+            setLoadoutData(loadoutDataArr)
+            setSortedTeamLoadoutData(loadoutTeamSortedDataArr)
 
             console.warn("loadoutData recalculated [EXPENSIVE]")
         })()
@@ -392,7 +401,7 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                 console.log(key)
 
                 setValue(`${key}.name`, slot.name)
-                setValue(`${key}.model`, loadoutData?.[`models${team}`].find(x => x.key === slot.model))
+                setValue(`${key}.model`, loadoutData?.models.find(x => x.key === slot.model))
                 setValue(`${key}.helmet`, loadoutData?.helmets.find(x => x.key === slot.helmet))
                 setValue(`${key}.mask`, loadoutData?.masks.find(x => x.key === slot.mask))
                 setValue(`${key}.gloves`, loadoutData?.gloves.find(x => x.key === slot.gloves))
@@ -491,9 +500,9 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
                             <H4>Slots</H4>
                             <Tabs id="slots">
-                                <Tab id="slot1" title={<H5>Slot 1</H5>} panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot2" title={<H5>Slot 2</H5>} panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot3" title={<H5>Slot 3</H5>} panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot1" title={<H5>Slot 1</H5>} panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={sortedTeamLoadoutData}/>}/>
+                                <Tab id="slot2" title={<H5>Slot 2</H5>} panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={sortedTeamLoadoutData}/>}/>
+                                <Tab id="slot3" title={<H5>Slot 3</H5>} panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={sortedTeamLoadoutData}/>}/>
                             </Tabs>
                         </DialogBody>
 
