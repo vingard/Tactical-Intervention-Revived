@@ -6,13 +6,14 @@ import { v4 as uuid4 } from "uuid"
 export function NewModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const {register, handleSubmit, control, setValue, formState: {errors}} = useForm()
 
-    async function newModFormSubmit(data: any, event: any) {
-        //const success = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
-        onClosed()
+    function generateRandomUID() {
+        setValue("uid", uuid4())
     }
 
-    function generateRandomUID() {
-        setValue("id", uuid4())
+    async function newModFormSubmit(data: any, event: any) {
+        const success = await window.electron.ipcRenderer.invoke("mod:new", data)
+        onClosed()
+        generateRandomUID()
     }
 
     useEffect(() => {
@@ -36,17 +37,16 @@ export function NewModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                         <FormGroup
                             helperText="A unique string identifying this mod - automatically generated"
                             label="Unique ID"
-                            intent={errors.id && "danger"}
+                            intent={errors.uid && "danger"}
                         >
                             <Controller
-                                name="id"
+                                name="uid"
                                 control={control}
                                 rules={{required: true}}
                                 render={({field}) => (
                                     <InputGroup
                                         {...field}
-                                        placeholder="example_mod_name"
-                                        intent={errors.username && "danger"}
+                                        intent={errors.uid && "danger"}
                                         disabled
                                     />
                                 )}

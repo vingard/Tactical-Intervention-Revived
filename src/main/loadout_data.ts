@@ -1936,7 +1936,7 @@ export const LOADOUTS = {
         "tags": [
             "pet",
             "dog",
-            "equipment",
+            //"equipment",
             "counter_terrorist"
         ]
     },
@@ -1946,7 +1946,7 @@ export const LOADOUTS = {
         "tags": [
             "pet",
             "dog",
-            "equipment",
+            //"equipment",
             "terrorist"
         ]
     },
@@ -1956,7 +1956,7 @@ export const LOADOUTS = {
         "tags": [
             "pet",
             "dog",
-            "equipment",
+            //"equipment",
             "counter_terrorist"
         ]
     },
@@ -1967,7 +1967,7 @@ export const LOADOUTS = {
             "pet",
             "dog",
             "terrorist",
-            "equipment"
+            //"equipment"
         ]
     },
     "light_armor": {
@@ -1995,21 +1995,18 @@ export const LOADOUTS = {
         "id": 3010,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "ris_pack2": {
         "id": 3011,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "ris_pack3": {
         "id": 3012,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "short_respawn": {
@@ -2107,56 +2104,48 @@ export const LOADOUTS = {
         "id": 3050,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_lightb": {
         "id": 3051,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_mediuma": {
         "id": 3052,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_mediumb": {
         "id": 3053,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_heavya": {
         "id": 3054,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_heavyb": {
         "id": 3055,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "crate_quick_start": {
         "id": 3056,
         "name": "",
         "tags": [
-            "perk"
         ]
     },
     "pack_all_weapons": {
         "id": 3070,
         "name": "",
         "tags": [
-            "perk",
             "pack"
         ]
     },
@@ -2164,7 +2153,6 @@ export const LOADOUTS = {
         "id": 3071,
         "name": "",
         "tags": [
-            "perk",
             "pack"
         ]
     },
@@ -2172,7 +2160,6 @@ export const LOADOUTS = {
         "id": 3072,
         "name": "",
         "tags": [
-            "perk",
             "pack"
         ]
     },
@@ -2180,7 +2167,6 @@ export const LOADOUTS = {
         "id": 3073,
         "name": "",
         "tags": [
-            "perk",
             "pack"
         ]
     },
@@ -2188,7 +2174,6 @@ export const LOADOUTS = {
         "id": 3074,
         "name": "",
         "tags": [
-            "perk",
             "pack"
         ]
     },

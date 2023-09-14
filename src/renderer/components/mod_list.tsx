@@ -5,11 +5,11 @@ import { WorkerDialog } from "./worker_dialog"
 function ModDropdown({mod}: {mod: any}) {
     const [deleting, setDeleting] = useState(false)
     const [deletePopup, setDeletePopup] = useState(false)
-    const loadingStateId = `mod_${mod.name}`
+    const loadingStateId = `mod_${mod.uid}`
 
     async function deleteMod() {
         setDeleting(true)
-        const success = await window.electron.ipcRenderer.invoke("mod:delete", mod.name)
+        const success = await window.electron.ipcRenderer.invoke("mod:delete", mod.uid)
         if (success) setDeleting(false)
     }
 
@@ -21,8 +21,8 @@ function ModDropdown({mod}: {mod: any}) {
                 content={
                     <Menu>
                         <MenuItem icon="refresh" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate"))}/>
-                        <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("mod:openRemoteURL", mod.name))}/>
-                        <MenuItem icon="folder-shared-open" text="Open mod directory" onClick={() => (window.electron.ipcRenderer.invoke("mod:openDirectory", mod.name))}/>
+                        {mod.url && <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("mod:openRemoteURL", mod.uid))}/>}
+                        <MenuItem icon="folder-shared-open" text="Open mod directory" onClick={() => (window.electron.ipcRenderer.invoke("mod:openDirectory", mod.uid))}/>
                         <MenuItem icon="trash" text="Delete" intent="danger" onClick={() => setDeletePopup(true)}/>
                     </Menu>
                 }
@@ -33,7 +33,7 @@ function ModDropdown({mod}: {mod: any}) {
 
             <WorkerDialog
                 open={deleting}
-                title={`Deleting ${mod.prettyName || mod.name}`}
+                title={`Deleting ${mod.name || mod.uid}`}
                 icon="trash"
                 loadingStateId={loadingStateId}
                 onClosed={() => setDeleting(false)}
@@ -47,7 +47,7 @@ function ModDropdown({mod}: {mod: any}) {
                 onClose={() => setDeletePopup(false)}
             >
                 <DialogBody>
-                    Are you sure you want to delete {mod.prettyName || mod.name}?
+                    Are you sure you want to delete {mod.name || mod.uid}?
                 </DialogBody>
 
                 <DialogFooter actions={(
@@ -66,21 +66,14 @@ function ModDropdown({mod}: {mod: any}) {
 }
 
 export function ModList() {
-    const [mods, setMods] = useState({})
+    const [mods, setMods] = useState([])
     const [mounting, setMounting] = useState(false)
     const [workerTitle, setWorkerTitle] = useState("")
     const [loadingStateId, setLoadingStateId] = useState("")
 
     useEffect(() => {
-        window.electron.ipcRenderer.on("mod:setState", (modData: any) => {
-            setMods({...mods, ...{[modData.name]: modData}})
-        })
-
-        window.electron.ipcRenderer.on("mod:setDeleted", (modName: any) => {
-            const temp: any = {...mods}
-            delete temp[modName]
-
-            setMods(temp)
+        window.electron.ipcRenderer.on("mod:setState", (allMods: any) => {
+            setMods(allMods)
         })
 
         window.electron.ipcRenderer.invoke("mod:init")
@@ -88,14 +81,12 @@ export function ModList() {
 
 
     async function setModMounted(mod: any, isMounted: boolean) {
-        setWorkerTitle(`${isMounted && "Mounting" || "Un-Mounting"} ${mod.prettyName || mod.name}`)
-        setLoadingStateId(`mod_${mod.name}`)
+        setWorkerTitle(`${isMounted && "Mounting" || "Un-Mounting"} ${mod.name || mod.uid}`)
+        setLoadingStateId(`mod_${mod.uid}`)
         setMounting(true)
-        const success = await window.electron.ipcRenderer.invoke("mod:setMounted", mod.name, isMounted)
+        const success = await window.electron.ipcRenderer.invoke("mod:setMounted", mod.uid, isMounted)
         if (success) setMounting(false)
     }
-
-    const modsArray = Object.values(mods)
 
     return (
         <>
@@ -108,7 +99,7 @@ export function ModList() {
             />}
 
             <div className="modList container">
-                {modsArray.length === 0 && (
+                {mods.length === 0 && (
                     <div className="modList noMods">
                         <NonIdealState
                             icon="heart-broken"
@@ -120,8 +111,8 @@ export function ModList() {
                 )}
 
                 <Section compact>
-                    {modsArray.map((mod) => (
-                        <SectionCard key={mod.name} style={{padding: "0.5rem", paddingLeft: "1rem"}}>
+                    {mods.map((mod: any) => (
+                        <SectionCard key={mod.uid} style={{padding: "0.5rem", paddingLeft: "1rem"}}>
                             <div className="">
                                 <div style={{float: "right", margin: "1rem"}}>
                                     <ButtonGroup style={{float: "right"}}>
@@ -131,12 +122,16 @@ export function ModList() {
                                     </ButtonGroup>
                                 </div>
 
-                                <H6 style={{marginBottom: "0.1rem"}}>{mod.prettyName || mod.name}</H6>
+                                <H6 style={{marginBottom: "0.1rem"}}>{mod.name || mod.uid}</H6>
                                 <p className="muted" style={{marginTop: "0", marginBottom: "0.2rem"}}>
                                     {mod.version}
                                 </p>
-                                <Tag minimal intent={mod.mounted && "success" || "danger"}>{mod.mounted && "Mounted" || "Un-mounted"}</Tag>
-                                {mod.needsUpdate && <Tag minimal intent="warning">Update Available (latest: 2.0.1)</Tag>}
+                                <div style={{display: "flex", gap: "0.2rem"}}>
+                                    <Tag minimal intent={mod.mounted && "success" || "danger"}>{mod.mounted && "Mounted" || "Un-mounted"}</Tag>
+
+                                    {mod.needsUpdate && <Tag minimal intent="warning">Update Available (latest: 2.0.1)</Tag>}
+                                    {!mod.url && <Tag minimal intent="primary">Local Mod</Tag>}
+                                </div>
                             </div>
                         </SectionCard>
                     ))}

@@ -82,10 +82,10 @@ export async function mountFile(filePath: string, from: string, to: string, modN
         const conf = config.read()
         const otherMod = mods[mod.getLoadOrder(manifest[filePath])] // the mod being overwritten
 
-        if (otherMod && otherMod.name !== modName && otherMod.claims) {
+        if (otherMod && otherMod.uid !== modName && otherMod.claims) {
             // the other mod has been booted off this symlink
             // Update the config to reflect this change
-            conf.mods[mod.getIndex(conf, otherMod.name)].claims[filePath] = false
+            conf.mods[mod.getIndex(conf, otherMod.uid)].claims[filePath] = false
             config.update(conf)
         }
     }
@@ -107,19 +107,19 @@ export async function unMountFile(filePath: string, from: string, to: string, mo
 
     // eslint-disable-next-line no-restricted-syntax
     for (const thisMod of sortedMods) {
-        if (!thisMod.mounted || thisMod.name === modName) {
+        if (!thisMod.mounted || thisMod.uid === modName) {
             // eslint-disable-next-line no-continue
             continue
         }
 
         if (thisMod.mounted && thisMod.claims?.[filePath] !== undefined) { // if any mod has a claim to a file, mount it
             // eslint-disable-next-line no-await-in-loop
-            await mountFile(filePath, path.resolve(appPath.modsDir, thisMod.name), to)
+            await mountFile(filePath, path.resolve(appPath.modsDir, thisMod.uid), to)
 
             // Update the config to reflect this change
             const conf = config.read()
-            conf.mountManifest[filePath] = thisMod.name
-            conf.mods[mod.getIndex(conf, thisMod.name)].claims[filePath] = true
+            conf.mountManifest[filePath] = thisMod.uid
+            conf.mods[mod.getIndex(conf, thisMod.uid)].claims[filePath] = true
             config.update(conf)
             return true
         }

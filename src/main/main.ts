@@ -250,17 +250,18 @@ async function handleSetSettings(event: any, data: any) {
 
 async function handleQueryMod(event: any, url: string) {
     try {
-        return await mod.getInfo(url)
-    } catch(err) {
-        console.log(err)
+        return {mod: await mod.getInfo(url)}
+    } catch(err: any) {
+        return {error: err.message}
     }
 }
 
 async function handleInstallMod(event: any, url: string, mount: boolean = false) {
     try {
-        return await mod.install(url)
-    } catch(err) {
-        console.log(err)
+        return {success: await mod.install(url)}
+    } catch(err: any) {
+        log.error(err.message)
+        return {error: err.message}
     }
 }
 
@@ -341,6 +342,14 @@ async function handleSetLoadout(event: any, backpack: any, loadouts: any) {
     }
 }
 
+async function handleNewMod(event: any, modInfo: any) {
+    try {
+        return await mod.createNew(modInfo.uid, modInfo.name, modInfo.description, modInfo.author, modInfo.version)
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -363,6 +372,7 @@ app.whenReady()
         ipcMain.handle("mod:openRemoteURL", handleModOpenRemoteURL)
         ipcMain.handle("mod:openDirectory", handleModOpenDirectory)
         ipcMain.handle("mod:delete", handleModDelete)
+        ipcMain.handle("mod:new", handleNewMod)
 
         config.create()
 

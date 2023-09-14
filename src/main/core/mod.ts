@@ -11,30 +11,42 @@ import * as appPath from "./appPath"
 import { SoftError } from "./softError"
 import { loadingReset, loadingSetState, loadingSuccess } from "./util"
 
-async function setState(mod: any) {
-    const win = getWindow()!
-    if (!win) return
-    win.webContents.send("mod:setState", mod)
-}
-
-async function setStateDeleted(modName: string) {
-    const win = getWindow()!
-    if (!win) return
-    win.webContents.send("mod:setDeleted", modName)
-}
-
-export async function getInfo(url: string) {
+export async function getInfo(location: string, isFileSystem: boolean = false) {
     let modInfo
-    const modInfoUrl = `${url.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`
 
-    try {
-        modInfo = await (await axios.get(modInfoUrl)).data
-    } catch (err) {
-        throw new SoftError(`Could not find a valid mod at ${url} (${err})`)
+    if (isFileSystem) {
+        let modInfoFile
+        const modInfoFilePath = path.resolve(location, "mod.json")
+
+        try {
+            modInfoFile = await jetpack.readAsync(modInfoFilePath)
+        } catch (err) {
+            throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
+        }
+
+        try {
+            modInfo = JSON.parse(<string>modInfoFile)
+        } catch (err) {
+            throw new SoftError(`Failed to parse JSON for ${modInfoFilePath}`)
+        }
+    } else {
+        try {
+            modInfo = (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`)).data
+        } catch (err) {
+            throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
+        }
+    }
+
+    if (!modInfo.uid) {
+        throw new SoftError("Mod does not provide a 'uid' in its mod.json file, this is required!")
     }
 
     if (!modInfo.name) {
-        throw new SoftError("This mod does not provide a 'name' in its mod.json file, this is required!")
+        throw new SoftError("Mod does not provide a 'name' in its mod.json file, this is required!")
+    }
+
+    if (typeof modInfo.uid !== "string") {
+        throw new SoftError("Mod 'uid' must be a string!")
     }
 
     if (typeof modInfo.name !== "string") {
@@ -45,9 +57,9 @@ export async function getInfo(url: string) {
         throw new SoftError("Mod 'version' must be a string!")
     }
 
-    modInfo.name = modInfo.name.toLowerCase()
+    modInfo.uid = `${modInfo.uid.toLowerCase()}${!isFileSystem && "-DL" || ""}`
     modInfo.version = modInfo.version || "0.0.1"
-    modInfo.url = url
+    modInfo.url = !isFileSystem && location
 
     return modInfo
 }
@@ -59,7 +71,7 @@ export function isValidURL(url: string) {
 
 export function get(name: string) {
     const conf = config.read()
-    const i = conf.mods.findIndex((x: any) => x.name === name)
+    const i = conf.mods.findIndex((x: any) => x.uid === name)
 
     return conf.mods[i]
 }
@@ -74,7 +86,48 @@ export function getLoadOrder(mod: any) {
 }
 
 export function getIndex(conf: any, modName: string) {
-    return conf.mods.findIndex((x: any) => x.name === modName)
+    return conf.mods.findIndex((x: any) => x.uid === modName)
+}
+
+async function addToConfig(mod: any, shouldMerge: boolean = false) {
+    // Append to timm.json the mod info
+    const conf = config.read()
+
+    const foundIndex = conf.mods.findIndex((x: any) => x.uid === mod.uid)
+
+    // If mod exists replace otherwise append
+    if (foundIndex === -1) {
+        conf.mods.push(mod)
+    } else {
+        conf.mods[foundIndex] = shouldMerge && {...conf.mods[foundIndex], ...mod} || mod
+    }
+
+    config.update(conf)
+}
+
+async function updateState() {
+    const win = getWindow()!
+    if (!win) return
+    win.webContents.send("mod:setState", await getAll())
+}
+
+export async function createNew(uid: string, name: string, description?: string, author?: string, version: string = "0.0.1") {
+    log.info(`Creating new mod: ${name} ${uid}`)
+
+    const modData = {
+        uid,
+        name,
+        description,
+        version,
+        author
+    }
+
+    const newModDir = jetpack.cwd(path.resolve(appPath.modsDir, uid))
+    await newModDir.dirAsync(".") // make mod folder
+    await newModDir.writeAsync("mod.json", JSON.stringify(modData, undefined, "  ")) // make mod.json file
+
+    addToConfig(modData)
+    updateState()
 }
 
 /** Installs a mod from a GitHub repository URL. */
@@ -82,15 +135,15 @@ export async function install(url: string) {
     // Get mod.json file info
     // get title, version, store in timm.json mods
     const mod = await getInfo(url)
-    const modPath = path.resolve(appPath.modsDir, mod.name)
-    const modTempFileName = `${mod.name}.zip`
+    const modPath = path.resolve(appPath.modsDir, mod.uid)
+    const modTempFileName = `${mod.uid}.zip`
 
-    const modLoadStateId = `mod_${mod.name}`
+    const modLoadStateId = `mod_${mod.uid}`
     loadingReset(modLoadStateId)
 
     // If mod is already installed prompt?
 
-    log.info(`Installing ${mod.name} (${mod.version}):`)
+    log.info(`Installing ${mod.uid} (${mod.version}):`)
 
     // Download archive
     log.info(`Downloading from ${mod.url}`)
@@ -122,40 +175,29 @@ export async function install(url: string) {
     // Cleanup archive
     await files.deleteTempFile(modTempFileName)
 
-    // Append to timm.json the mod info
-    const conf = config.read()
+    // Add to config
+    addToConfig(mod)
 
-    const foundIndex = conf.mods.findIndex((x: any) => x.name === mod.name)
-
-    // If mod exists replace otherwise append
-    if (foundIndex === -1) {
-        conf.mods.push(mod)
-    } else {
-        conf.mods[foundIndex] = mod
-    }
-
-    config.update(conf)
-
-    const succMsg = `${mod.name} (${mod.version}) was installed succesfully!`
+    const succMsg = `${mod.name} - ${mod.uid} (${mod.version}) was installed succesfully!`
     log.info(succMsg)
     loadingSetState(modLoadStateId, succMsg, 1, 1)
     loadingSuccess(modLoadStateId)
-    setState(mod)
+    updateState()
 
     return mod
 }
 
 export async function mountMod(mod: any) {
-    const modLoadingStateId = `mod_${mod.name}`
+    const modLoadingStateId = `mod_${mod.uid}`
     loadingReset(modLoadingStateId)
 
-    const modFolder = path.resolve(appPath.modsDir, mod.name)
+    const modFolder = path.resolve(appPath.modsDir, mod.uid)
     const modFs = jetpack.cwd(modFolder)
     const modContentsTemp = modFs.find(".", {directories: false, recursive: true})
 
     const modContents: any = {}
     for (const filePath of modContentsTemp) {
-        modContents[path.normalize(filePath)] = mod.name
+        modContents[path.normalize(filePath)] = mod.uid
     }
 
     const mods = getAll()
@@ -169,13 +211,15 @@ export async function mountMod(mod: any) {
 
     for (const [k, v] of modFiles) {
         loadingSetState(modLoadingStateId, "Preparing to mount game files", completed++, modFiles.length)
+        if (k === "mod.json") continue // skip mod.json file, we dont mount that!
+
         claims[k] = false
 
         // If the mounted file has conflict
         if (manifest[k]) {
             const ownerMod = mods[getIndex(conf, manifest[k])]
 
-            if (ownerMod && ownerMod.name !== mod.name) {
+            if (ownerMod && ownerMod.uid !== mod.uid) {
                 // If the owner mod has greater or (equal to load order - however equal to should never happen ideally)
                 if (getLoadOrder(ownerMod) >= myPriority) {
                     claims[k] = false
@@ -209,21 +253,21 @@ export async function mountMod(mod: any) {
 
 
     conf = config.read()
-    const modIndex = getIndex(conf, mod.name)
+    const modIndex = getIndex(conf, mod.uid)
     conf.mountManifest = manifest
     conf.mods[modIndex].mounted = true
     conf.mods[modIndex].claims = claims
     config.update(conf)
-    setState(conf.mods[modIndex])
+    updateState()
 
     loadingSuccess(modLoadingStateId)
 }
 
 export async function unMountMod(mod: any) {
-    const modLoadingStateId = `mod_${mod.name}`
+    const modLoadingStateId = `mod_${mod.uid}`
     loadingReset(modLoadingStateId)
 
-    const modFolder = path.resolve(appPath.modsDir, mod.name)
+    const modFolder = path.resolve(appPath.modsDir, mod.uid)
     const modFs = jetpack.cwd(modFolder)
 
     const manifest = game.getMountManifest()
@@ -233,7 +277,7 @@ export async function unMountMod(mod: any) {
 
     for (const [k, v] of manifestArray) {
         loadingSetState(modLoadingStateId, "Preparing to un-mount game files", completed++, manifestArray.length)
-        if (v === mod.name) {
+        if (v === mod.uid) {
             content[k] = v
         }
     }
@@ -261,32 +305,28 @@ export async function unMountMod(mod: any) {
     // TODO: Fix this so it loops through a sorted array of claims to see
     for (const [k, v] of manifestArray) {
         loadingSetState(modLoadingStateId, "Cleaning up manifest", completed++, manifestArray.length)
-        if (v === mod.name) {
+        if (v === mod.uid) {
             manifest[k] = undefined
         }
     }
 
     const conf = config.read()
-    const modIndex = getIndex(conf, mod.name)
+    const modIndex = getIndex(conf, mod.uid)
     //config.mountManifest = manifest
     conf.mods[modIndex].mounted = false
     conf.mods[modIndex].claims = undefined
     config.update(conf)
-    setState(conf.mods[modIndex])
+    updateState()
 
     loadingSuccess(modLoadingStateId)
 }
 
 export async function init() {
-    const mods = getAll()
-
-    for (const mod of mods) {
-        setState(mod)
-    }
+    updateState()
 }
 
 export async function remove(mod: any) {
-    const modLoadingStateId = `mod_${mod.name}`
+    const modLoadingStateId = `mod_${mod.uid}`
     loadingReset(modLoadingStateId)
 
     loadingSetState(modLoadingStateId, "Preparing to delete")
@@ -294,22 +334,37 @@ export async function remove(mod: any) {
 
     loadingSetState(modLoadingStateId, "Deleting files")
 
-    const modPath = path.resolve(appPath.modsDir, mod.name)
+    const modPath = path.resolve(appPath.modsDir, mod.uid)
 
     if (jetpack.exists(modPath) === "dir") {
         try {
-            jetpack.remove(path.resolve(appPath.modsDir, mod.name))
+            jetpack.remove(path.resolve(appPath.modsDir, mod.uid))
         } catch(err: any) {
             throw new Error("Failed to remove mod directory")
         }
     }
 
     const conf = config.read()
-    const modIndex = getIndex(conf, mod.name)
+    const modIndex = getIndex(conf, mod.uid)
     conf.mods.splice(modIndex, 1)
     console.log("new confg", conf.mods)
     config.update(conf)
 
-    setStateDeleted(mod.name)
+    updateState()
     loadingSuccess(modLoadingStateId)
+}
+
+/** Syncing can be used to un-mount, sync the mod.json, then re-mount locally installed mods */
+export async function sync(uid: string) {
+    const remoteModInfo = await getInfo(path.resolve(appPath.modsDir, uid), true)
+    let mod = get(uid)
+
+    if (!mod) { // If mod is not in the revived config, then add it
+        addToConfig(remoteModInfo)
+        mod = remoteModInfo
+    }
+
+    await unMountMod(mod)
+    addToConfig(remoteModInfo, true) // merge mod to config
+    await mountMod(mod)
 }

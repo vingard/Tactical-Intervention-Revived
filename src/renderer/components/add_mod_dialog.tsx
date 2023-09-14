@@ -5,11 +5,12 @@ import { LoadingBar } from "./loadingbar"
 import { WorkerDialog } from "./worker_dialog"
 
 export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
-    const {register, handleSubmit, control, setValue, formState: {errors}} = useForm()
+    const {register, handleSubmit, control, setValue, setError, clearErrors, formState: {errors}} = useForm()
     const [modData, setModData] = useState(null)
     const [installing, setInstalling] = useState(false)
 
     async function onUrlChanged(event: any) {
+        clearErrors()
         setModData(null)
 
         let urlStr: string = event.target.value
@@ -20,16 +21,22 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
         // eslint-disable-next-line prefer-destructuring
         urlStr = `https://${matches[0]}`
 
-        const modInfo = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
-        if (!modInfo) return
-        setModData(modInfo)
+        const {info, error} = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
+
+        // forgive me for this awful hack D: - i will standardise a error popup across the whole app soon
+        if (error && !error.includes("Could not find")) return setError("url", {message: error})
+
+        if (!info) return
+        setModData(info)
     }
 
     async function addModFormSubmit(data: any, event: any) {
         if (!modData) return
 
         setInstalling(true)
-        const success = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
+        const {success, error} = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
+        if (error) setError("url", {message: error})
+
         setInstalling(false)
         onClosed()
     }
@@ -41,9 +48,9 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
         <div>
             {modData && <WorkerDialog
                 open={installing}
-                title={`Installing ${modData.prettyName || modData.name}`}
+                title={`Installing ${modData.name || modData.uid}`}
                 icon="cloud-download"
-                loadingStateId={`mod_${modData.name}`}
+                loadingStateId={`mod_${modData.uid}`}
                 onClosed={() => setInstalling(false)}
             />}
 
@@ -58,8 +65,8 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                     <DialogBody>
                         <FormGroup
                             label="Mod URL"
-                            helperText="GitHub repository URL of the mod you wish to install"
-                            intent={errors.username && "danger" || (modData && "success")}
+                            helperText={errors.url?.message || "GitHub repository URL of the mod you wish to install"}
+                            intent={errors.url && "danger" || (modData && "success")}
                         >
                             <Controller
                                 name="url"
@@ -69,7 +76,7 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                                     <InputGroup
                                         {...field}
                                         placeholder="www.github.com/x/x"
-                                        intent={errors.username && "danger" || (modData && "success")}
+                                        intent={errors.url && "danger" || (modData && "success")}
                                     />
                                 )}
                             />
@@ -89,7 +96,7 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
 
                     {modData && (
                         <Card>
-                            <H4>{modData.name}</H4>
+                            <H4>{modData.uid}</H4>
                             <p className="muted">
                                 <Icon icon="changes"/> Version: {modData.version}
                             </p>

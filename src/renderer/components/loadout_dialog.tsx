@@ -172,7 +172,7 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
                         <LoadoutItemSelect
                             {...field}
                             noneOption
-                            availableItems={loadoutData?.equipment || []}
+                            availableItems={[...(loadoutData?.equipment || []), ...(loadoutData?.[`dogs${team}`] || [])]}
                         />
                     )}
                 />
