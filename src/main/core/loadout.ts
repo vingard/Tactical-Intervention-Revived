@@ -101,7 +101,7 @@ function makeLoadoutSlot(parser: Parser, input: any, team: "T" | "CT", data: Loa
     .uint16(`gloves${team}`)
     .uint16(`boots${team}`)
     .uint16(`holster${team}`)
-    .array(`unknown${team}`, {
+    .array(`unknown${team}`, { /** Skins? */
         type: "uint16le",
         length: 3
     })

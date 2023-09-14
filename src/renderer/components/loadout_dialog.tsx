@@ -491,9 +491,9 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
                             <H4>Slots</H4>
                             <Tabs id="slots">
-                                <Tab id="slot1" title={<H4>1</H4>} panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot2" title={<H4>2</H4>} panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
-                                <Tab id="slot3" title={<H4>3</H4>} panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot1" title={<H5>Slot 1</H5>} panel={<SlotPanel slot={0} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot2" title={<H5>Slot 2</H5>} panel={<SlotPanel slot={1} control={control} errors={errors} loadoutData={loadoutData}/>}/>
+                                <Tab id="slot3" title={<H5>Slot 3</H5>} panel={<SlotPanel slot={2} control={control} errors={errors} loadoutData={loadoutData}/>}/>
                             </Tabs>
                         </DialogBody>
 

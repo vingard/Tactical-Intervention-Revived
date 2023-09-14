@@ -924,7 +924,7 @@ export const LOADOUTS = {
     },
     "aug_acog": {
         "id": 421,
-        "name": "AUG (Red-Dot)",
+        "name": "AUG (ACOG)",
         "tags": [
             "weapon",
             "rifle",
