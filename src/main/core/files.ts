@@ -4,6 +4,7 @@ import axios from "axios"
 import onezip from "onezip"
 import jetpack from "fs-jetpack"
 import byteSize from "byte-size"
+import log from "electron-log"
 //import drivelist from "drivelist"
 // eslint-disable-next-line import/no-cycle
 import * as appPath from "./appPath"
@@ -44,17 +45,67 @@ export function getDirectories(dirPath: string) {
     })
 }
 
-export async function downloadTempFile(url: string, name: string, loadStateId: string, acceptNoContentLength: boolean = false) {
+function isDateWithinLast(checkDate: Date, minutes: number) {
+    // Get the current date and time
+    const currentDate = new Date()
+
+    // Calculate the time one hour ago
+    const timeAgo = new Date(currentDate)
+    timeAgo.setMinutes(currentDate.getMinutes() - minutes)
+
+    // Compare the given date with the calculated time
+    return checkDate >= timeAgo && checkDate <= currentDate
+}
+
+let abortController: AbortController
+
+export async function downloadTempFile(url: string, name: string, loadStateId: string, acceptNoContentLength: boolean = false, partialAutoRetries: number = 32) {
     loadingSetState(loadStateId, "Starting download...")
     let resp
+
+    if (abortController) {
+        console.log("abort dl")
+        abortController.abort()
+    }
+
+    abortController = new AbortController()
+
+    const savePath = path.resolve(appPath.tempDir, name)
+    let fileOffset
+
+    if (partialAutoRetries && jetpack.exists(savePath)) {
+        const stats = jetpack.inspect(savePath, {times: true})
+
+        // If the file was modified within the last 8 hours, we'll continue the download. Otherwise, its
+        // probably best to start fresh
+        if (stats?.modifyTime && isDateWithinLast(stats.modifyTime, 8 * 60)) {
+            fileOffset = stats.size
+        }
+    }
+
+    async function onDownloadError(err: any) {
+        log.warn(`Download error - ${err.message}`)
+
+        if (partialAutoRetries > 0) {
+            log.info(`Retrying download... (${partialAutoRetries} attempts left)`)
+            await downloadTempFile(url, name, loadStateId, acceptNoContentLength, partialAutoRetries - 1)
+            return data.emit("ends")
+        }
+
+        throw new SoftError(`Download failed - ${err.message}`)
+    }
 
     try {
         resp = await axios({
             url,
             method: "GET",
             responseType: "stream",
-            headers: { "Accept-Encoding": null },
-            timeout: (60000 * 8)
+            headers: {
+                "Accept-Encoding": null,
+                "Range": fileOffset && `bytes=${fileOffset}-`
+            },
+            timeout: (60000 * 8), // 8 minute connection timeout
+            signal: abortController.signal
         })
     } catch (err) {
         throw new SoftError(`Download failed! ${err}`)
@@ -62,13 +113,13 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
 
     // extract from response
     const { data, headers } = resp
-    let downloadedLength = 0
+    let downloadedLength = fileOffset || 0
     const totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // Wild guess??
 
     if (totalLength <= 0 && !acceptNoContentLength) throw new SoftError("Download failed - failed to find archive")
 
     try {
-        const writer = fs.createWriteStream(path.resolve(appPath.tempDir, name))
+        const writer = fs.createWriteStream(savePath, {flags: fileOffset && "a" || undefined}) // append IF we are continuing parial dl
 
         data.on("data", (chunk: any) => loadingSetState(
             loadStateId,
@@ -82,9 +133,14 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
         throw new SoftError(`Download failed! ${err}`)
     }
 
-    data.on("error", (err: any) => {
-        throw new SoftError(`Download failed - ${err.message}`)
+    data.on("error", async (err: any) => {
+        await onDownloadError(err)
     })
+
+    setTimeout(() => {
+        abortController.abort()
+        data.emit("error", {message: "fake error"})
+    }, 5000)
 
     // eslint-disable-next-line func-names
     return new Promise<void>(function(resolve) {

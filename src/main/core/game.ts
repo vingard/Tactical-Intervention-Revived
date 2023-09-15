@@ -34,7 +34,8 @@ export function checkInstalled() {
     conf.gameDownloaded = patchMark
     config.update(conf)
 
-    return conf.gameDownloaded
+    //return conf.gameDownloaded
+    return false
 }
 
 async function getRemotePackage() {
