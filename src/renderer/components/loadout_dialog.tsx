@@ -363,7 +363,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
             // eslint-disable-next-line guard-for-in
             for (const category in loadoutDataArr) {
                 const key = category as keyof typeof loadoutDataArr
-                console.log("sort", category, loadoutDataArr[key])
                 // eslint-disable-next-line no-multi-assign
                 loadoutTeamSortedDataArr.T[category] = loadoutDataArr[key].filter((x: LoadoutItem) => !x.team || x.team === "T")
                 loadoutTeamSortedDataArr.CT[category] = loadoutDataArr[key].filter((x: LoadoutItem) => !x.team || x.team === "CT")
@@ -379,8 +378,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     useEffect(() => {
         async function getLoadoutData() {
             const data = await window.electron.ipcRenderer.invoke("game:getLoadout")
-            console.log("inbound", data)
-
             const primaries = []
 
             for (const i of data.backpack.primaries) {
@@ -398,7 +395,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
             function setSlotValues(team: "CT" | "T", slotId: number, slot: any) {
                 const key = `slots[${slotId}].${team}`
-                console.log(key)
 
                 setValue(`${key}.name`, slot.name)
                 setValue(`${key}.model`, loadoutData?.models.find(x => x.key === slot.model))
@@ -434,8 +430,6 @@ export function LoadoutDialog({open, onClosed}: {open: boolean, onClosed: any}) 
 
         if (open === true) getLoadoutData()
     }, [open, setValue])
-
-    console.log(errors)
 
     if (!loadoutData) return
 

@@ -13,14 +13,12 @@ function ModDropdown({mod}: {mod: any}) {
         if (success) setDeleting(false)
     }
 
-    console.log(deletePopup)
-
     return (
         <>
             <Popover
                 content={
                     <Menu>
-                        <MenuItem icon="refresh" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate"))}/>
+                        <MenuItem icon="automatic-updates" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate"))}/>
                         {mod.url && <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("mod:openRemoteURL", mod.uid))}/>}
                         <MenuItem icon="folder-shared-open" text="Open mod directory" onClick={() => (window.electron.ipcRenderer.invoke("mod:openDirectory", mod.uid))}/>
                         <MenuItem icon="trash" text="Delete" intent="danger" onClick={() => setDeletePopup(true)}/>
@@ -88,6 +86,14 @@ export function ModList() {
         if (success) setMounting(false)
     }
 
+    async function syncMod(mod: any) {
+        setWorkerTitle(`Syncing ${mod.name || mod.uid} with local content`)
+        setLoadingStateId(`mod_${mod.uid}`)
+        setMounting(true)
+        const success = await window.electron.ipcRenderer.invoke("mod:sync", mod.uid)
+        if (success) setMounting(false)
+    }
+
     return (
         <>
             {loadingStateId !== "" && <WorkerDialog
@@ -117,6 +123,15 @@ export function ModList() {
                                 <div style={{float: "right", margin: "1rem"}}>
                                     <ButtonGroup style={{float: "right"}}>
                                         {mod.needsUpdate && <Button icon="cloud-download" intent="primary">Update</Button>}
+                                        {!mod.url && (
+                                            <Button
+                                                icon="changes"
+                                                onClick={() => (syncMod(mod))}
+                                                disabled={!mod.mounted}
+                                            >
+                                                Sync Files
+                                            </Button>
+                                        )}
                                         <Button icon={mod.mounted && "switch" || "one-to-one"} onClick={() => (setModMounted(mod, !mod.mounted))}>{mod.mounted && "Un-Mount" || "Mount"}</Button>
                                         <ModDropdown mod={mod}/>
                                     </ButtonGroup>

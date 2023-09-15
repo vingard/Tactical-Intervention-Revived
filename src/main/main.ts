@@ -265,9 +265,9 @@ async function handleInstallMod(event: any, url: string, mount: boolean = false)
     }
 }
 
-async function handleSetMounted(event: any, modName: string, isMounted: boolean) {
+async function handleSetMounted(event: any, modUID: string, isMounted: boolean) {
     try {
-        const modData = await mod.get(modName)
+        const modData = await mod.get(modUID)
 
         if (isMounted) {
             await mod.mountMod(modData)
@@ -279,7 +279,7 @@ async function handleSetMounted(event: any, modName: string, isMounted: boolean)
     } catch(err: any) {
         console.error("MountModCaughtError", err)
         log.error(err.message)
-        loadingSetError(`mod_${modName}`, err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
     }
 }
 
@@ -288,34 +288,34 @@ async function handleModInit() {
     return true
 }
 
-async function handleModOpenRemoteURL(event: any, modName: string) {
+async function handleModOpenRemoteURL(event: any, modUID: string) {
     try {
-        const thisMod = mod.get(modName)
+        const thisMod = mod.get(modUID)
         await shell.openExternal(thisMod.url)
     } catch(err: any) {
         console.error("OpenRemoteURLModError", err)
     }
 }
 
-async function handleModOpenDirectory(event: any, modName: string) {
+async function handleModOpenDirectory(event: any, modUID: string) {
     try {
-        const thisMod = mod.get(modName)
-        await shell.openPath(path.resolve(modsDir, modName))
+        const thisMod = mod.get(modUID)
+        await shell.openPath(path.resolve(modsDir, modUID))
     } catch(err: any) {
         console.error("OpenDirectoryModError", err)
     }
 }
 
-async function handleModDelete(event: any, modName: string) {
+async function handleModDelete(event: any, modUID: string) {
     try {
-        console.log(modName)
-        const thisMod = mod.get(modName)
-        if (!thisMod) throw new Error(`Failed to find mod '${modName}'`)
+        console.log(modUID)
+        const thisMod = mod.get(modUID)
+        if (!thisMod) throw new Error(`Failed to find mod '${modUID}'`)
         await mod.remove(thisMod)
     } catch(err: any) {
         console.error("DeleteModError", err)
         log.error(err.message)
-        loadingSetError(`mod_${modName}`, err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
     }
 }
 
@@ -342,11 +342,24 @@ async function handleSetLoadout(event: any, backpack: any, loadouts: any) {
     }
 }
 
-async function handleNewMod(event: any, modInfo: any) {
+async function handleModNew(event: any, modInfo: any) {
     try {
         return await mod.createNew(modInfo.uid, modInfo.name, modInfo.description, modInfo.author, modInfo.version)
     } catch(err: any) {
         log.error(err.message)
+    }
+}
+
+async function handleModSync(event: any, modUID: string) {
+    try {
+        const modData = await mod.get(modUID)
+        await mod.sync(modUID)
+
+        return true
+    } catch(err: any) {
+        console.error("SyncModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
     }
 }
 
@@ -372,7 +385,8 @@ app.whenReady()
         ipcMain.handle("mod:openRemoteURL", handleModOpenRemoteURL)
         ipcMain.handle("mod:openDirectory", handleModOpenDirectory)
         ipcMain.handle("mod:delete", handleModDelete)
-        ipcMain.handle("mod:new", handleNewMod)
+        ipcMain.handle("mod:new", handleModNew)
+        ipcMain.handle("mod:sync", handleModSync)
 
         config.create()
 

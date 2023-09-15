@@ -35,6 +35,7 @@ export type Channels =
     | "mod:new"
     | "mod:update"
     | "mod:checkForUpdate"
+    | "mod:sync"
 
 const electronHandler = {
     ipcRenderer: {

@@ -187,13 +187,32 @@ export async function install(url: string) {
     return mod
 }
 
+const MOD_CONTENT_DIRS = [
+    "resource",
+    "particles",
+    "sound",
+    "models",
+    "materials",
+    "scripts",
+    "media",
+    "maps",
+    "cfg"
+]
+
 export async function mountMod(mod: any) {
     const modLoadingStateId = `mod_${mod.uid}`
     loadingReset(modLoadingStateId)
 
     const modFolder = path.resolve(appPath.modsDir, mod.uid)
     const modFs = jetpack.cwd(modFolder)
-    const modContentsTemp = modFs.find(".", {directories: false, recursive: true})
+    let modContentsTemp: any = []
+
+    // Mount only content inside MOD_CONTENT_DIRS, this is done mostly to support git, and just generally to be nice and clean :)
+    // eslint-disable-next-line guard-for-in
+    for (const dir of MOD_CONTENT_DIRS) {
+        if (modFs.exists(dir) !== "dir") continue
+        modContentsTemp = [...modContentsTemp, ...modFs.find(dir, {directories: false, recursive: true})]
+    }
 
     const modContents: any = {}
     for (const filePath of modContentsTemp) {
@@ -211,8 +230,6 @@ export async function mountMod(mod: any) {
 
     for (const [k, v] of modFiles) {
         loadingSetState(modLoadingStateId, "Preparing to mount game files", completed++, modFiles.length)
-        if (k === "mod.json") continue // skip mod.json file, we dont mount that!
-
         claims[k] = false
 
         // If the mounted file has conflict
@@ -347,7 +364,6 @@ export async function remove(mod: any) {
     const conf = config.read()
     const modIndex = getIndex(conf, mod.uid)
     conf.mods.splice(modIndex, 1)
-    console.log("new confg", conf.mods)
     config.update(conf)
 
     updateState()
@@ -364,7 +380,7 @@ export async function sync(uid: string) {
         mod = remoteModInfo
     }
 
-    await unMountMod(mod)
+    if (mod.mounted) await unMountMod(mod)
     addToConfig(remoteModInfo, true) // merge mod to config
     await mountMod(mod)
 }

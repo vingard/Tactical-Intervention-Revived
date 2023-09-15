@@ -149,8 +149,6 @@ function makeLoadoutSlot(parser: Parser, input: any, team: "T" | "CT", data: Loa
     input[`nameLen${team}`] = (data.name || "").length + 1
     input[`name${team}`] = data.name || ""
 
-    console.log("slot out", input)
-
     return input
 }
 

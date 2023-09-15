@@ -82,6 +82,7 @@
         "fs-jetpack": "^5.1.0",
         "onezip": "^5.0.0",
         "react": "^18.2.0",
+        "react-beautiful-dnd": "^13.1.1",
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.45.4",
         "react-router-dom": "^6.11.2",
