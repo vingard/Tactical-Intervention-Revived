@@ -18,6 +18,7 @@ export type Channels =
     | "game:getLoadoutData"
     | "game:getLoadout"
     | "game:setLoadout"
+    | "game:showUninstaller"
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"

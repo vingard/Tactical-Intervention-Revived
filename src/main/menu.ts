@@ -174,7 +174,7 @@ export default class MenuBuilder {
                             })
 
                             if (buttonPressed.response === 0) {
-                                //await game.uninstall()
+                                await game.unInstall()
                             }
                         }
                     }

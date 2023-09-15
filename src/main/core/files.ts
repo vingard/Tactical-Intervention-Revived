@@ -57,95 +57,109 @@ function isDateWithinLast(checkDate: Date, minutes: number) {
     return checkDate >= timeAgo && checkDate <= currentDate
 }
 
-let abortController: AbortController
+export async function downloadTempFile(url: string, name: string, loadStateId: string, acceptNoContentLength: boolean = false, partialAutoRetries: number = 64) {
+    let abortController: AbortController
 
-export async function downloadTempFile(url: string, name: string, loadStateId: string, acceptNoContentLength: boolean = false, partialAutoRetries: number = 32) {
     loadingSetState(loadStateId, "Starting download...")
-    let resp
 
-    if (abortController) {
-        console.log("abort dl")
-        abortController.abort()
-    }
+    async function startOrContinueDownload() {
+        let resp
 
-    abortController = new AbortController()
-
-    const savePath = path.resolve(appPath.tempDir, name)
-    let fileOffset
-
-    if (partialAutoRetries && jetpack.exists(savePath)) {
-        const stats = jetpack.inspect(savePath, {times: true})
-
-        // If the file was modified within the last 8 hours, we'll continue the download. Otherwise, its
-        // probably best to start fresh
-        if (stats?.modifyTime && isDateWithinLast(stats.modifyTime, 8 * 60)) {
-            fileOffset = stats.size
-        }
-    }
-
-    async function onDownloadError(err: any) {
-        log.warn(`Download error - ${err.message}`)
-
-        if (partialAutoRetries > 0) {
-            log.info(`Retrying download... (${partialAutoRetries} attempts left)`)
-            await downloadTempFile(url, name, loadStateId, acceptNoContentLength, partialAutoRetries - 1)
-            return data.emit("ends")
+        if (abortController) {
+            abortController.abort()
         }
 
-        throw new SoftError(`Download failed - ${err.message}`)
-    }
+        abortController = new AbortController()
 
-    try {
-        resp = await axios({
-            url,
-            method: "GET",
-            responseType: "stream",
-            headers: {
-                "Accept-Encoding": null,
-                "Range": fileOffset && `bytes=${fileOffset}-`
-            },
-            timeout: (60000 * 8), // 8 minute connection timeout
-            signal: abortController.signal
+        const savePath = path.resolve(appPath.tempDir, name)
+        let fileOffset
+
+        if (partialAutoRetries && jetpack.exists(savePath)) {
+            const stats = jetpack.inspect(savePath, {times: true})
+
+            // If the file was modified within the last 8 hours, we'll continue the download. Otherwise, its
+            // probably best to start fresh
+            if (stats?.modifyTime && isDateWithinLast(stats.modifyTime, 8 * 60)) {
+                fileOffset = stats.size
+            }
+        }
+
+        let totalLength: number
+
+        try {
+            const query = await axios({
+                url,
+                method: "HEAD",
+                headers: {"Accept-Encoding": null},
+                timeout: 5000
+            })
+
+            const {headers} = query
+
+            totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // try to get download file size
+        } catch(err: any) {
+            throw new SoftError(`Failed to query download source! ${err.message}`)
+        }
+
+        try {
+            resp = await axios({
+                url,
+                method: "GET",
+                responseType: "stream",
+                headers: {
+                    "Accept-Encoding": null,
+                    "Range": fileOffset && `bytes=${fileOffset}-`
+                },
+                timeout: (60000 * 8), // 8 minute connection timeout
+                signal: abortController.signal
+            })
+        } catch (err: any) {
+            throw new SoftError(`Download init failed! ${err.message}`)
+        }
+
+        // extract from response
+        const { data, headers } = resp
+        let downloadedLength = fileOffset || 0
+        totalLength = totalLength || parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // try to get download file size
+
+        if (totalLength <= 0 && !acceptNoContentLength) throw new SoftError("Download failed - failed to find archive")
+
+        try {
+            const writer = fs.createWriteStream(savePath, {flags: fileOffset && "a" || undefined}) // append IF we are continuing parial dl
+
+            data.on("data", (chunk: any) => loadingSetState(
+                loadStateId,
+                `Downloading ${byteSize(downloadedLength)}/${byteSize(totalLength)}`,
+                (downloadedLength += chunk.length) / totalLength,
+                1
+            ))
+
+            data.pipe(writer)
+        } catch (err) {
+            throw new SoftError(`Download failed! ${err}`)
+        }
+
+        // eslint-disable-next-line func-names
+        return new Promise<void>(function(resolve) {
+            data.once("error", (err: any) => {
+                resolve(err.message)
+            })
+            data.once("end", () => {
+                resolve()
+            })
         })
-    } catch (err) {
-        throw new SoftError(`Download failed! ${err}`)
     }
 
-    // extract from response
-    const { data, headers } = resp
-    let downloadedLength = fileOffset || 0
-    const totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // Wild guess??
-
-    if (totalLength <= 0 && !acceptNoContentLength) throw new SoftError("Download failed - failed to find archive")
-
-    try {
-        const writer = fs.createWriteStream(savePath, {flags: fileOffset && "a" || undefined}) // append IF we are continuing parial dl
-
-        data.on("data", (chunk: any) => loadingSetState(
-            loadStateId,
-            `Downloading ${byteSize(downloadedLength)}/${byteSize(totalLength)}`,
-            (downloadedLength += chunk.length) / totalLength,
-            1
-        ))
-
-        data.pipe(writer)
-    } catch (err) {
-        throw new SoftError(`Download failed! ${err}`)
+    let retryableErrMessage: any
+    for (let attempt = 1; attempt <= partialAutoRetries; attempt++) {
+        // eslint-disable-next-line no-await-in-loop
+        retryableErrMessage = await startOrContinueDownload()
+        if (!retryableErrMessage) return // we are done!
+        log.warn(`Download error - ${retryableErrMessage}`)
+        log.info(`Retrying download... (attempt ${attempt}/${partialAutoRetries})`)
     }
 
-    data.on("error", async (err: any) => {
-        await onDownloadError(err)
-    })
-
-    setTimeout(() => {
-        abortController.abort()
-        data.emit("error", {message: "fake error"})
-    }, 5000)
-
-    // eslint-disable-next-line func-names
-    return new Promise<void>(function(resolve) {
-        data.once("end", () => resolve())
-    })
+    throw new SoftError(`Download failed - Too many errors: ${retryableErrMessage || "Unknown"}`)
 }
 
 export async function deleteTempFile(name: string) {

@@ -34,8 +34,8 @@ export function checkInstalled() {
     conf.gameDownloaded = patchMark
     config.update(conf)
 
-    //return conf.gameDownloaded
-    return false
+    return conf.gameDownloaded
+    //return false
 }
 
 async function getRemotePackage() {
@@ -256,12 +256,7 @@ export async function installGame(overrideUrl?: string) {
     // Download patched content to a temp file
     log.info("Downloading game content")
 
-    try {
-        await files.downloadTempFile(url, tempFileName, "game")
-    } catch(err: any) {
-        log.error("Base game download error", err)
-        loadingSetError("game", err.message)
-    }
+    await files.downloadTempFile(url, tempFileName, "game")
 
     // Extract
     log.info("Extracting game content")
@@ -292,28 +287,39 @@ export async function installGame(overrideUrl?: string) {
     loadingSetState("game", "Game installed successfully!", 1, 1, true)
 }
 
-export async function uninstall() {
+export async function unInstall() {
+    const win = getWindow()!
+    if (!win) return
+
     // force dialog popup?
     loadingReset("game")
     log.info("Uninstalling game")
 
+    win.webContents.send("game:showUninstaller")
+
+    async function tryRemove(filePath: string) {
+        try {
+            await jetpack.removeAsync(filePath)
+        } catch (err: any) {
+            log.warn(`Error when removing directory - ${err.message} - contuining!`)
+        }
+    }
+
     await mod.resetAllClaims()
     loadingSetState("game", "Removing base content")
-    await jetpack.removeAsync(path.resolve(appPath.baseContentDir))
+    await tryRemove(path.resolve(appPath.baseContentDir))
     loadingSetState("game", "Removing common redist")
-    await jetpack.removeAsync(path.resolve(appPath.commonRedistDir))
+    await tryRemove(path.resolve(appPath.commonRedistDir))
     loadingSetState("game", "Removing bin")
-    await jetpack.removeAsync(path.resolve(appPath.binDir))
+    await tryRemove(path.resolve(appPath.binDir))
     loadingSetState("game", "Removing tacint")
-    await jetpack.removeAsync(path.resolve(appPath.tacintDir))
+    await tryRemove(path.resolve(appPath.tacintDir))
     loadingSetState("game", "Removing mounted content")
-    await jetpack.removeAsync(path.resolve(appPath.mountDir))
+    await tryRemove(path.resolve(appPath.mountDir))
 
     loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
     log.info("Game uninstalled!")
 
-    const win = getWindow()!
-    if (!win) return
     win.webContents.send("game:setState", checkInstalled()) // tell the client the game is not installed
 }
 

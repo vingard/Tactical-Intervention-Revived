@@ -151,7 +151,7 @@ export async function install(url: string) {
 
     // Download archive
     log.info(`Downloading from ${mod.url}`)
-    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true)
+    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true, 0)
 
     // Make mods folder and remove old install
     await files.tryToRemoveDirectory(modPath)

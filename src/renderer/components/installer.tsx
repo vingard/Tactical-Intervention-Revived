@@ -188,7 +188,7 @@ export function GameInstaller() {
     }
 
     useEffect(() => {
-        if (gameInfo.gameInstalled === false && !installerOpen && !installerComplete) {
+        if (gameInfo.gameInstalled === false && !installerOpen) {
             setInstallerOpen(true)
         }
     }, [gameInfo, installerOpen, installerComplete])

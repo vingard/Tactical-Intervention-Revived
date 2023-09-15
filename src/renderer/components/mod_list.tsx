@@ -71,7 +71,6 @@ export function ModList() {
     const [loadingStateId, setLoadingStateId] = useState("")
 
     useEffect(() => {
-        console.log("new hooks")
         window.electron.ipcRenderer.on("mod:setState", (allMods: any) => {
             const sortedMods = allMods.sort((a: any, b: any) => ((a.priority || 0) < (b.priority || 0)) ? 1 : -1)
             setMods(sortedMods)
