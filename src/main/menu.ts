@@ -151,6 +151,8 @@ export default class MenuBuilder {
                     {
                         label: "Start Dedicated Server",
                         click: () => {
+                            if (!game.checkInstalled()) return
+
                             server.start()
                         }
                     },
@@ -163,6 +165,8 @@ export default class MenuBuilder {
                     {
                         label: "Uninstall Game",
                         click: async () => {
+                            if (!game.checkInstalled()) return
+
                             const buttonPressed = await dialog.showMessageBox(this.mainWindow, {
                                 type: "warning",
                                 title: "Are you sure you want to uninstall the game?",
