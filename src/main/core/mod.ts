@@ -9,7 +9,7 @@ import * as files from "./files"
 import * as game from "./game"
 import * as appPath from "./appPath"
 import { SoftError } from "./softError"
-import { loadingReset, loadingSetState, loadingSuccess } from "./util"
+import { loadingReset, loadingSetState } from "./util"
 
 export async function getInfo(location: string, isFileSystem: boolean = false) {
     let modInfo
@@ -184,8 +184,7 @@ export async function install(url: string) {
 
     const succMsg = `${mod.name} - ${mod.uid} (${mod.version}) was installed succesfully!`
     log.info(succMsg)
-    loadingSetState(modLoadStateId, succMsg, 1, 1)
-    loadingSuccess(modLoadStateId)
+    loadingSetState(modLoadStateId, succMsg, 1, 1, true)
     updateState()
 
     return mod
@@ -281,7 +280,7 @@ export async function mountMod(mod: any) {
     config.update(conf)
     updateState()
 
-    loadingSuccess(modLoadingStateId)
+    loadingSetState(modLoadingStateId, "Mounted succesfully", undefined, undefined, true)
 
     return conf.mods[modIndex]
 }
@@ -340,9 +339,24 @@ export async function unMountMod(mod: any) {
     config.update(conf)
     updateState()
 
-    loadingSuccess(modLoadingStateId)
+    loadingSetState(modLoadingStateId, "Un-mounted succesfully", undefined, undefined, true)
 
     return conf.mods[modIndex]
+}
+
+/** This method nukes all the claims and mountManifest wrecklessly, this should only be called if you know you are wiping the game content */
+export async function resetAllClaims() {
+    const conf = config.read()
+
+    for (const mod of conf.mods) {
+        mod.mounted = false
+        mod.claims = undefined
+    }
+
+    conf.mountManifest = undefined
+
+    config.update(conf)
+    updateState()
 }
 
 export async function init() {
@@ -374,7 +388,7 @@ export async function remove(mod: any) {
     config.update(conf)
 
     updateState()
-    loadingSuccess(modLoadingStateId)
+    loadingSetState(modLoadingStateId, "Removed succesfully", undefined, undefined, true)
 }
 
 /** Syncing can be used to un-mount, sync the mod.json, then re-mount locally installed mods */

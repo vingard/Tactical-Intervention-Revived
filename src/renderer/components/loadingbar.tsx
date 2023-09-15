@@ -5,9 +5,9 @@ export function LoadingBar({loadStateId, useProgress = true, usePercent = true, 
     const [loaderInfo, setLoaderInfo]: any = useState({})
 
     useEffect(() => {
-        window.electron.ipcRenderer.on("loading:setState", (inboundKey: any, completedItems, totalItems, message) => {
+        window.electron.ipcRenderer.on("loading:setState", (inboundKey: any, completedItems, totalItems, message, success) => {
             if (loadStateId !== inboundKey) return
-            setLoaderInfo({...loaderInfo, ...{completedItems, totalItems, message}})
+            setLoaderInfo({...loaderInfo, ...{completedItems, totalItems, message, success}})
         })
 
         window.electron.ipcRenderer.on("loading:setError", (inboundKey: any, error) => {
@@ -19,12 +19,6 @@ export function LoadingBar({loadStateId, useProgress = true, usePercent = true, 
         window.electron.ipcRenderer.on("loading:reset", (inboundKey: any) => {
             if (loadStateId !== inboundKey) return
             setLoaderInfo({})
-        })
-
-        window.electron.ipcRenderer.on("loading:success", (inboundKey: any) => {
-            if (loadStateId !== inboundKey) return
-            setLoaderInfo({...loaderInfo, ...{success: true}})
-            if (onCompleted) onCompleted()
         })
     }, [])
 

@@ -17,8 +17,8 @@ import * as mod from "./mod"
 // eslint-disable-next-line import/no-self-import
 
 // eslint-disable-next-line import/no-cycle
-import { isDebug } from "../main"
-import { loadingReset, loadingSetError, loadingSetState, loadingSuccess } from "./util"
+import { getWindow, isDebug } from "../main"
+import { loadingReset, loadingSetError, loadingSetState } from "./util"
 import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
@@ -254,7 +254,13 @@ export async function installGame(overrideUrl?: string) {
 
     // Download patched content to a temp file
     log.info("Downloading game content")
-    await files.downloadTempFile(url, tempFileName, "game")
+
+    try {
+        await files.downloadTempFile(url, tempFileName, "game")
+    } catch(err: any) {
+        log.error("Base game download error", err)
+        loadingSetError("game", err.message)
+    }
 
     // Extract
     log.info("Extracting game content")
@@ -282,8 +288,32 @@ export async function installGame(overrideUrl?: string) {
         throw new SoftError("Something went wrong, please retry the install :(")
     }
 
-    loadingSetState("game", "Game installed successfully!", 1, 1)
-    loadingSuccess("game")
+    loadingSetState("game", "Game installed successfully!", 1, 1, true)
+}
+
+export async function uninstall() {
+    // force dialog popup?
+    loadingReset("game")
+    log.info("Uninstalling game")
+
+    await mod.resetAllClaims()
+    loadingSetState("game", "Removing base content")
+    await jetpack.removeAsync(path.resolve(appPath.baseContentDir))
+    loadingSetState("game", "Removing common redist")
+    await jetpack.removeAsync(path.resolve(appPath.commonRedistDir))
+    loadingSetState("game", "Removing bin")
+    await jetpack.removeAsync(path.resolve(appPath.binDir))
+    loadingSetState("game", "Removing tacint")
+    await jetpack.removeAsync(path.resolve(appPath.tacintDir))
+    loadingSetState("game", "Removing mounted content")
+    await jetpack.removeAsync(path.resolve(appPath.mountDir))
+
+    loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
+    log.info("Game uninstalled!")
+
+    const win = getWindow()!
+    if (!win) return
+    win.webContents.send("game:setState", checkInstalled()) // tell the client the game is not installed
 }
 
 export function getMountManifest() {

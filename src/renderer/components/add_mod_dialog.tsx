@@ -1,4 +1,4 @@
-import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, H5, H6, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
+import { Button, Callout, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, H5, H6, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { LoadingBar } from "./loadingbar"
@@ -21,13 +21,14 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
         // eslint-disable-next-line prefer-destructuring
         urlStr = `https://${matches[0]}`
 
-        const {info, error} = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
+        const {mod, error} = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
+        console.log("modQuery", mod)
 
         // forgive me for this awful hack D: - i will standardise a error popup across the whole app soon
         if (error && !error.includes("Could not find")) return setError("url", {message: error})
 
-        if (!info) return
-        setModData(info)
+        if (!mod) return
+        setModData(mod)
     }
 
     async function addModFormSubmit(data: any, event: any) {
@@ -96,27 +97,34 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
 
                     {modData && (
                         <Card>
-                            <H4>{modData.uid}</H4>
-                            <p className="muted">
-                                <Icon icon="changes"/> Version: {modData.version}
-                            </p>
+                            <Callout>
+                            <H4 style={{marginBottom: "0"}}>{modData.name}</H4> <p className="muted" style={{marginBottom: "0"}}>{modData.version}</p>
+                            {modData.author && <p style={{marginTop: "0px", color: "#d1d1d1", fontSize: 12, fontWeight: 500}}>Created by: {modData.author}</p>}
 
-                            <p className="muted">
-                                <Icon icon="cloud-download"/> Already downloaded
-                            </p>
+                            {modData.description && (
+                                <p style={{marginTop: "0px", color: "#d1d1d1", fontSize: 13, fontWeight: 400, wordWrap: "break-word"}}>
+                                    {modData.description}
+                                </p>
+                            )}
+
+                            <p style={{fontSize: 10, color: "#878787", opacity: 0.7, marginBottom: "0px", marginTop: "1rem"}}>{modData.uid}</p>
+                            </Callout>
                         </Card>
                     )}
 
 
                     <DialogFooter
                         actions={
-                            <Button
-                                intent="primary"
-                                type="submit"
-                                disabled={modData === null}
-                            >
-                                Install Mod
-                            </Button>
+                            <>
+                                {/* {modData && <p style={{fontSize: 10, color: "#878787"}}>{modData.uid}</p>} */}
+                                <Button
+                                    intent="primary"
+                                    type="submit"
+                                    disabled={modData === null}
+                                >
+                                    Install Mod
+                                </Button>
+                            </>
                         }
                     />
                 </form>

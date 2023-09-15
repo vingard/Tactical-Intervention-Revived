@@ -152,7 +152,6 @@ async function handleGameStartInstall() {
         await game.installGame()
         return true
     } catch (err: any) {
-        console.error("InstallGameCaughtError", err)
         log.error(err.message)
         loadingSetError("game", err.message)
         return false
@@ -258,7 +257,11 @@ async function handleQueryMod(event: any, url: string) {
 
 async function handleInstallMod(event: any, url: string, mount: boolean = false) {
     try {
-        return {success: await mod.install(url)}
+        const out = {success: await mod.install(url)}
+        if (mount) {
+            await mod.mountMod(out.success)
+        }
+        return out
     } catch(err: any) {
         log.error(err.message)
         return {error: err.message}

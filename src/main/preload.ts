@@ -4,6 +4,7 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron"
 
 export type Channels =
     | "game:checkState"
+    | "game:setState"
     | "game:startInstall"
     | "game:setStartConfig"
     | "game:setCfg"
