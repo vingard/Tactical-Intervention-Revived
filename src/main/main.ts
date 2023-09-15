@@ -308,7 +308,6 @@ async function handleModOpenDirectory(event: any, modUID: string) {
 
 async function handleModDelete(event: any, modUID: string) {
     try {
-        console.log(modUID)
         const thisMod = mod.get(modUID)
         if (!thisMod) throw new Error(`Failed to find mod '${modUID}'`)
         await mod.remove(thisMod)
@@ -353,11 +352,24 @@ async function handleModNew(event: any, modInfo: any) {
 async function handleModSync(event: any, modUID: string) {
     try {
         const modData = await mod.get(modUID)
-        await mod.sync(modUID)
+        await mod.sync(modData)
 
         return true
     } catch(err: any) {
         console.error("SyncModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
+    }
+}
+
+async function handleModSetPriority(event: any, modUID: string, priority: number) {
+    try {
+        const modData = await mod.get(modUID)
+        await mod.setPriority(modData, priority)
+
+        return true
+    } catch(err: any) {
+        console.error("SetPriorityModCaughtError", err)
         log.error(err.message)
         loadingSetError(`mod_${modUID}`, err.message)
     }
@@ -387,6 +399,7 @@ app.whenReady()
         ipcMain.handle("mod:delete", handleModDelete)
         ipcMain.handle("mod:new", handleModNew)
         ipcMain.handle("mod:sync", handleModSync)
+        ipcMain.handle("mod:setPriority", handleModSetPriority)
 
         config.create()
 

@@ -78,7 +78,7 @@ export async function mountFile(filePath: string, from: string, to: string, modN
         }
     }
 
-    if (manifest[filePath]) {
+    if (modName && manifest[filePath]) {
         const conf = config.read()
         const otherMod = mods[mod.getLoadOrder(manifest[filePath])] // the mod being overwritten
 

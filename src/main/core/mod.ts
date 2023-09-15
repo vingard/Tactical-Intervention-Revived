@@ -92,17 +92,21 @@ export function getIndex(conf: any, modName: string) {
 async function addToConfig(mod: any, shouldMerge: boolean = false) {
     // Append to timm.json the mod info
     const conf = config.read()
-
     const foundIndex = conf.mods.findIndex((x: any) => x.uid === mod.uid)
+
+    let newMod = {}
 
     // If mod exists replace otherwise append
     if (foundIndex === -1) {
-        conf.mods.push(mod)
+        newMod = mod
+        conf.mods.push(newMod)
     } else {
-        conf.mods[foundIndex] = shouldMerge && {...conf.mods[foundIndex], ...mod} || mod
+        newMod = shouldMerge && {...conf.mods[foundIndex], ...mod} || mod
+        conf.mods[foundIndex] = newMod
     }
 
     config.update(conf)
+    return newMod
 }
 
 async function updateState() {
@@ -278,6 +282,8 @@ export async function mountMod(mod: any) {
     updateState()
 
     loadingSuccess(modLoadingStateId)
+
+    return conf.mods[modIndex]
 }
 
 export async function unMountMod(mod: any) {
@@ -299,7 +305,6 @@ export async function unMountMod(mod: any) {
         }
     }
 
-    await game.unMountContent(content, modFolder, appPath.mountDir)
     try {
         await (async () => {
             const [emitter, totalFiles] = game.unMountContent(content, modFolder, appPath.mountDir)
@@ -336,6 +341,8 @@ export async function unMountMod(mod: any) {
     updateState()
 
     loadingSuccess(modLoadingStateId)
+
+    return conf.mods[modIndex]
 }
 
 export async function init() {
@@ -371,16 +378,28 @@ export async function remove(mod: any) {
 }
 
 /** Syncing can be used to un-mount, sync the mod.json, then re-mount locally installed mods */
-export async function sync(uid: string) {
-    const remoteModInfo = await getInfo(path.resolve(appPath.modsDir, uid), true)
-    let mod = get(uid)
+export async function sync(mod: any) {
+    const remoteModInfo = await getInfo(path.resolve(appPath.modsDir, mod.uid), true)
 
     if (!mod) { // If mod is not in the revived config, then add it
         addToConfig(remoteModInfo)
         mod = remoteModInfo
     }
 
-    if (mod.mounted) await unMountMod(mod)
-    addToConfig(remoteModInfo, true) // merge mod to config
-    await mountMod(mod)
+    if (mod.mounted) mod = await unMountMod(mod)
+    mod = await addToConfig(remoteModInfo, true) // merge mod to config
+    mod = await mountMod(mod)
+    return mod
+}
+
+export async function setPriority(mod: any, priority?: number) {
+    // if mod mounted, unmount, set priority, remount
+    const wasMounted = mod.mounted
+    if (wasMounted) mod = await unMountMod(mod)
+    mod.priority = priority
+    addToConfig(mod)
+    if (wasMounted) mod = await mountMod(mod)
+
+    updateState()
+    return mod
 }
