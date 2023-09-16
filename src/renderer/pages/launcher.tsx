@@ -1,15 +1,14 @@
-import { Button, Callout, Card, NonIdealState, Popover } from "@blueprintjs/core"
-import { useCallback, useContext, useEffect, useState } from "react"
+import { Card } from "@blueprintjs/core"
 import { GameInstaller } from "renderer/components/installer"
+import { ModList } from "renderer/components/mod_list"
 import { Toolbar } from "renderer/components/toolbar"
-import { GameContext } from "renderer/providers/game.provider"
+import { GameUninstaller } from "renderer/components/uninstaller"
 
 export function LauncherPage() {
-    //const [installerOpen, setInstallerOpen] = useState(false)
-
     return (
         <div className="content">
             <GameInstaller/>
+            <GameUninstaller/>
 
             <Card>
                 <Toolbar/>
@@ -19,16 +18,7 @@ export function LauncherPage() {
                 Your game is not installed! Click here to install your game.
             </Callout> */}
 
-            <div className="modList container">
-                <div className="modList noMods">
-                    <NonIdealState
-                        icon="heart-broken"
-                        title="No mods installed"
-                    >
-                        {`When you download a mod it'll show up here.`}
-                    </NonIdealState>
-                </div>
-            </div>
+            <ModList/>
         </div>
     )
 }

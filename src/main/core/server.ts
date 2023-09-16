@@ -11,7 +11,9 @@ export async function start(args: string = "") {
     const conf = {mods: {}, loadoutRules: {}, hidden: false}
 
     let baseArgs = "sv_master_legacy_mode 1"
-    baseArgs += "\nsv_enableoldqueries 1"
+    baseArgs += "\nsv_enableoldqueries 1" // restore Source Server Queries
+    baseArgs += "\nsv_use_steam_voice 0" // restore VOIP
+    baseArgs += "\nsv_alltalk 2" // all teams can talk
     baseArgs += `\nhostname ${await game.getUsername()}'s server`
 
     try {

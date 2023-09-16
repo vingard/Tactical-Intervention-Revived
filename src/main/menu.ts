@@ -3,11 +3,13 @@ import {
     Menu,
     shell,
     BrowserWindow,
-    MenuItemConstructorOptions
+    MenuItemConstructorOptions,
+    dialog
 } from "electron"
 
 import * as appPath from "./core/appPath"
 import * as server from "./core/server"
+import * as game from "./core/game"
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
@@ -61,7 +63,7 @@ export default class MenuBuilder {
                     {
                         label: "Discord",
                         click() {
-                            shell.openExternal("https://electronjs.org")
+                            shell.openExternal("https://discord.gg/DZhySxaVbr")
                         }
                     },
                     {
@@ -119,13 +121,6 @@ export default class MenuBuilder {
             }
         ]
 
-        const templateMods = [
-            {
-                label: "Mods",
-                submenu: []
-            }
-        ]
-
         const templateGame = [
             {
                 label: "Game",
@@ -139,7 +134,35 @@ export default class MenuBuilder {
                     {
                         label: "Start Dedicated Server",
                         click: () => {
+                            if (!game.isInstalled()) return
+
                             server.start()
+                        }
+                    },
+                    // {
+                    //     label: "Re-Mount Game",
+                    //     click: () => {
+
+                    //     }
+                    // },
+                    {
+                        label: "Uninstall Game",
+                        click: async () => {
+                            if (!game.isInstalled()) return
+
+                            const buttonPressed = await dialog.showMessageBox(this.mainWindow, {
+                                type: "warning",
+                                title: "Are you sure you want to uninstall the game?",
+                                message: "Uninstalling the game will delete your base game content. Your mods will be un-mounted, but not deleted. Loadouts will be preserved.",
+                                buttons: [
+                                    "Uninstall Game",
+                                    "Cancel"
+                                ]
+                            })
+
+                            if (buttonPressed.response === 0) {
+                                await game.unInstall()
+                            }
                         }
                     }
                 ]
@@ -148,7 +171,6 @@ export default class MenuBuilder {
 
         return [
             ...templateGame,
-            ...templateMods,
             ...(isDebug ? templateDebug : []),
             ...templateHelp
         ]

@@ -11,8 +11,6 @@ export function SettingsDialog({open, onClosed}: {open: boolean, onClosed: any})
         data.username = data.username.trim()
         data.cfg = data.cfg.trim()
 
-        console.log(data)
-
         const success = await window.electron.ipcRenderer.invoke("game:setSettings", data)
 
         if (success) onClosed()
@@ -21,7 +19,6 @@ export function SettingsDialog({open, onClosed}: {open: boolean, onClosed: any})
     useEffect(() => {
         async function getSettings() {
             const settings = await window.electron.ipcRenderer.invoke("game:getSettings")
-            console.log(settings)
             setValue("username", settings.username)
             setValue("cfg", settings.cfg)
             setSettingsReceived(true)

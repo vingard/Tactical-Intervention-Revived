@@ -33,7 +33,7 @@ export function ConnectDialog({open, onClosed}: {open: boolean, onClosed: any}) 
     }
 
     const intent = serverIsValid && "success" || (errors.ip && "danger")
-    console.log(serverData)
+
     return (
         <Dialog
             isOpen={open}

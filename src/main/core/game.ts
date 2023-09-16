@@ -11,18 +11,20 @@ import { spawn } from "child_process"
 import * as appPath from "./appPath"
 import * as config from "./config"
 import * as files from "./files"
+import * as loadout from "./loadout"
 // eslint-disable-next-line import/no-cycle
 import * as mod from "./mod"
 // eslint-disable-next-line import/no-self-import
 
 // eslint-disable-next-line import/no-cycle
-import { isDebug } from "../main"
-import { loadingReset, loadingSetError, loadingSetState } from "./util"
+import { getWindow, isDebug } from "../main"
+import { loadingReset, loadingSetError, loadingSetState, wait } from "./util"
 import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
 
-export function checkInstalled() {
+/** Checks the install status and if needed, updates the config */
+export function checkInstalledStatus() {
     let patchMark = false
     try {
         fs.readFileSync(path.resolve(appPath.mountDir, "PATCHED"))
@@ -34,6 +36,20 @@ export function checkInstalled() {
     config.update(conf)
 
     return conf.gameDownloaded
+    //return false
+}
+
+/** Sets the installed version of the game to the specifed hash, this will be used to compare against the remote for auto-updates */
+export function setInstalledVersion(contentHash: string) {
+    const conf = config.read()
+    conf.gameVersion = contentHash
+    config.update(conf)
+}
+
+/** Returns the game version (hash) if it is installed */
+export function isInstalled(): string {
+    const conf = config.read()
+    return conf.gameDownloaded && conf.gameVersion
 }
 
 async function getRemotePackage() {
@@ -77,14 +93,14 @@ export async function mountFile(filePath: string, from: string, to: string, modN
         }
     }
 
-    if (manifest[filePath]) {
+    if (modName && manifest[filePath]) {
         const conf = config.read()
         const otherMod = mods[mod.getLoadOrder(manifest[filePath])] // the mod being overwritten
 
-        if (otherMod && otherMod.name !== modName && otherMod.claims) {
+        if (otherMod && otherMod.uid !== modName && otherMod.claims) {
             // the other mod has been booted off this symlink
             // Update the config to reflect this change
-            conf.mods[mod.getIndex(conf, otherMod.name)].claims[filePath] = false
+            conf.mods[mod.getIndex(conf, otherMod.uid)].claims[filePath] = false
             config.update(conf)
         }
     }
@@ -106,19 +122,19 @@ export async function unMountFile(filePath: string, from: string, to: string, mo
 
     // eslint-disable-next-line no-restricted-syntax
     for (const thisMod of sortedMods) {
-        if (!thisMod.mounted || thisMod.name === modName) {
+        if (!thisMod.mounted || thisMod.uid === modName) {
             // eslint-disable-next-line no-continue
             continue
         }
 
         if (thisMod.mounted && thisMod.claims?.[filePath] !== undefined) { // if any mod has a claim to a file, mount it
             // eslint-disable-next-line no-await-in-loop
-            await mountFile(filePath, path.resolve(appPath.modsDir, thisMod.name), to)
+            await mountFile(filePath, path.resolve(appPath.modsDir, thisMod.uid), to)
 
             // Update the config to reflect this change
             const conf = config.read()
-            conf.mountManifest[filePath] = thisMod.name
-            conf.mods[mod.getIndex(conf, thisMod.name)].claims[filePath] = true
+            conf.mountManifest[filePath] = thisMod.uid
+            conf.mods[mod.getIndex(conf, thisMod.uid)].claims[filePath] = true
             config.update(conf)
             return true
         }
@@ -170,13 +186,32 @@ export function mountContent(content: ContentType, from: string, to: string): [E
     return [emitter, entries.length]
 }
 
-export async function unMountContent(content: ContentType, from: string, to: string) {
-    for (const [filePath, modName] of Object.entries(content)) {
-        // eslint-disable-next-line no-await-in-loop
-        await unMountFile(filePath, from, to, modName)
-    }
+export function unMountContent(content: ContentType, from: string, to: string): [EventEmitter, number] {
+    const emitter = new EventEmitter()
+    const entries = Object.entries(content)
+    let i = 0
 
-    files.cleanupModContentLeftovers(from, to)
+    process.nextTick(() => {(
+        async () => {
+            emitter.emit("start", entries.length)
+
+            for (const [filePath, modName] of entries) {
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await unMountFile(filePath, from, to, modName)
+                } catch (err: any) {
+                    emitter.emit("error", err.message)
+                }
+                emitter.emit("progress", i++)
+            }
+
+            emitter.emit("cleanupDirs")
+            files.cleanupModContentLeftovers(from, to)
+            emitter.emit("end", i)
+        }
+    )()})
+
+    return [emitter, entries.length]
 }
 
 export async function mountBaseContent() {
@@ -234,7 +269,24 @@ export async function installGame(overrideUrl?: string) {
 
     // Download patched content to a temp file
     log.info("Downloading game content")
-    await files.downloadTempFile(url, tempFileName, "game")
+
+    const contentHash = await files.downloadTempFile(url, tempFileName, "game")
+    if (!contentHash) throw new SoftError("No content hash was provided!")
+
+    loadingSetState("game", "Preparing for game content extraction...")
+    // Removes mapkit dir (this is for backwards compat as old revived versions used this as a mounting dir)
+    await files.tryRemove(path.resolve(appPath.workingDir, "mapkit"))
+
+    // Just in case
+    await mod.resetAllClaims()
+
+    // These should be empty, but just in case we'll clean them
+    await files.tryRemove(appPath.mountDir)
+    await files.tryRemove(appPath.binDir)
+    await files.tryRemove(appPath.baseContentDir)
+    await files.tryRemove(appPath.commonRedistDir)
+
+    await wait(5000) // wait 5 seconds for windows to catch up, silly but needed
 
     // Extract
     log.info("Extracting game content")
@@ -256,13 +308,46 @@ export async function installGame(overrideUrl?: string) {
     await mountBaseContent()
 
     // Final check
-    const isPatched = checkInstalled()
+    const isPatched = checkInstalledStatus()
+    setInstalledVersion(contentHash)
 
     if (!isPatched) {
         throw new SoftError("Something went wrong, please retry the install :(")
     }
 
-    loadingSetState("game", "Game installed successfully!", 1, 1)
+    loadingSetState("game", "Game installed successfully!", 1, 1, true)
+    log.info(`Succesfully installed game (version ${contentHash})!`)
+}
+
+export async function unInstall() {
+    const win = getWindow()!
+    if (!win) return
+
+    // force dialog popup?
+    loadingReset("game")
+    log.info("Uninstalling game")
+
+    win.webContents.send("game:showUninstaller")
+
+    await mod.resetAllClaims()
+    loadingSetState("game", "Removing base content")
+    await files.tryRemove(path.resolve(appPath.baseContentDir))
+    loadingSetState("game", "Removing common redist")
+    await files.tryRemove(path.resolve(appPath.commonRedistDir))
+    loadingSetState("game", "Removing bin")
+    await files.tryRemove(path.resolve(appPath.binDir))
+    loadingSetState("game", "Removing tacint")
+    await files.tryRemove(path.resolve(appPath.tacintDir))
+    loadingSetState("game", "Removing mounted content")
+    await files.tryRemove(path.resolve(appPath.mountDir))
+
+    loadingSetState("game", "Finishing up...")
+    await wait(6000) // wait 5 seconds to allow rimraf's windows delete hacks to catch up, this is silly but needed lol
+
+    loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
+    log.info("Game uninstalled!")
+
+    win.webContents.send("game:setState", false) // tell the client the game is not installed
 }
 
 export function getMountManifest() {
@@ -369,10 +454,61 @@ export async function setTempCfg(content: string) {
     await setCfg(content, "_temp.cfg")
 }
 
+const DEFAULT_PRIMARIES = ["skorpion", "bekas", "m1"]
+const DEFAULT_SECONDARIES = ["p2000", "gsr1911"]
+const DEFAULT_REQUSITIONS = ["flashbang", "grenade", "incendiary"]
+const DEFAULT_SLOTS = [
+    {
+        CT: {name: "Medic", model: "ctmodel1", equipment: "medikit", requisitions: ["smoke", "smoke", "flashbang"]},
+        T: {name: "Medic", model: "tmodel1", equipment: "medikit", requisitions: ["smoke", "smoke", "flashbang"]}
+    },
+    {
+        CT: {name: "Assault", model: "ctmodel2", equipment: "light_armor", requisitions: DEFAULT_REQUSITIONS},
+        T: {name: "Assault", model: "tmodel2", equipment: "light_armor", requisitions: DEFAULT_REQUSITIONS}
+    },
+    {
+        CT: {name: "Heavy", model: "ctmodel3", equipment: "heavy_armor", requisitions: DEFAULT_REQUSITIONS},
+        T: {name: "Heavy", model: "tmodel3", equipment: "heavy_armor", requisitions: DEFAULT_REQUSITIONS}
+    }
+]
+
+export async function getBackpackAndLoadout() {
+    const conf = config.read()
+
+    let loadouts = DEFAULT_SLOTS
+    if (conf.loadouts && conf.loadouts.length > 0) loadouts = conf.loadouts
+
+    return {
+        backpack: {
+            primaries: conf.backpack?.primaries || DEFAULT_PRIMARIES,
+            secondaries: conf.backpack?.secondaries || DEFAULT_SECONDARIES
+        },
+        loadouts
+    }
+}
+
+export async function setTempBackpackAndLoadout() {
+    const dat = await getBackpackAndLoadout()
+    await loadout.setBackpack(dat.backpack.primaries, dat.backpack.secondaries)
+
+    let slotId = 1
+    // eslint-disable-next-line guard-for-in, no-await-in-loop
+    for (const loadoutSlot of (dat.loadouts || [])) {
+        if (!loadoutSlot.CT || !loadoutSlot.T) {
+            log.error(`Invalid loadout provided for slot ${slotId}!`)
+            continue
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await loadout.setLoadoutSlot(slotId, loadoutSlot.T, loadoutSlot.CT)
+        slotId++
+    }
+}
+
 export async function start(args: string = "") {
     log.info(`Attempting to start game with args: ${args}`)
 
     await setTempCfg(args)
+    await setTempBackpackAndLoadout()
     const instance = spawn(`${appPath.gamePath}`)
 
     instance.on("exit", (code) => {

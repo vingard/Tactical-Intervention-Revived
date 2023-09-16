@@ -1,14 +1,16 @@
-import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
+import { Button, Callout, Card, Dialog, DialogBody, DialogFooter, FormGroup, H4, H5, H6, Icon, InputGroup, Switch, TextArea } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { LoadingBar } from "./loadingbar"
+import { WorkerDialog } from "./worker_dialog"
 
 export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
-    const {register, handleSubmit, control, setValue, formState: {errors}} = useForm()
+    const {register, handleSubmit, control, setValue, setError, clearErrors, formState: {errors}} = useForm()
     const [modData, setModData] = useState(null)
     const [installing, setInstalling] = useState(false)
 
     async function onUrlChanged(event: any) {
+        clearErrors()
         setModData(null)
 
         let urlStr: string = event.target.value
@@ -19,17 +21,25 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
         // eslint-disable-next-line prefer-destructuring
         urlStr = `https://${matches[0]}`
 
-        const modInfo = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
-        if (!modInfo) return
-        setModData(modInfo)
+        const {mod, error} = await window.electron.ipcRenderer.invoke("mod:query", urlStr)
+        console.log("modQuery", mod)
+
+        // forgive me for this awful hack D: - i will standardise a error popup across the whole app soon
+        if (error && !error.includes("Could not find")) return setError("url", {message: error})
+
+        if (!mod) return
+        setModData(mod)
     }
 
     async function addModFormSubmit(data: any, event: any) {
         if (!modData) return
 
-        const success = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
-        if (success) setInstalling(true)
-        //if (success) onClosed() // TODO: Add loader
+        setInstalling(true)
+        const {success, error} = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
+        if (error) setError("url", {message: error})
+
+        setInstalling(false)
+        onClosed()
     }
 
     useEffect(() => {
@@ -37,8 +47,16 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
 
     return (
         <div>
+            {modData && <WorkerDialog
+                open={installing}
+                title={`Installing ${modData.name || modData.uid}`}
+                icon="cloud-download"
+                loadingStateId={`mod_${modData.uid}`}
+                onClosed={() => setInstalling(false)}
+            />}
+
             <Dialog
-                isOpen={open}
+                isOpen={open && !installing}
                 onClose={onClosed}
                 className="bp5-dark"
                 title="Add a Mod"
@@ -48,8 +66,8 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                     <DialogBody>
                         <FormGroup
                             label="Mod URL"
-                            helperText="GitHub repository URL of the mod you wish to install"
-                            intent={errors.username && "danger" || (modData && "success")}
+                            helperText={errors.url?.message || "GitHub repository URL of the mod you wish to install"}
+                            intent={errors.url && "danger" || (modData && "success")}
                         >
                             <Controller
                                 name="url"
@@ -59,7 +77,7 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                                     <InputGroup
                                         {...field}
                                         placeholder="www.github.com/x/x"
-                                        intent={errors.username && "danger" || (modData && "success")}
+                                        intent={errors.url && "danger" || (modData && "success")}
                                     />
                                 )}
                             />
@@ -79,25 +97,34 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
 
                     {modData && (
                         <Card>
-                            <H4>{modData.name}</H4>
-                            <p className="muted">
-                                <Icon icon="upload"/> {modData.version}
-                            </p>
+                            <Callout>
+                            <H4 style={{marginBottom: "0"}}>{modData.name}</H4> <p className="muted" style={{marginBottom: "0"}}>{modData.version}</p>
+                            {modData.author && <p style={{marginTop: "0px", color: "#d1d1d1", fontSize: 12, fontWeight: 500}}>Created by: {modData.author}</p>}
 
-                            <LoadingBar loadStateId={`mod_${modData.name}`} idle={!installing}/>
+                            {modData.description && (
+                                <p style={{marginTop: "0px", color: "#d1d1d1", fontSize: 13, fontWeight: 400, wordWrap: "break-word"}}>
+                                    {modData.description}
+                                </p>
+                            )}
+
+                            <p style={{fontSize: 10, color: "#878787", opacity: 0.7, marginBottom: "0px", marginTop: "1rem"}}>{modData.uid}</p>
+                            </Callout>
                         </Card>
                     )}
 
 
                     <DialogFooter
                         actions={
-                            <Button
-                                intent="primary"
-                                type="submit"
-                                disabled={modData === null}
-                            >
-                                Install Mod
-                            </Button>
+                            <>
+                                {/* {modData && <p style={{fontSize: 10, color: "#878787"}}>{modData.uid}</p>} */}
+                                <Button
+                                    intent="primary"
+                                    type="submit"
+                                    disabled={modData === null}
+                                >
+                                    Install Mod
+                                </Button>
+                            </>
                         }
                     />
                 </form>

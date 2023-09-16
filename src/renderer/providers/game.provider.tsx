@@ -18,6 +18,10 @@ export function GameProvider({children}: {children?: ReactNode}) {
 
     useEffect(() => {
         checkGameState()
+
+        window.electron.ipcRenderer.on("game:setState", (isInstalled: boolean) => {
+            setGameInfo({...gameInfo, ...{gameInstalled: isInstalled}})
+        })
     }, [])
 
     return (

@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from "path"
-import { app, BrowserWindow, shell, ipcMain } from "electron"
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
 import tccp from "tcp-ping"
@@ -22,6 +22,8 @@ import * as server from "./core/server"
 import * as mod from "./core/mod"
 import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
+import { devToolsPath, modsDir } from "./core/appPath"
+import { LOADOUTS } from "./loadout_data"
 
 class AppUpdater {
     constructor() {
@@ -139,7 +141,7 @@ export function getWindow() {
 
 async function handleGameCheckState() {
     try {
-        return game.checkInstalled()
+        return game.checkInstalledStatus()
     } catch(err: any) {
         config.create(true)
     }
@@ -150,7 +152,6 @@ async function handleGameStartInstall() {
         await game.installGame()
         return true
     } catch (err: any) {
-        console.error("InstallGameCaughtError", err)
         log.error(err.message)
         loadingSetError("game", err.message)
         return false
@@ -202,19 +203,24 @@ async function handleConnectServer(event: any, addr: string, password?: string) 
     } catch(err: any) {
         throw new SoftError(err.message)
     }
-
-    return false
 }
 
 async function handleGameStart(event: any) {
-    try {
+    //try {
         await game.start()
+        return true
+    // } catch(err: any) {
+    //     throw new SoftError(err.message)
+    // }
+}
+
+async function handleGmeStartDevTools() {
+    try {
+        shell.openPath(devToolsPath)
         return true
     } catch(err: any) {
         throw new SoftError(err.message)
     }
-
-    return false
 }
 
 async function handleGetSettings() {
@@ -243,17 +249,154 @@ async function handleSetSettings(event: any, data: any) {
 
 async function handleQueryMod(event: any, url: string) {
     try {
-        return await mod.getInfo(url)
-    } catch(err) {
-        console.log(err)
+        return {mod: await mod.getInfo(url)}
+    } catch(err: any) {
+        return {error: err.message}
     }
 }
 
 async function handleInstallMod(event: any, url: string, mount: boolean = false) {
     try {
-        return await mod.install(url)
-    } catch(err) {
-        console.log(err)
+        const out = {success: await mod.install(url)}
+        if (mount) {
+            await mod.mountMod(out.success)
+        }
+        return out
+    } catch(err: any) {
+        log.error(err.message)
+        return {error: err.message}
+    }
+}
+
+async function handleSetMounted(event: any, modUID: string, isMounted: boolean) {
+    try {
+        const modData = await mod.get(modUID)
+
+        if (isMounted) {
+            await mod.mountMod(modData)
+        } else {
+            await mod.unMountMod(modData)
+        }
+
+        return true
+    } catch(err: any) {
+        console.error("MountModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
+    }
+}
+
+async function handleModInit() {
+    await mod.init()
+    return true
+}
+
+async function handleModOpenRemoteURL(event: any, modUID: string) {
+    try {
+        const thisMod = mod.get(modUID)
+        await shell.openExternal(thisMod.url)
+    } catch(err: any) {
+        console.error("OpenRemoteURLModError", err)
+    }
+}
+
+async function handleModOpenDirectory(event: any, modUID: string) {
+    try {
+        const thisMod = mod.get(modUID)
+        await shell.openPath(path.resolve(modsDir, modUID))
+    } catch(err: any) {
+        console.error("OpenDirectoryModError", err)
+    }
+}
+
+async function handleModDelete(event: any, modUID: string) {
+    try {
+        const thisMod = mod.get(modUID)
+        if (!thisMod) throw new Error(`Failed to find mod '${modUID}'`)
+        await mod.remove(thisMod)
+    } catch(err: any) {
+        console.error("DeleteModError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
+    }
+}
+
+async function handleGetLoadoutData() {
+    return LOADOUTS
+}
+
+async function handleGetLoadout() {
+    try {
+        return await game.getBackpackAndLoadout()
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
+
+async function handleSetLoadout(event: any, backpack: any, loadouts: any) {
+    try {
+        const conf = config.read()
+        conf.backpack = backpack
+        conf.loadouts = loadouts
+        config.update(conf)
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
+
+async function handleModNew(event: any, modInfo: any) {
+    try {
+        return await mod.createNew(modInfo.uid, modInfo.name, modInfo.description, modInfo.author, modInfo.version)
+    } catch(err: any) {
+        log.error(err.message)
+    }
+}
+
+async function handleModSync(event: any, modUID: string) {
+    try {
+        const modData = await mod.get(modUID)
+        await mod.sync(modData)
+
+        return true
+    } catch(err: any) {
+        console.error("SyncModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
+    }
+}
+
+async function handleModSetPriority(event: any, modUID: string, priority: number) {
+    try {
+        const modData = await mod.get(modUID)
+        await mod.setPriority(modData, priority)
+
+        return true
+    } catch(err: any) {
+        console.error("SetPriorityModCaughtError", err)
+        log.error(err.message)
+        loadingSetError(`mod_${modUID}`, err.message)
+    }
+}
+
+// todo: recode this to support loading bar in the future?
+async function handleModInstallFromFolder(event: any) {
+    try {
+        const dirs: any = await dialog.showOpenDialog({properties: ["openDirectory"]})
+        const modSourcePath = dirs?.filePaths?.[0]
+        if (!modSourcePath) return
+
+        const thisMod = await mod.installFromFolder(modSourcePath)
+
+        const win = getWindow()!
+        if (!win) return
+        dialog.showMessageBox(win, {
+            type: "info",
+            title: "Mod Install Successful",
+            message: `Succesfully installed ${thisMod.name || thisMod.uid} (${thisMod.version || "???"})`
+        })
+    } catch(err: any) {
+        log.error(err.message)
+        dialog.showErrorBox("Mod Install Failed", err.message)
     }
 }
 
@@ -265,18 +408,36 @@ app.whenReady()
         ipcMain.handle("game:queryServer", handleQueryServer)
         ipcMain.handle("game:connectServer", handleConnectServer)
         ipcMain.handle("game:start", handleGameStart)
+        ipcMain.handle("game:startDevTools", handleGmeStartDevTools)
         ipcMain.handle("game:getSettings", handleGetSettings)
         ipcMain.handle("game:setSettings", handleSetSettings)
+        ipcMain.handle("game:getLoadoutData", handleGetLoadoutData)
+        ipcMain.handle("game:getLoadout", handleGetLoadout)
+        ipcMain.handle("game:setLoadout", handleSetLoadout)
+
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)
+        ipcMain.handle("mod:setMounted", handleSetMounted)
+        ipcMain.handle("mod:init", handleModInit)
+        ipcMain.handle("mod:openRemoteURL", handleModOpenRemoteURL)
+        ipcMain.handle("mod:openDirectory", handleModOpenDirectory)
+        ipcMain.handle("mod:delete", handleModDelete)
+        ipcMain.handle("mod:new", handleModNew)
+        ipcMain.handle("mod:sync", handleModSync)
+        ipcMain.handle("mod:setPriority", handleModSetPriority)
+        ipcMain.handle("mod:installFromFolder", handleModInstallFromFolder)
 
         config.create()
 
-        createWindow()
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the
             // dock icon is clicked and there are no other windows open.
             if (mainWindow === null) createWindow()
-        })
+        });
+
+        (async () => {
+            await createWindow()
+            //mod.init() We do this through an IPC now
+        })()
     })
     .catch(console.log)

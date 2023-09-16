@@ -1,19 +1,19 @@
 import { ProgressBar } from "@blueprintjs/core"
 import { useEffect, useState } from "react"
 
-export function LoadingBar({loadStateId, useProgress = true, usePercent = true, idle = false}: {loadStateId: string, useProgress?: boolean, usePercent?: boolean, idle?: boolean}) {
+export function LoadingBar({loadStateId, useProgress = true, usePercent = true, idle = false, onCompleted, onError}: {loadStateId: string, useProgress?: boolean, usePercent?: boolean, idle?: boolean, onCompleted?: () => void, onError?: () => void}) {
     const [loaderInfo, setLoaderInfo]: any = useState({})
 
     useEffect(() => {
-        window.electron.ipcRenderer.on("loading:setState", (inboundKey: any, completedItems, totalItems, message) => {
+        window.electron.ipcRenderer.on("loading:setState", (inboundKey: any, completedItems, totalItems, message, success) => {
             if (loadStateId !== inboundKey) return
-            setLoaderInfo({...loaderInfo, ...{completedItems, totalItems, message}})
+            setLoaderInfo({...loaderInfo, ...{completedItems, totalItems, message, success}})
         })
 
         window.electron.ipcRenderer.on("loading:setError", (inboundKey: any, error) => {
             if (loadStateId !== inboundKey) return
-            setLoaderInfo({...loaderInfo, ...{error}})
-            // this value is not set? investigate!!
+            setLoaderInfo({...loaderInfo, ...{failed: true, error}})
+            if (onError) onError()
         })
 
         window.electron.ipcRenderer.on("loading:reset", (inboundKey: any) => {
@@ -40,7 +40,7 @@ export function LoadingBar({loadStateId, useProgress = true, usePercent = true, 
 
     return (
         <div className="installer progressInfo">
-            <ProgressBar intent={loaderInfo.error && "danger" || (progress === 1 && "success" || "primary")} animate={isWorking} value={progress}/>
+            <ProgressBar intent={loaderInfo.error && "danger" || (loaderInfo.success && "success" || "primary")} animate={isWorking} value={progress}/>
             <p style={{color: loaderInfo.error && "#EB6847"}}>
                 {loaderInfo.error || (loaderInfo.message || "Working...")}
                 {(usePercent && progress) && ` - ${Math.floor(progress * 100)}%`}
