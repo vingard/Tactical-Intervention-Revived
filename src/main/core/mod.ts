@@ -112,7 +112,7 @@ async function addToConfig(mod: any, shouldMerge: boolean = false) {
 async function updateState() {
     const win = getWindow()!
     if (!win) return
-    win.webContents.send("mod:setState", await getAll())
+    win.webContents.send("mod:setState", (await getAll()) || [])
 }
 
 export async function createNew(uid: string, name: string, description?: string, author?: string, version: string = "0.0.1") {
@@ -132,6 +132,32 @@ export async function createNew(uid: string, name: string, description?: string,
 
     addToConfig(modData)
     updateState()
+}
+
+export async function installFromFolder(sourcePath: string) {
+    const mod = await getInfo(sourcePath, true)
+    const modLoadStateId = `mod_${mod.uid}`
+    const modPath = path.resolve(appPath.modsDir, mod.uid)
+
+    log.info(`Installing ${mod.name} (${mod.version}) from '${sourcePath}':`)
+
+    loadingReset(modLoadStateId)
+
+    // Make mods folder and remove old install
+    await files.tryToRemoveDirectory(modPath)
+    await files.createDirIfNotExists(modPath)
+
+    await jetpack.copyAsync(sourcePath, modPath, {overwrite: true})
+
+    // Add to config
+    addToConfig(mod)
+
+    const succMsg = `${mod.name} - ${mod.uid} (${mod.version}) was installed succesfully!`
+    log.info(succMsg)
+    loadingSetState(modLoadStateId, succMsg, 1, 1, true)
+    updateState()
+
+    return mod
 }
 
 /** Installs a mod from a GitHub repository URL. */
@@ -348,7 +374,7 @@ export async function unMountMod(mod: any) {
 export async function resetAllClaims() {
     const conf = config.read()
 
-    for (const mod of conf.mods) {
+    for (const mod of conf.mods || []) {
         mod.mounted = false
         mod.claims = undefined
     }

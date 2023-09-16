@@ -5,6 +5,7 @@ import onezip from "onezip"
 import jetpack from "fs-jetpack"
 import byteSize from "byte-size"
 import log from "electron-log"
+import {rimraf} from "rimraf"
 //import drivelist from "drivelist"
 // eslint-disable-next-line import/no-cycle
 import * as appPath from "./appPath"
@@ -103,7 +104,8 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
             throw new SoftError(`Failed to query download source! ${err.message}`)
         }
 
-        console.log("contentHash:", contentHash)
+        // if the file is already downloaded, stop download!
+        if (totalLength !== 0 && fileOffset === totalLength) return {}
 
         try {
             resp = await axios({
@@ -254,5 +256,18 @@ export async function findSteamDir() {
     for (const drive of drives) {
         const dirPath = path.resolve(drive, "Program Files (x86)", "Steam")
         if (jetpack.exists(path.resolve(dirPath, "steam.exe"))) return dirPath
+    }
+}
+
+// Need this because of random permissions errors that dont do anything? Weird - probably some symlinks behaving badly
+// Update, see: https://stackoverflow.com/a/61210717
+export async function tryRemove(filePath: string) {
+    if (jetpack.exists(filePath) !== "dir") return
+
+    try {
+        console.log("rm", filePath)
+        await rimraf.windows(filePath) // rimraf is used here cause turns out this can be a real pain, see comment above
+    } catch (err: any) {
+        log.warn(`Error when removing ${filePath} - ${err.message} - contuining!`)
     }
 }

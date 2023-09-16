@@ -19,7 +19,7 @@ export const srcdsPath = path.resolve(binDir, "tacint_ds.exe")
 
 export const commonRedistDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived", "_CommonRedist"))
 export const revivedDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived"))
-export const mountDir = files.createDirIfNotExists(path.resolve(workingDir, "mapkit"))
+export const mountDir = files.createDirIfNotExists(path.resolve(workingDir, "tacint")) // used to be 'mapkit' changed to tacint due to mapkit compat issues
 export const modsDir = files.createDirIfNotExists(path.resolve(workingDir, "mods"))
 export const tempDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived", "temp"))
 export const baseContentDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived", "base_content"))

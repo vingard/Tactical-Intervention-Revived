@@ -273,6 +273,19 @@ export async function installGame(overrideUrl?: string) {
     const contentHash = await files.downloadTempFile(url, tempFileName, "game")
     if (!contentHash) throw new SoftError("No content hash was provided!")
 
+    loadingSetState("game", "Preparing for game content extraction...")
+    // Removes mapkit dir (this is for backwards compat as old revived versions used this as a mounting dir)
+    await files.tryRemove(path.resolve(appPath.workingDir, "mapkit"))
+
+    // Just in case
+    await mod.resetAllClaims()
+
+    // These should be empty, but just in case we'll clean them
+    await files.tryRemove(appPath.mountDir)
+    await files.tryRemove(appPath.binDir)
+    await files.tryRemove(appPath.baseContentDir)
+    await files.tryRemove(appPath.commonRedistDir)
+
     // Extract
     log.info("Extracting game content")
     await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
@@ -314,26 +327,17 @@ export async function unInstall() {
 
     win.webContents.send("game:showUninstaller")
 
-    // Need this because of random permissions errors that dont do anything? Weird - probably some symlinks behaving badly
-    async function tryRemove(filePath: string) {
-        try {
-            await jetpack.removeAsync(filePath)
-        } catch (err: any) {
-            log.warn(`Error when removing directory - ${err.message} - contuining!`)
-        }
-    }
-
     await mod.resetAllClaims()
     loadingSetState("game", "Removing base content")
-    await tryRemove(path.resolve(appPath.baseContentDir))
+    await files.tryRemove(path.resolve(appPath.baseContentDir))
     loadingSetState("game", "Removing common redist")
-    await tryRemove(path.resolve(appPath.commonRedistDir))
+    await files.tryRemove(path.resolve(appPath.commonRedistDir))
     loadingSetState("game", "Removing bin")
-    await tryRemove(path.resolve(appPath.binDir))
+    await files.tryRemove(path.resolve(appPath.binDir))
     loadingSetState("game", "Removing tacint")
-    await tryRemove(path.resolve(appPath.tacintDir))
+    await files.tryRemove(path.resolve(appPath.tacintDir))
     loadingSetState("game", "Removing mounted content")
-    await tryRemove(path.resolve(appPath.mountDir))
+    await files.tryRemove(path.resolve(appPath.mountDir))
 
     loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
     log.info("Game uninstalled!")

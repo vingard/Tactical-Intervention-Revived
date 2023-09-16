@@ -63,7 +63,7 @@ export default class MenuBuilder {
                     {
                         label: "Discord",
                         click() {
-                            shell.openExternal("https://electronjs.org")
+                            shell.openExternal("https://discord.gg/DZhySxaVbr")
                         }
                     },
                     {
@@ -121,23 +121,6 @@ export default class MenuBuilder {
             }
         ]
 
-        const templateMods = [
-            {
-                label: "Mods",
-                submenu: [
-                    {
-                        label: "Check all mods for updates"
-                    },
-                    {
-                        label: "Install mod from .zip"
-                    },
-                    {
-                        label: "Create new mod..."
-                    }
-                ]
-            }
-        ]
-
         const templateGame = [
             {
                 label: "Game",
@@ -188,7 +171,6 @@ export default class MenuBuilder {
 
         return [
             ...templateGame,
-            ...templateMods,
             ...(isDebug ? templateDebug : []),
             ...templateHelp
         ]

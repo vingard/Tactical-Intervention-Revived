@@ -25,6 +25,7 @@ export type Channels =
     | "loading:success"
     | "mod:query"
     | "mod:install"
+    | "mod:installFromFolder"
     | "mod:setState"
     | "mod:setDeleted"
     | "mod:setMounted"
