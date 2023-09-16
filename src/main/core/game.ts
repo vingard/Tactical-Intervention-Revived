@@ -347,7 +347,7 @@ export async function unInstall() {
     loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
     log.info("Game uninstalled!")
 
-    win.webContents.send("game:setState", checkInstalledStatus()) // tell the client the game is not installed
+    win.webContents.send("game:setState", false) // tell the client the game is not installed
 }
 
 export function getMountManifest() {

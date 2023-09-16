@@ -19,6 +19,8 @@ export function WorkerDialog({open, onClosed, loadingStateId, title, icon, autoC
                 title={title}
                 icon={icon}
                 isCloseButtonShown={!working}
+                canOutsideClickClose={false}
+                canEscapeKeyClose={false}
             >
                 <DialogBody>
                     <LoadingBar
