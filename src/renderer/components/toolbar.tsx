@@ -24,6 +24,10 @@ function AddModDropdown({onAddModFromFolder, onCreateNewMod}: {onAddModFromFolde
     )
 }
 
+async function addModFromFolder() {
+    await window.electron.ipcRenderer.invoke("mod:installFromFolder")
+}
+
 export function Toolbar() {
     const [openPopup, setOpenPopup] = useState("")
     const [playDropdownOpen, setPlayDropdownOpen] = useState(false)
@@ -38,7 +42,7 @@ export function Toolbar() {
 
                     <ButtonGroup>
                         <Button large icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
-                        <Popover content={<AddModDropdown onAddModFromFolder={() => console.log("folder")} onCreateNewMod={() => setOpenPopup("mod_new")}/>} placement="bottom-end">
+                        <Popover content={<AddModDropdown onAddModFromFolder={() => addModFromFolder()} onCreateNewMod={() => setOpenPopup("mod_new")}/>} placement="bottom-end">
                             <Button icon="caret-down"/>
                         </Popover>
                     </ButtonGroup>

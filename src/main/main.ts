@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from "path"
-import { app, BrowserWindow, shell, ipcMain } from "electron"
+import { app, BrowserWindow, shell, ipcMain, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
 import tccp from "tcp-ping"
@@ -378,6 +378,28 @@ async function handleModSetPriority(event: any, modUID: string, priority: number
     }
 }
 
+// todo: recode this to support loading bar in the future?
+async function handleModInstallFromFolder(event: any) {
+    try {
+        const dirs: any = await dialog.showOpenDialog({properties: ["openDirectory"]})
+        const modSourcePath = dirs?.filePaths?.[0]
+        if (!modSourcePath) return
+
+        const thisMod = await mod.installFromFolder(modSourcePath)
+
+        const win = getWindow()!
+        if (!win) return
+        dialog.showMessageBox(win, {
+            type: "info",
+            title: "Mod Install Successful",
+            message: `Succesfully installed ${thisMod.name || thisMod.uid} (${thisMod.version || "???"})`
+        })
+    } catch(err: any) {
+        log.error(err.message)
+        dialog.showErrorBox("Mod Install Failed", err.message)
+    }
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -403,6 +425,7 @@ app.whenReady()
         ipcMain.handle("mod:new", handleModNew)
         ipcMain.handle("mod:sync", handleModSync)
         ipcMain.handle("mod:setPriority", handleModSetPriority)
+        ipcMain.handle("mod:installFromFolder", handleModInstallFromFolder)
 
         config.create()
 
