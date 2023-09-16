@@ -17,7 +17,7 @@ function StartPanel() {
                         <br/>The game will be installed to the same location as this program.
                     </p>
 
-                    <p>Approximate size on disk: <b>5GB</b></p>
+                    <p>Approximate size on disk: <b>7GB</b></p>
                 </div>
             </div>
         </DialogBody>
@@ -188,9 +188,11 @@ export function GameInstaller() {
     }
 
     useEffect(() => {
-        if (gameInfo.gameInstalled === false && !installerOpen) {
+        if (gameInfo.gameInstalled === false && !installerOpen && !installerComplete) {
             setInstallerOpen(true)
         }
+
+        if (gameInfo.gameInstalled === true && installerComplete === true) setInstallerComplete(false)
     }, [gameInfo, installerOpen, installerComplete])
 
     return (

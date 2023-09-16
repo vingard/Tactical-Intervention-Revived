@@ -59,6 +59,7 @@ function isDateWithinLast(checkDate: Date, minutes: number) {
 
 export async function downloadTempFile(url: string, name: string, loadStateId: string, acceptNoContentLength: boolean = false, partialAutoRetries: number = 64) {
     let abortController: AbortController
+    let contentHash!: string
 
     loadingSetState(loadStateId, "Starting download...")
 
@@ -96,10 +97,13 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
 
             const {headers} = query
 
+            contentHash = contentHash || headers.etag // grab the conentHash from etag, or use the existing one, in case the remote source changes mid download
             totalLength = parseInt(headers["content-length"] || headers["Content-Length"] || 0, 10) // try to get download file size
         } catch(err: any) {
             throw new SoftError(`Failed to query download source! ${err.message}`)
         }
+
+        console.log("contentHash:", contentHash)
 
         try {
             resp = await axios({
@@ -140,21 +144,25 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
         }
 
         // eslint-disable-next-line func-names
-        return new Promise<void>(function(resolve) {
+        return new Promise<any>(function(resolve) {
             data.once("error", (err: any) => {
-                resolve(err.message)
+                resolve(<any>{error: err.message})
             })
+            // Return the contentHash if succesful
             data.once("end", () => {
-                resolve()
+                resolve(<any>{})
             })
         })
     }
 
     let retryableErrMessage: any
+
     for (let attempt = 1; attempt <= partialAutoRetries; attempt++) {
         // eslint-disable-next-line no-await-in-loop
-        retryableErrMessage = await startOrContinueDownload()
-        if (!retryableErrMessage) return // we are done!
+        const {error} = await startOrContinueDownload()
+        retryableErrMessage = error
+
+        if (!retryableErrMessage) return contentHash // we are done!
         log.warn(`Download error - ${retryableErrMessage}`)
         log.info(`Retrying download... (attempt ${attempt}/${partialAutoRetries})`)
     }

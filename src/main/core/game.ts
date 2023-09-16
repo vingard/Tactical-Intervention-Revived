@@ -23,7 +23,8 @@ import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
 
-export function checkInstalled() {
+/** Checks the install status and if needed, updates the config */
+export function checkInstalledStatus() {
     let patchMark = false
     try {
         fs.readFileSync(path.resolve(appPath.mountDir, "PATCHED"))
@@ -36,6 +37,19 @@ export function checkInstalled() {
 
     return conf.gameDownloaded
     //return false
+}
+
+/** Sets the installed version of the game to the specifed hash, this will be used to compare against the remote for auto-updates */
+export function setInstalledVersion(contentHash: string) {
+    const conf = config.read()
+    conf.gameVersion = contentHash
+    config.update(conf)
+}
+
+/** Returns the game version (hash) if it is installed */
+export function isInstalled(): string {
+    const conf = config.read()
+    return conf.gameDownloaded && conf.gameVersion
 }
 
 async function getRemotePackage() {
@@ -256,7 +270,8 @@ export async function installGame(overrideUrl?: string) {
     // Download patched content to a temp file
     log.info("Downloading game content")
 
-    await files.downloadTempFile(url, tempFileName, "game")
+    const contentHash = await files.downloadTempFile(url, tempFileName, "game")
+    if (!contentHash) throw new SoftError("No content hash was provided!")
 
     // Extract
     log.info("Extracting game content")
@@ -278,13 +293,15 @@ export async function installGame(overrideUrl?: string) {
     await mountBaseContent()
 
     // Final check
-    const isPatched = checkInstalled()
+    const isPatched = checkInstalledStatus()
+    setInstalledVersion(contentHash)
 
     if (!isPatched) {
         throw new SoftError("Something went wrong, please retry the install :(")
     }
 
     loadingSetState("game", "Game installed successfully!", 1, 1, true)
+    log.info(`Succesfully installed game (version ${contentHash})!`)
 }
 
 export async function unInstall() {
@@ -297,6 +314,7 @@ export async function unInstall() {
 
     win.webContents.send("game:showUninstaller")
 
+    // Need this because of random permissions errors that dont do anything? Weird - probably some symlinks behaving badly
     async function tryRemove(filePath: string) {
         try {
             await jetpack.removeAsync(filePath)
@@ -320,7 +338,7 @@ export async function unInstall() {
     loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
     log.info("Game uninstalled!")
 
-    win.webContents.send("game:setState", checkInstalled()) // tell the client the game is not installed
+    win.webContents.send("game:setState", checkInstalledStatus()) // tell the client the game is not installed
 }
 
 export function getMountManifest() {

@@ -141,7 +141,7 @@ export function getWindow() {
 
 async function handleGameCheckState() {
     try {
-        return game.checkInstalled()
+        return game.checkInstalledStatus()
     } catch(err: any) {
         config.create(true)
     }
