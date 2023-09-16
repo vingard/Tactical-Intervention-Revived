@@ -26,3 +26,4 @@ export const baseContentDir = files.createDirIfNotExists(path.resolve(workingDir
 export const backpackDir = files.createDirIfNotExists(path.resolve(appData, "Goldberg SteamEmu Saves", "51100", "remote"))
 export const settingsDir = files.createDirIfNotExists(path.resolve(appData, "Goldberg SteamEmu Saves", "settings"))
 export const cfgDir = path.resolve(tacintDir, "cfg")
+export const intermediateDir = files.createDirIfNotExists(path.resolve(revivedDir, "intermediate"))

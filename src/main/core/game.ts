@@ -18,7 +18,7 @@ import * as mod from "./mod"
 
 // eslint-disable-next-line import/no-cycle
 import { getWindow, isDebug } from "../main"
-import { loadingReset, loadingSetError, loadingSetState } from "./util"
+import { loadingReset, loadingSetError, loadingSetState, wait } from "./util"
 import { SoftError } from "./softError"
 
 const REPO_URL = "https://github.com/vingard/Tactical-Intervention-Revived"
@@ -286,6 +286,8 @@ export async function installGame(overrideUrl?: string) {
     await files.tryRemove(appPath.baseContentDir)
     await files.tryRemove(appPath.commonRedistDir)
 
+    await wait(5000) // wait 5 seconds for windows to catch up, silly but needed
+
     // Extract
     log.info("Extracting game content")
     await files.extractArchive(path.resolve(appPath.tempDir, tempFileName), destination, "game")
@@ -338,6 +340,9 @@ export async function unInstall() {
     await files.tryRemove(path.resolve(appPath.tacintDir))
     loadingSetState("game", "Removing mounted content")
     await files.tryRemove(path.resolve(appPath.mountDir))
+
+    loadingSetState("game", "Finishing up...")
+    await wait(6000) // wait 5 seconds to allow rimraf's windows delete hacks to catch up, this is silly but needed lol
 
     loadingSetState("game", "Game uninstalled successfully", undefined, undefined, true)
     log.info("Game uninstalled!")

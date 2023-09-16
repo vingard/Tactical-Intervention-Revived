@@ -17,3 +17,8 @@ export function loadingReset(key: string) {
     if (!win) return
     win.webContents.send("loading:reset", key)
 }
+
+export function wait(time: number) {
+    // eslint-disable-next-line no-promise-executor-return
+    return new Promise(resolve => setTimeout(resolve, time))
+}
