@@ -10,6 +10,7 @@ import {
 import * as appPath from "./core/appPath"
 import * as server from "./core/server"
 import * as game from "./core/game"
+import { AppUpdater } from "./main";
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
@@ -75,7 +76,7 @@ export default class MenuBuilder {
                         }
                     },
                     {
-                        label: "Making a Mod",
+                        label: "Wiki",
                         click() {
                             shell.openExternal(
                                 "https://github.com/vingard/Tactical-Intervention-Revived/wiki"
@@ -83,7 +84,13 @@ export default class MenuBuilder {
                         }
                     },
                     {
-                        label: `Version`,
+                        label: "Check For Updates",
+                        click() {
+                            AppUpdater.checkForUpdates()
+                        }
+                    },
+                    {
+                        label: "Version",
                         sublabel: isDebug && "dev" || app.getVersion()
                     }
                 ]

@@ -161,7 +161,7 @@ export async function installFromFolder(sourcePath: string) {
 }
 
 /** Installs a mod from a GitHub repository URL. */
-export async function install(url: string) {
+export async function install(url: string, shouldMount: boolean = false) {
     // Get mod.json file info
     // get title, version, store in timm.json mods
     const mod = await getInfo(url)
@@ -177,6 +177,7 @@ export async function install(url: string) {
 
     // Download archive
     log.info(`Downloading from ${mod.url}`)
+
     await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true, 0)
 
     // Make mods folder and remove old install
@@ -210,6 +211,12 @@ export async function install(url: string) {
 
     const succMsg = `${mod.name} - ${mod.uid} (${mod.version}) was installed succesfully!`
     log.info(succMsg)
+
+    if (shouldMount) {
+        // eslint-disable-next-line no-use-before-define
+        await mountMod(mod)
+    }
+
     loadingSetState(modLoadStateId, succMsg, 1, 1, true)
     updateState()
 

@@ -218,7 +218,7 @@ function TeamSlotPanel({team, slot, control, errors, loadoutData}: {team: "CT" |
 function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control: any, errors: any, loadoutData: any}) {
     return (
         <div style={{display: "flex"}}>
-            <Card className="ctBackground">
+            <Card className="ctBackground" style={{width: "50%"}}>
                 <H4>Counter-Terrorist</H4>
                 <TeamSlotPanel
                     team="CT"
@@ -229,7 +229,7 @@ function SlotPanel({slot, control, errors, loadoutData}: {slot: number, control:
                 />
             </Card>
 
-            <Card className="tBackground">
+            <Card className="tBackground" style={{width: "50%"}}>
                 <H4>Terrorist</H4>
                 <TeamSlotPanel
                     team="T"
