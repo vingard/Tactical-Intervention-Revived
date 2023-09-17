@@ -10,6 +10,7 @@ import {
 import * as appPath from "./core/appPath"
 import * as server from "./core/server"
 import * as game from "./core/game"
+import { AppUpdater } from "./main";
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
     selector?: string;
@@ -83,7 +84,13 @@ export default class MenuBuilder {
                         }
                     },
                     {
-                        label: `Version`,
+                        label: "Check For Updates",
+                        click() {
+                            AppUpdater.checkForUpdates()
+                        }
+                    },
+                    {
+                        label: "Version",
                         sublabel: isDebug && "dev" || app.getVersion()
                     }
                 ]

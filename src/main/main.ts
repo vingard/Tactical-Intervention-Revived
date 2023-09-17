@@ -25,11 +25,63 @@ import { SoftError } from "./core/softError"
 import { devToolsPath, modsDir } from "./core/appPath"
 import { LOADOUTS } from "./loadout_data"
 
-class AppUpdater {
+export class AppUpdater {
     constructor() {
         log.transports.file.level = "info"
         autoUpdater.logger = log
-        autoUpdater.checkForUpdatesAndNotify()
+        autoUpdater.autoDownload = false
+
+        autoUpdater.on("error", (error) => {
+            dialog.showErrorBox("Error: ", error == null ? "unknown" : (error.stack || error).toString())
+        })
+
+        autoUpdater.on("update-available", () => {
+            // eslint-disable-next-line promise/catch-or-return
+            dialog.showMessageBox({
+                type: "info",
+                title: "Launcher Update Available",
+                message: "A launcher update is available, do you want update now?",
+                buttons: ["Update", "Cancel"]
+            }).then((buttonIndex: any) => {
+                if (buttonIndex === 0) {
+                    autoUpdater.downloadUpdate()
+                }
+            })
+        })
+
+        // autoUpdater.on("update-not-available", () => {
+        //     // bit of a nasty hack, to not show the dialog on first call
+        //     // could be improved later probably
+        //     displayUpdateNotif = true
+        //     if (!displayUpdateNotif) return
+
+        //     dialog.showMessageBox({
+        //         title: "No Updates",
+        //         message: "Current version is up-to-date."
+        //     })
+        // })
+
+        autoUpdater.on("update-downloaded", () => {
+            // eslint-disable-next-line promise/catch-or-return
+            dialog.showMessageBox({
+                title: "Update Ready For Install",
+                message: "Update downloaded, the application will now shut-down to update..."
+            }).then(() => {
+                setImmediate(() => autoUpdater.quitAndInstall())
+            })
+        })
+
+        AppUpdater.checkForUpdates(true)
+    }
+
+    static async checkForUpdates(silent: boolean = false) {
+        const updateResult = await autoUpdater.checkForUpdates()
+        if (!updateResult?.downloadPromise && !silent) {
+            dialog.showMessageBox({
+                title: "No Updates",
+                message: "Current version is up-to-date."
+            })
+        }
     }
 }
 
