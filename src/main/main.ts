@@ -12,7 +12,7 @@ import path from "path"
 import { app, BrowserWindow, shell, ipcMain, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
-import tccp from "tcp-ping"
+import { compareVersions } from "compare-versions"
 //import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
@@ -35,18 +35,16 @@ export class AppUpdater {
             dialog.showErrorBox("Error: ", error == null ? "unknown" : (error.stack || error).toString())
         })
 
-        autoUpdater.on("update-available", () => {
+        autoUpdater.on("update-available", async () => {
             // eslint-disable-next-line promise/catch-or-return
-            dialog.showMessageBox({
+            const buttonPressed = await dialog.showMessageBox({
                 type: "info",
                 title: "Launcher Update Available",
                 message: "A launcher update is available, do you want update now?",
                 buttons: ["Update", "Cancel"]
-            }).then((buttonIndex: any) => {
-                if (buttonIndex === 0) {
-                    autoUpdater.downloadUpdate()
-                }
             })
+
+            if (buttonPressed.response === 0) autoUpdater.downloadUpdate()
         })
 
         // autoUpdater.on("update-not-available", () => {
@@ -65,9 +63,9 @@ export class AppUpdater {
             // eslint-disable-next-line promise/catch-or-return
             dialog.showMessageBox({
                 title: "Update Ready For Install",
-                message: "Update downloaded, the application will now shut-down to update..."
+                message: "Update downloaded successfully, after you close this popup the launcher will shut-down to install the update..."
             }).then(() => {
-                setImmediate(() => autoUpdater.quitAndInstall())
+                setImmediate(() => autoUpdater.quitAndInstall(false, true))
             })
         })
 
@@ -76,7 +74,10 @@ export class AppUpdater {
 
     static async checkForUpdates(silent: boolean = false) {
         const updateResult = await autoUpdater.checkForUpdates()
-        if (!updateResult?.downloadPromise && !silent) {
+        if (!updateResult) return // for dev builds
+
+        // If remote version is not greater than cur app ver and not silent mode then display message
+        if (updateResult?.updateInfo?.version && compareVersions(updateResult?.updateInfo.version, app.getVersion()) !== 1 && !silent) {
             dialog.showMessageBox({
                 title: "No Updates",
                 message: "Current version is up-to-date."

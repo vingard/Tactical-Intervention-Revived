@@ -188,6 +188,8 @@ export async function extractArchive(archive: string, destination: string, loadS
     loadingSetState(loadStateId, "Starting extraction...")
     let extract: any
 
+    // TODO: onezip can fail (with no error) on corrupted zip files, in future
+    // add timeout (1-2min?) between starting extraction and first progress to hackily fix this!
     try {
         extract = onezip.extract(archive, destination)
     } catch (err) {
