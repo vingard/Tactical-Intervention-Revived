@@ -1241,7 +1241,7 @@ export const LOADOUTS = {
     },
     "ctmodel4": {
         "id": 1003,
-        "name": "SDL",
+        "name": "SDU",
         "tags": [
             "model",
             "counter_terrorist"
