@@ -1,8 +1,7 @@
 import fs from "fs"
 import path from "path"
 import axios from "axios"
-import node7z from "node-7z"
-import sevenBin from "7zip-bin"
+import onezip from "onezip"
 import jetpack from "fs-jetpack"
 import byteSize from "byte-size"
 import log from "electron-log"
@@ -190,13 +189,7 @@ export async function extractArchive(archive: string, destination: string, loadS
     let extract: any
 
     try {
-        extract = node7z.extractFull(archive, destination, {
-            $bin: sevenBin.path7za,
-            $progress: true,
-            recursive: true,
-            yes: true,
-            noRootDuplication: true
-        })
+        extract = onezip.extract(archive, destination)
     } catch (err) {
         throw new SoftError(`Error extracting archive! ${err}`)
     }
@@ -205,8 +198,8 @@ export async function extractArchive(archive: string, destination: string, loadS
         throw new SoftError(`Error extracting archive! ${err}`, loadStateId)
     })
 
-    extract.on("progress", (progressData: any) => {
-        loadingSetState(loadStateId, "Extracting", progressData.percent / 100, 1)
+    extract.on("progress", (perc: number) => {
+        loadingSetState(loadStateId, "Extracting", perc / 100, 1)
     })
 
     return new Promise<void>(function(resolve) {
