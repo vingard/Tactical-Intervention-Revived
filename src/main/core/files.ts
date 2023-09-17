@@ -1,7 +1,8 @@
 import fs from "fs"
 import path from "path"
 import axios from "axios"
-import onezip from "onezip"
+import node7z from "node-7z"
+import sevenBin from "7zip-bin"
 import jetpack from "fs-jetpack"
 import byteSize from "byte-size"
 import log from "electron-log"
@@ -157,6 +158,12 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
         })
     }
 
+    if (partialAutoRetries === 0) {
+        const {error} = await startOrContinueDownload()
+        if (error) throw new SoftError(`Download failed - ${error}`)
+        return contentHash
+    }
+
     let retryableErrMessage: any
 
     for (let attempt = 1; attempt <= partialAutoRetries; attempt++) {
@@ -183,7 +190,13 @@ export async function extractArchive(archive: string, destination: string, loadS
     let extract: any
 
     try {
-        extract = onezip.extract(archive, destination)
+        extract = node7z.extractFull(archive, destination, {
+            $bin: sevenBin.path7za,
+            $progress: true,
+            recursive: true,
+            yes: true,
+            noRootDuplication: true
+        })
     } catch (err) {
         throw new SoftError(`Error extracting archive! ${err}`)
     }
@@ -192,8 +205,8 @@ export async function extractArchive(archive: string, destination: string, loadS
         throw new SoftError(`Error extracting archive! ${err}`, loadStateId)
     })
 
-    extract.on("progress", (perc: number) => {
-        loadingSetState(loadStateId, "Extracting", perc / 100, 1)
+    extract.on("progress", (progressData: any) => {
+        loadingSetState(loadStateId, "Extracting", progressData.percent / 100, 1)
     })
 
     return new Promise<void>(function(resolve) {
@@ -266,7 +279,7 @@ export async function tryRemove(filePath: string) {
 
     try {
         console.log("rm", filePath)
-        await rimraf.windows(filePath) // rimraf is used here cause turns out this can be a real pain, see comment above
+        await rimraf.windows(filePath, {maxRetries: 12, retryDelay: 300}) // rimraf is used here cause turns out this can be a real pain, see comment above
     } catch (err: any) {
         log.warn(`Error when removing ${filePath} - ${err.message} - contuining!`)
     }

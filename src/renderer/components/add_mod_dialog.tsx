@@ -38,8 +38,10 @@ export function AddModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
         const {success, error} = await window.electron.ipcRenderer.invoke("mod:install", modData.url, data.mount)
         if (error) setError("url", {message: error})
 
-        setInstalling(false)
-        onClosed()
+        if (success) {
+            setInstalling(false)
+            onClosed()
+        }
     }
 
     useEffect(() => {

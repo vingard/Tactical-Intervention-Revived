@@ -270,7 +270,7 @@ export async function installGame(overrideUrl?: string) {
     // Download patched content to a temp file
     log.info("Downloading game content")
 
-    const contentHash = await files.downloadTempFile(url, tempFileName, "game")
+    const contentHash = await files.downloadTempFile(url, tempFileName, "game", false, 256)
     if (!contentHash) throw new SoftError("No content hash was provided!")
 
     loadingSetState("game", "Preparing for game content extraction...")
@@ -282,8 +282,11 @@ export async function installGame(overrideUrl?: string) {
 
     // These should be empty, but just in case we'll clean them
     await files.tryRemove(appPath.mountDir)
+    await wait(500)
     await files.tryRemove(appPath.binDir)
+    await wait(500)
     await files.tryRemove(appPath.baseContentDir)
+    await wait(500)
     await files.tryRemove(appPath.commonRedistDir)
 
     await wait(5000) // wait 5 seconds for windows to catch up, silly but needed

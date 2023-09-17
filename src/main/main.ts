@@ -256,14 +256,17 @@ async function handleQueryMod(event: any, url: string) {
 }
 
 async function handleInstallMod(event: any, url: string, mount: boolean = false) {
+    let modUid
+
     try {
-        const out = {success: await mod.install(url)}
-        if (mount) {
-            await mod.mountMod(out.success)
-        }
-        return out
+        const modInfo = await mod.getInfo(url)
+        modUid = modInfo.uid
+        const installedMod = await mod.install(url, mount)
+
+        return {success: installedMod}
     } catch(err: any) {
         log.error(err.message)
+        loadingSetError(`mod_${modUid}`, err.message)
         return {error: err.message}
     }
 }

@@ -75,7 +75,7 @@ export default class MenuBuilder {
                         }
                     },
                     {
-                        label: "Making a Mod",
+                        label: "Wiki",
                         click() {
                             shell.openExternal(
                                 "https://github.com/vingard/Tactical-Intervention-Revived/wiki"
