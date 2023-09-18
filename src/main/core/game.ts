@@ -75,9 +75,7 @@ export async function mountFile(filePath: string, from: string, to: string, modN
     const mods = mod.getAll()
 
     // If link file exists, we'll remove it and replace
-    if (await jetpack.existsAsync(toFull)) {
-        await jetpack.removeAsync(toFull)
-    }
+    await jetpack.removeAsync(toFull)
 
     try {
         // create symlink
