@@ -10,9 +10,7 @@ export function LauncherPage() {
             <GameInstaller/>
             <GameUninstaller/>
 
-            <Card>
-                <Toolbar/>
-            </Card>
+            <Toolbar/>
 
             {/* <Callout title="Game not installed" intent="danger">
                 Your game is not installed! Click here to install your game.

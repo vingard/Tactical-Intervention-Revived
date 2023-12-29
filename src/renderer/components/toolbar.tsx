@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Classes, ContextMenu, Divider, Menu, MenuDivider, MenuItem, Popover } from "@blueprintjs/core"
+import { Button, ButtonGroup, Card, Classes, ContextMenu, Divider, Menu, MenuDivider, MenuItem, Popover } from "@blueprintjs/core"
 import { useState } from "react"
 import { ConnectDialog } from "./connect_dialog"
 import { SettingsDialog } from "./settings_dialog"
@@ -35,32 +35,34 @@ export function Toolbar() {
     return (
         <>
             <div className="toolbar container">
-                <ButtonGroup>
-                    {/* <Button>
-                        <img src={icon} alt="" width="40"/>
-                    </Button> */}
-
+                <Card>
                     <ButtonGroup>
-                        <Button large icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
-                        <Popover content={<AddModDropdown onAddModFromFolder={() => addModFromFolder()} onCreateNewMod={() => setOpenPopup("mod_new")}/>} placement="bottom-end">
-                            <Button icon="caret-down"/>
-                        </Popover>
-                    </ButtonGroup>
-                </ButtonGroup>
+                        {/* <Button>
+                            <img src={icon} alt="" width="40"/>
+                        </Button> */}
 
-                <div className="toolbar play">
-                    <ButtonGroup>
-                        <Button icon="ammunition" onClick={() => setOpenPopup("loadout")}>Loadout</Button>
-                        <Button icon="cog" onClick={() => setOpenPopup("settings")}>Settings</Button>
-                        <Divider/>
-                        <Button intent="primary" icon="play" large onClick={() => setOpenPopup("connect")}>
-                            Play
-                        </Button>
-                        <Popover content={<PlayDropdown/>} placement="bottom-end">
-                            <Button intent="primary" icon="caret-down"/>
-                        </Popover>
+                        <ButtonGroup>
+                            <Button large icon="add" onClick={() => setOpenPopup("mod_add")}>Add Mod</Button>
+                            <Popover content={<AddModDropdown onAddModFromFolder={() => addModFromFolder()} onCreateNewMod={() => setOpenPopup("mod_new")}/>} placement="bottom-end">
+                                <Button icon="caret-down"/>
+                            </Popover>
+                        </ButtonGroup>
                     </ButtonGroup>
-                </div>
+
+                    <div className="toolbar play">
+                        <ButtonGroup>
+                            <Button icon="ammunition" onClick={() => setOpenPopup("loadout")}>Loadout</Button>
+                            <Button icon="cog" onClick={() => setOpenPopup("settings")}>Settings</Button>
+                            <Divider/>
+                            <Button intent="primary" icon="play" large onClick={() => setOpenPopup("connect")}>
+                                Play
+                            </Button>
+                            <Popover content={<PlayDropdown/>} placement="bottom-end">
+                                <Button intent="primary" icon="caret-down"/>
+                            </Popover>
+                        </ButtonGroup>
+                    </div>
+                </Card>
             </div>
 
             <SettingsDialog open={openPopup === "settings"} onClosed={() => setOpenPopup("")}/>
