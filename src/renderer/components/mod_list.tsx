@@ -112,11 +112,11 @@ export function ModList() {
             result.destination.index
         )
 
-        const goingDown = result.source.index < result.destination.index
-        console.log("goingDown", goingDown)
+        console.log(result.source.index,  "-->", result.destination.index)
+
+
         const mod = items[result.destination.index]
-        const lastMod = items[result.destination.index + (goingDown && -1 || 1)]
-        const priority = (lastMod?.priority || 0) + (goingDown && -1 || 1)
+        const priority = mod.priority + (result.source.index - result.destination.index)
 
         console.log(`setting priority for ${mod.name} ${mod.uid} to ${priority}`)
 

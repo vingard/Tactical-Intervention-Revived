@@ -76,7 +76,7 @@ export function get(name: string) {
     return conf.mods[i]
 }
 
-export function getAll() {
+export function getAll(): any[] {
     const conf = config.read()
     return conf.mods
 }
@@ -87,6 +87,13 @@ export function getLoadOrder(mod: any) {
 
 export function getIndex(conf: any, modName: string) {
     return conf.mods.findIndex((x: any) => x.uid === modName)
+}
+
+function generateInitialPriority(mod: any) {
+    // eslint-disable-next-line no-use-before-define
+    setPriority(mod, 0)
+
+    return mod
 }
 
 async function addToConfig(mod: any, shouldMerge: boolean = false) {
@@ -118,7 +125,7 @@ async function updateState() {
 export async function createNew(uid: string, name: string, description?: string, author?: string, version: string = "0.0.1") {
     log.info(`Creating new mod: ${name} ${uid}`)
 
-    const modData = {
+    let modData = {
         uid,
         name,
         description,
@@ -130,12 +137,13 @@ export async function createNew(uid: string, name: string, description?: string,
     await newModDir.dirAsync(".") // make mod folder
     await newModDir.writeAsync("mod.json", JSON.stringify(modData, undefined, "  ")) // make mod.json file
 
+    modData = generateInitialPriority(modData)
     addToConfig(modData)
     updateState()
 }
 
 export async function installFromFolder(sourcePath: string) {
-    const mod = await getInfo(sourcePath, true)
+    let mod = await getInfo(sourcePath, true)
     const modLoadStateId = `mod_${mod.uid}`
     const modPath = path.resolve(appPath.modsDir, mod.uid)
 
@@ -150,6 +158,7 @@ export async function installFromFolder(sourcePath: string) {
     await jetpack.copyAsync(sourcePath, modPath, {overwrite: true})
 
     // Add to config
+    mod = generateInitialPriority(mod)
     addToConfig(mod)
 
     const succMsg = `${mod.name} - ${mod.uid} (${mod.version}) was installed succesfully!`
@@ -164,7 +173,7 @@ export async function installFromFolder(sourcePath: string) {
 export async function install(url: string, shouldMount: boolean = false) {
     // Get mod.json file info
     // get title, version, store in timm.json mods
-    const mod = await getInfo(url)
+    let mod = await getInfo(url)
     const modPath = path.resolve(appPath.modsDir, mod.uid)
     const modTempFileName = `${mod.uid}.zip`
 
@@ -205,6 +214,9 @@ export async function install(url: string, shouldMount: boolean = false) {
 
     // Cleanup archive
     await files.deleteTempFile(modTempFileName)
+
+    // generate init priority
+    mod = generateInitialPriority(mod)
 
     // Add to config
     addToConfig(mod)
@@ -439,12 +451,36 @@ export async function sync(mod: any) {
     return mod
 }
 
-export async function setPriority(mod: any, priority?: number) {
+export async function setPriority(mod: any, priority: number) {
     // if mod mounted, unmount, set priority, remount
     const wasMounted = mod.mounted
     if (wasMounted) mod = await unMountMod(mod)
-    mod.priority = priority
-    addToConfig(mod)
+
+    // EW this is nasty code
+    // re-jiggle all mods priority, this code is a horrible mess!
+    // if anyone wants to, please recode mods to be OOP and have the priority
+    // handled by the mod index natively
+    const conf = config.read()
+    const allMods = <any[]>conf.mods
+
+    // sort the array based on priority, DESC
+    let sortedMods = allMods.sort((a, b) => a.priority > b.priority ? 1 : -1)
+
+    // remove the mode we want to set priority for
+    sortedMods = sortedMods.filter((thisMod) => thisMod.uid !== mod.uid)
+
+    // insert into the array
+    sortedMods.splice(priority, 0, mod)
+
+    // update the 'priority' property
+    sortedMods = sortedMods.map((thisMod, index) => {
+        thisMod.priority = index
+        return thisMod
+    })
+
+    conf.mods = sortedMods
+    config.update(conf)
+
     if (wasMounted) mod = await mountMod(mod)
 
     updateState()
