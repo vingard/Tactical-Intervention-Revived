@@ -81,7 +81,7 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, big = false, ...
     const LoadoutTagRender = (item: LoadoutItem) => {
         if (big) {
             return (
-                <H5 style={{color: "black", fontWeight: "bold", margin: "0"}}>{itemGetName(item)}</H5>
+                <H5 style={{fontWeight: "bold", margin: "0"}}>{itemGetName(item)}</H5>
             )
         }
 
@@ -102,6 +102,9 @@ function LoadoutItemSelectTemp({name, availableItems, maxItems, big = false, ...
             selectedItems={field.value || []}
             popoverProps={{position: "bottom-left", matchTargetWidth: true}}
             tagRenderer={LoadoutTagRender}
+            tagInputProps={{
+                tagProps: {minimal: true}
+            }}
             fill
         />
     )

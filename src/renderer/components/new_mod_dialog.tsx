@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form"
 import { v4 as uuid4 } from "uuid"
 
 export function NewModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
-    const {register, handleSubmit, control, setValue, formState: {errors}} = useForm()
+    const {register, handleSubmit, control, setValue, reset, formState: {errors}} = useForm()
 
     function generateRandomUID() {
         setValue("uid", uuid4())
@@ -13,6 +13,7 @@ export function NewModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     async function newModFormSubmit(data: any, event: any) {
         const success = await window.electron.ipcRenderer.invoke("mod:new", data)
         onClosed()
+        reset()
         generateRandomUID()
     }
 

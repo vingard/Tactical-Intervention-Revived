@@ -24,6 +24,7 @@ import { loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
 import { devToolsPath, modsDir } from "./core/appPath"
 import { LOADOUTS } from "./loadout_data"
+import { ProcessWatcher } from "./core/procwatch"
 
 export class AppUpdater {
     constructor() {
@@ -175,6 +176,9 @@ const createWindow = async () => {
     // eslint-disable-next-line
     new AppUpdater();
 }
+
+// Start the process watcher...
+export const processWatcher = new ProcessWatcher()
 
 /**
  * Add event listeners...

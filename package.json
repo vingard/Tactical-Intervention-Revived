@@ -72,6 +72,7 @@
         "@blueprintjs/core": "^5.2.1",
         "@blueprintjs/icons": "^5.1.5",
         "@blueprintjs/select": "^5.0.10",
+        "@heyikang/ps-list": "^8.1.2",
         "axios": "^1.5.0",
         "binary-parser-encoder": "^1.5.3",
         "byte-size": "^8.1.1",
@@ -179,6 +180,13 @@
             "dist",
             "node_modules",
             "package.json"
+        ],
+        "extraFiles": [
+            {
+                "from": "src/assets_bin",
+                "to": "./",
+                "filter": ["**/*"]
+            }
         ],
         "afterSign": ".erb/scripts/notarize.js",
         "mac": {

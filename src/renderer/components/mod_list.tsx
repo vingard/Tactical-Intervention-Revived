@@ -129,7 +129,7 @@ export function ModList() {
     }, [mods, setMods])
 
     return (
-        <>
+        <div style={{backgroundColor: "red"}}>
             {loadingStateId !== "" && <WorkerDialog
                 open={mounting}
                 title={workerTitle}
@@ -162,7 +162,10 @@ export function ModList() {
                                         // background: snapshot.isDraggingOver && "lightblue" || undefined,
                                         //opacity: snapshot.isDraggingOver && 0.1 || undefined,
                                         background: snapshot.isDraggingOver && "rgba(200, 200, 200, 0.05)" || undefined,
-                                        padding: "grid"
+                                        padding: "grid",
+                                        overflow: "",
+                                        overflowX: "hidden",
+                                        overflowY: "auto"
                                     }}
                                 >
                                     {mods.map((mod: any, index) => (
@@ -236,6 +239,6 @@ export function ModList() {
                     </DragDropContext>
                 </Section>
             </div>
-        </>
+        </div>
     )
 }

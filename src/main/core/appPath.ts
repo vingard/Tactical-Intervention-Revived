@@ -1,9 +1,11 @@
 import {app} from "electron"
 import path from "path"
-import log from "electron-log"
 // eslint-disable-next-line import/no-cycle
 import * as files from "./files"
+import { isDev } from "./util"
 
+const appPath = app.getAppPath()
+export const binAssetPath = isDev() ? path.resolve(appPath, "assets_bin") : appPath
 export const exePath = app.getPath("exe")
 export const workingDir = path.dirname(exePath)
 const appData = app.getPath("appData")
@@ -11,11 +13,14 @@ const appData = app.getPath("appData")
 export const tacintDir = files.createDirIfNotExists(path.resolve(workingDir, "tacint"))
 export const binDir = files.createDirIfNotExists(path.resolve(workingDir, "bin"))
 
+export const gameExe = "tacint_mapkit.exe"
+export const serverExe = "tacint_ds.exe"
+
 export const configPath = path.resolve(workingDir, "_revived", "data.json")
 export const cfgPath = path.resolve(tacintDir, "cfg", "revived.cfg")
-export const gamePath = path.resolve(binDir, "tacint_mapkit.exe")
+export const gamePath = path.resolve(binDir, gameExe)
 export const devToolsPath = path.resolve(binDir, "TacintMapkitLauncher.exe")
-export const srcdsPath = path.resolve(binDir, "tacint_ds.exe")
+export const srcdsPath = path.resolve(binDir, serverExe)
 
 export const commonRedistDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived", "_CommonRedist"))
 export const revivedDir = files.createDirIfNotExists(path.resolve(workingDir, "_revived"))

@@ -1,3 +1,4 @@
+import { shell } from "electron"
 import { getWindow } from "../main"
 
 export function loadingSetState(key: string, message: string, completedItems: number = 0, totalItems: number = 0, success: boolean = false) {
@@ -18,7 +19,27 @@ export function loadingReset(key: string) {
     win.webContents.send("loading:reset", key)
 }
 
+/**
+ *
+ * @param time Time in ms
+ * @returns
+ */
 export function wait(time: number) {
     // eslint-disable-next-line no-promise-executor-return
     return new Promise(resolve => setTimeout(resolve, time))
+}
+
+export function startExecutableWithArgs(filePath: string, args?: string) {
+    const shortcutPath = `${filePath}.lnk`
+    shell.writeShortcutLink(shortcutPath, "create", {
+        target: filePath,
+        args,
+        description: "Don't delete - auto generated shortcut from Tactical Internvention Revived"
+    })
+
+    shell.openPath(shortcutPath)
+}
+
+export function isDev() {
+    return process.env.NODE_ENV === "development"
 }

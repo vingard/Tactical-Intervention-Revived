@@ -71,11 +71,19 @@ export async function mountFile(filePath: string, from: string, to: string, modN
 
     const fromFull = path.resolve(from, filePath)
     const toFull = path.resolve(to, filePath)
+    // eslint-disable-next-line no-use-before-define
     const manifest = getMountManifest()
     const mods = mod.getAll()
 
     // If link file exists, we'll remove it and replace
-    await jetpack.removeAsync(toFull)
+
+    // OLD METHOD: (seemed to have issues)
+    //await jetpack.removeAsync(toFull)
+
+    // NEW METHOD:
+    if (fs.existsSync(toFull)) {
+        fs.unlinkSync(toFull)
+    }
 
     try {
         // create symlink
