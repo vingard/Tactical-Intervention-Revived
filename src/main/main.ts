@@ -25,6 +25,7 @@ import { SoftError } from "./core/softError"
 import { devToolsPath, modsDir } from "./core/appPath"
 import { LOADOUTS } from "./loadout_data"
 import { ProcessWatcher } from "./core/procwatch"
+import { HostedServer } from "./core/hostedserver"
 
 export class AppUpdater {
     constructor() {
@@ -182,6 +183,18 @@ const createWindow = async () => {
 // Start the process watcher...
 export const processWatcher = new ProcessWatcher()
 
+let hostedServer: HostedServer
+
+processWatcher.on("serverStarted", () => {
+    hostedServer = new HostedServer("TEMP_IP")
+    console.log("srv")
+})
+
+processWatcher.on("serverClosed", () => {
+    console.log("close")
+    if (hostedServer) hostedServer.kill()
+})
+
 /**
  * Add event listeners...
  */
@@ -233,13 +246,10 @@ async function handleSetStartConfig(event: any, data: any) {
 
 
 async function handleQueryServer(event: any, ip: string, port: number) {
-    try {
-        const info = await server.query(ip, port)
-        return info
-    } catch(err) {
-        return false
-    }
+    const info = await server.query(ip, port)
+    if (!info) return false
 
+    return info
 
     // OLD METHOD, this is left in incase server queries dont work reliably
     // return new Promise<void>(function(resolve: any) {
@@ -462,6 +472,10 @@ async function handleModInstallFromFolder(event: any) {
     }
 }
 
+async function handleGetServerList() {
+    return server.getList()
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -476,6 +490,7 @@ app.whenReady()
         ipcMain.handle("game:getLoadoutData", handleGetLoadoutData)
         ipcMain.handle("game:getLoadout", handleGetLoadout)
         ipcMain.handle("game:setLoadout", handleSetLoadout)
+        ipcMain.handle("game:getServerList", handleGetServerList)
 
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)

@@ -1,3 +1,4 @@
+import * as dns from "dns"
 import { shell } from "electron"
 import { getWindow } from "../main"
 
@@ -42,4 +43,13 @@ export function startExecutableWithArgs(filePath: string, args?: string) {
 
 export function isDev() {
     return process.env.NODE_ENV === "development"
+}
+
+export async function dnsLookup(host: string): Promise<string | undefined> {
+    return new Promise((resolve, reject) => {
+        dns.lookup(host, (err, address, family) => {
+            if (err) resolve(undefined)
+            resolve(address)
+        })
+    })
 }

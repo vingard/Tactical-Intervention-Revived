@@ -35,8 +35,8 @@ export class ProcessWatcher extends EventEmitter {
     async scan() {
         //console.log("binAssetPath", appPath.binAssetPath)
 
-        const oldGameProcCount = this.processes.game.size
-        const oldServerProcCount = this.processes.server.size
+        const oldGameProcCount = this.processes.game.size.valueOf()
+        const oldServerProcCount = this.processes.server.size.valueOf()
 
         const osProcesses = await psList({
             all: true,
@@ -60,14 +60,13 @@ export class ProcessWatcher extends EventEmitter {
         }
 
         const newGameProcCount = this.processes.game.size
-
-        //console.log(this.processes)
+        const newServerProcCount = this.processes.server.size
 
         // i could xor here but might wanna expand this tracking to be smarter in future
         if (oldGameProcCount === 0 && newGameProcCount > 0) this.emit("gameStarted")
-        if (oldGameProcCount > 1 && newGameProcCount === 0) this.emit("gameClosed")
-        if (oldServerProcCount === 0 && newGameProcCount > 0) this.emit("serverStarted")
-        if (oldGameProcCount > 1 && newGameProcCount === 0) this.emit("serverClosed")
+        if (oldGameProcCount > 0 && newGameProcCount === 0) this.emit("gameClosed")
+        if (oldServerProcCount === 0 && newServerProcCount > 0) this.emit("serverStarted")
+        if (oldServerProcCount > 0 && newServerProcCount === 0) this.emit("serverClosed")
     }
 
     setScanning(isScanning: boolean) {

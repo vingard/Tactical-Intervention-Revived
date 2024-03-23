@@ -77,8 +77,15 @@ function LoadoutItemSelectTemp({name, availableItems, noneOption = false, ...pro
             noResults={<MenuItem disabled text="No results" roleStructure="listoption"/>}
             onItemSelect={handleItemSelect}
             popoverProps={{position: "bottom-left", matchTargetWidth: true}}
+            fill
         >
-            <Button text={field.value && itemGetName(field.value) || "None"} rightIcon="double-caret-vertical" placeholder="Select a item"/>
+            <Button
+                text={field.value && itemGetName(field.value) || "None"}
+                rightIcon="double-caret-vertical"
+                placeholder="Select a item"
+                fill
+                alignText="left"
+            />
         </Select>
     )
 }

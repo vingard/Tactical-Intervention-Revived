@@ -19,6 +19,7 @@ export type Channels =
     | "game:getLoadout"
     | "game:setLoadout"
     | "game:showUninstaller"
+    | "game:getServerList"
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"

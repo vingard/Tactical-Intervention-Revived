@@ -5,6 +5,7 @@ import { SettingsDialog } from "./settings_dialog"
 import { AddModDialog } from "./add_mod_dialog"
 import { LoadoutDialog } from "./loadout_dialog"
 import { NewModDialog } from "./new_mod_dialog"
+import { ServerBrowserDialog } from "./serverbrowser_dialog"
 
 function PlayDropdown() {
     return (
@@ -54,7 +55,7 @@ export function Toolbar() {
                             <Button icon="ammunition" onClick={() => setOpenPopup("loadout")}>Loadout</Button>
                             <Button icon="cog" onClick={() => setOpenPopup("settings")}>Settings</Button>
                             <Divider/>
-                            <Button intent="primary" icon="play" large onClick={() => setOpenPopup("connect")}>
+                            <Button intent="primary" icon="play" large onClick={() => setOpenPopup("server_browser")}>
                                 Play
                             </Button>
                             <Popover content={<PlayDropdown/>} placement="bottom-end">
@@ -66,6 +67,11 @@ export function Toolbar() {
             </div>
 
             <SettingsDialog open={openPopup === "settings"} onClosed={() => setOpenPopup("")}/>
+            <ServerBrowserDialog
+                open={openPopup === "server_browser"}
+                onClosed={() => setOpenPopup("")}
+                onSelectIPConnect={() => setOpenPopup("connect")}
+            />
             <ConnectDialog open={openPopup === "connect"} onClosed={() => setOpenPopup("")}/>
             <AddModDialog open={openPopup === "mod_add"} onClosed={() => setOpenPopup("")}/>
             <NewModDialog open={openPopup === "mod_new"} onClosed={() => setOpenPopup("")}/>

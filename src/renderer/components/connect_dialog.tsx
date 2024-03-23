@@ -1,28 +1,42 @@
 import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H3, H4, H5, Icon, InputGroup } from "@blueprintjs/core"
-import { useState } from "react"
+import { useDebounce } from "@uidotdev/usehooks"
+import isValidHostname from "is-valid-hostname"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 
 export function ConnectDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const {register, handleSubmit, control, formState: {errors}} = useForm()
     const [serverIsValid, setServerIsValid] = useState(false)
     const [serverData, setServerData] = useState(null)
+    const [connectInput, setConnectInput] = useState("")
+    const debouncedConnectInput = useDebounce(connectInput, 500)
 
-    async function onIpChanged(event: any) {
-        const ipStr: string = event.target.value
-        setServerIsValid(false)
-        setServerData(null)
+    useEffect(() => {
+        async function onHostnameChanged() {
+            const ipStr = debouncedConnectInput
+            setServerIsValid(false)
+            setServerData(null)
 
-        if (!ipStr || ipStr.trim() === "") return
-        if (!ipStr.match(/^(([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{1,5})?$/g)) return
-        const split = ipStr.split(":")
-        const ip = split[0]
-        const port = parseInt(split[1], 10) || 27015
+            if (!ipStr || ipStr.trim() === "") return
+            const split = ipStr.split(":")
+            const hostname = split[0]
 
-        const serverInfo = await window.electron.ipcRenderer.invoke("game:queryServer", ip, port)
-        if (!serverInfo) return
-        setServerIsValid(true)
-        setServerData(serverInfo)
-    }
+            // is valid hostname?
+            console.log("test", hostname)
+            if (!isValidHostname(hostname)) return
+            console.log("validHostname")
+
+            // get port if it exists
+            const port = parseInt(split[1], 10) || 27015
+
+            const serverInfo = await window.electron.ipcRenderer.invoke("game:queryServer", hostname, port)
+            if (!serverInfo) return
+            setServerIsValid(true)
+            setServerData(serverInfo)
+        }
+
+        onHostnameChanged()
+    }, [debouncedConnectInput])
 
     async function connectFormSubmit(data: any, event: any) {
         if (!serverIsValid) return
@@ -52,7 +66,7 @@ export function ConnectDialog({open, onClosed}: {open: boolean, onClosed: any}) 
                             <Controller
                                 name="ip"
                                 control={control}
-                                rules={{required: true, onChange: (e) => (onIpChanged(e))}}
+                                rules={{required: true, onChange: (e) => (setConnectInput(e.target.value))}}
                                 render={({field}) => (
                                     <InputGroup
                                         {...field}

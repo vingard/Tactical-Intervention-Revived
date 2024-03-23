@@ -124,3 +124,15 @@ body,
     background: rgb(245,245,245);
     background: linear-gradient(21deg, rgba(245,245,245,0) 0%, rgba(185,36,36,0.2956584000787815) 90%);
 }
+
+
+.serverList.metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+    }
+}
