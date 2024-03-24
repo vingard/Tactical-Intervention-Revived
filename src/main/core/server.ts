@@ -18,6 +18,9 @@ export async function start(args: string = "", port: number = 27015) {
     baseArgs += "\nsv_hibernate_when_empty 0" // disable hibernate
     baseArgs += "\nstringtable_usedictionaries 0" // prevent map change crashes
     baseArgs += `\nhostname ${await game.getUsername()}'s server`
+    baseArgs += "\nmap mis_highway"
+
+    baseArgs += "\necho Started Tactical Intervention Revived server!"
     //baseArgs += `\nmaxplayers ${27016}`
 
     try {
@@ -28,11 +31,11 @@ export async function start(args: string = "", port: number = 27015) {
 
     // old temp cfg system is kinda useless now that we have
     // startExecutableWithArgs
-    //await game.setTempCfg(`${baseArgs}\n\n${args}`)
+    await game.setTempCfg(`${baseArgs}\n\n${args}`)
 
-    await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
+    //await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
     console.log("port=",port)
-    util.startExecutableWithArgs(appPath.srcdsPath, `-ip 0.0.0.0 -port ${port} +clientport 27006 +exec ds.cfg`)
+    util.startExecutableWithArgs(appPath.srcdsPath, `-port ${port} +clientport 27006`)
 }
 
 export async function query(ip: string, port: number = 27015, getPlayers: boolean = true) {

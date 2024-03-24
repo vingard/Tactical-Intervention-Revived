@@ -130,7 +130,7 @@ export function NewModDialog({open, onClosed}: {open: boolean, onClosed: any}) {
                             />
                         </FormGroup>
 
-                        <strong>{`After creating this mod - you can edit these settings by editing the 'mod.json' file in your mod`}</strong>
+                        <strong>{`After creation, you can update this configuration by editing the 'mod.json' file in your mod directory`}</strong>
                     </DialogBody>
 
                     <DialogFooter

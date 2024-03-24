@@ -1,6 +1,7 @@
 import { Button, Dialog, DialogBody, DialogFooter, Section, SectionCard } from "@blueprintjs/core"
 import { ipcRenderer } from "electron"
 import { useEffect, useRef, useState } from "react"
+import { ServerList } from "./serverlist"
 
 export function ServerBrowserDialog({open, onClosed, onSelectIPConnect}: {open: boolean, onClosed: any, onSelectIPConnect: any}) {
     const [serverList, setServerList] = useState([])
@@ -32,56 +33,31 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect}: {open: 
                 style={{width: "56rem"}}
             >
                 <DialogBody>
-                    {serverList.filter((server: any) => server.query !== undefined).map((server: any) => (
-                        <Section
-                            key={server.id}
-                            title={server.query.info.name}
-                            subtitle={`${server.query.info.players}/${server.query.info.max_players} players on ${server.query.info.map}`}
-                            rightElement={
-                                <Button>
-                                    Connect
-                                </Button>
-                            }
-                            collapsible
-                            compact
-                        >
-                            <SectionCard>
-                                <div className="serverList metadata">
-                                    <div>
-                                        <span>Map</span>{server.query.info.map}
-                                    </div>
-                                    <div>
-                                        <span>Players</span>{`${server.query.info.players}/${server.query.info.max_players}`}
-                                    </div>
-
-                                    {server.query.players.map((ply: any) => (
-                                        <span>{`${ply.name} - ${ply.score}`}</span>
-                                    ))}
-                                </div>
-                            </SectionCard>
-                        </Section>
-                    ))}
-
+                    <ServerList serverList={serverList} isLoading={loading} onJoinServer={() => onClosed()}/>
                 </DialogBody>
 
                 <DialogFooter
                     actions={
                         <>
-                            <Button>
+                            <Button icon="refresh" onClick={() => loadServerList()}>
+                                Refresh
+                            </Button>
+
+                            <Button icon="globe-network">
                                 Create Server
                             </Button>
 
-                            <Button onClick={onSelectIPConnect}>
+                            <Button onClick={onSelectIPConnect} icon="arrow-up">
                                 Connect via IP
                             </Button>
 
-                            <Button
+                            {/* <Button
                                 intent="primary"
                                 type="submit"
                                 disabled={false}
                             >
                                 Connect
-                            </Button>
+                            </Button> */}
                         </>
                     }
                 />
