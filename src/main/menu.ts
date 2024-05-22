@@ -138,14 +138,14 @@ export default class MenuBuilder {
                             shell.openPath(appPath.workingDir)
                         }
                     },
-                    {
-                        label: "Start Dedicated Server",
-                        click: () => {
-                            if (!game.isInstalled()) return
+                    // {
+                    //     label: "Start Dedicated Server",
+                    //     click: () => {
+                    //         if (!game.isInstalled()) return
 
-                            server.start()
-                        }
-                    },
+                    //         server.start()
+                    //     }
+                    // },
                     // {
                     //     label: "Re-Mount Game",
                     //     click: () => {

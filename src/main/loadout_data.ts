@@ -1682,7 +1682,7 @@ export const LOADOUTS = {
     },
     "goggles8": {
         "id": 1457,
-        "name": "Tactical Goggles (Artic)",
+        "name": "Tactical Goggles (Arctic)",
         "tags": [
             "mask"
         ]
@@ -3375,7 +3375,7 @@ export const LOADOUTS = {
     },
     "tmodel4b": {
         "id": 12003,
-        "name": "Bomber (Artic)",
+        "name": "Bomber (Arctic)",
         "tags": [
             "model",
             "terrorist"

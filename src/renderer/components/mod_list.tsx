@@ -112,11 +112,11 @@ export function ModList() {
             result.destination.index
         )
 
-        const goingDown = result.source.index < result.destination.index
-        console.log("goingDown", goingDown)
+        console.log(result.source.index,  "-->", result.destination.index)
+
+
         const mod = items[result.destination.index]
-        const lastMod = items[result.destination.index + (goingDown && -1 || 1)]
-        const priority = (lastMod?.priority || 0) + (goingDown && -1 || 1)
+        const priority = mod.priority + (result.source.index - result.destination.index)
 
         console.log(`setting priority for ${mod.name} ${mod.uid} to ${priority}`)
 
@@ -129,7 +129,7 @@ export function ModList() {
     }, [mods, setMods])
 
     return (
-        <>
+        <div className="modList container">
             {loadingStateId !== "" && <WorkerDialog
                 open={mounting}
                 title={workerTitle}
@@ -138,104 +138,102 @@ export function ModList() {
                 onClosed={() => setMounting(false)}
             />}
 
-            <div className="modList container">
-                {mods.length === 0 && (
-                    <div className="modList noMods">
-                        <NonIdealState
-                            icon="heart-broken"
-                            title="No mods installed"
-                        >
-                            {`When you download a mod it'll show up here.`}
-                        </NonIdealState>
-                    </div>
-                )}
+            {mods.length === 0 && (
+                <div className="modList noMods">
+                    <NonIdealState
+                        icon="heart-broken"
+                        title="No mods installed"
+                    >
+                        {`When you download a mod it'll show up here.`}
+                    </NonIdealState>
+                </div>
+            )}
 
-                <Section compact>
-                    {/** eslint-disable-next-line react/jsx-no-bind */}
-                    <DragDropContext onDragEnd={onDragEnd}>
-                        <Droppable droppableId="droppable">
-                            {(provided, snapshot) => (
-                                <div
-                                    {...provided.droppableProps}
-                                    ref={provided.innerRef}
-                                    style={{
-                                        // background: snapshot.isDraggingOver && "lightblue" || undefined,
-                                        //opacity: snapshot.isDraggingOver && 0.1 || undefined,
-                                        background: snapshot.isDraggingOver && "rgba(200, 200, 200, 0.05)" || undefined,
-                                        padding: "grid"
-                                    }}
-                                >
-                                    {mods.map((mod: any, index) => (
-                                        <Draggable key={mod.uid} draggableId={mod.uid} index={index}>
-                                            {(modProvided, modSnapshot) => (
-                                                <SectionCard
-                                                    key={mod.uid}
-                                                    ref={modProvided.innerRef}
-                                                    padded={false}
-                                                    {...modProvided.draggableProps}
-                                                >
-                                                    <div style={{
-                                                        background: modSnapshot.isDragging && "rgba(255, 255, 255, 0.1)" || undefined,
-                                                        opacity: modSnapshot.isDragging && 0.5 || undefined,
-                                                        padding: "0.5rem",
-                                                        paddingLeft: "0.2rem",
-                                                        display: "flex",
-                                                        alignItems: "center"
-                                                    }}>
-                                                        <div style={{verticalAlign: "middle", padding: "0.1rem"}}>
-                                                            <Tooltip content="Drag the mod up or down the list to adjust the load order" compact className="bp5-dark">
-                                                                <Button
-                                                                    minimal
-                                                                    icon="arrows-vertical"
-                                                                    style={{opacity: 0.6}}
-                                                                    fill
-                                                                    small
-                                                                    {...modProvided.dragHandleProps}
-                                                                />
-                                                            </Tooltip>
-                                                        </div>
+            <Section compact>
+                {/** eslint-disable-next-line react/jsx-no-bind */}
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <Droppable droppableId="droppable">
+                        {(provided, snapshot) => (
+                            <div
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                style={{
+                                    // background: snapshot.isDraggingOver && "lightblue" || undefined,
+                                    //opacity: snapshot.isDraggingOver && 0.1 || undefined,
+                                    background: snapshot.isDraggingOver && "rgba(200, 200, 200, 0.05)" || undefined,
+                                    padding: "grid"
+                                }}
+                            >
+                                {mods.map((mod: any, index) => (
+                                    <Draggable key={mod.uid} draggableId={mod.uid} index={index}>
+                                        {(modProvided, modSnapshot) => (
+                                            <SectionCard
+                                                key={mod.uid}
+                                                ref={modProvided.innerRef}
+                                                padded={false}
+                                                {...modProvided.draggableProps}
+                                            >
+                                                <div style={{
+                                                    background: modSnapshot.isDragging && "rgba(255, 255, 255, 0.1)" || undefined,
+                                                    opacity: modSnapshot.isDragging && 0.5 || undefined,
+                                                    padding: "0.5rem",
+                                                    paddingLeft: "0.2rem",
+                                                    display: "flex",
+                                                    alignItems: "center"
+                                                }}>
+                                                    <div style={{verticalAlign: "middle", padding: "0.1rem"}}>
+                                                        <Tooltip content="Drag the mod up or down the list to adjust the load order" compact className="bp5-dark">
+                                                            <Button
+                                                                minimal
+                                                                icon="arrows-vertical"
+                                                                style={{opacity: 0.6}}
+                                                                fill
+                                                                small
+                                                                {...modProvided.dragHandleProps}
+                                                            />
+                                                        </Tooltip>
+                                                    </div>
 
-                                                        <div>
-                                                            <H6 style={{marginBottom: "0.1rem"}}>{mod.name || mod.uid}</H6>
-                                                            <p className="muted" style={{marginTop: "0", marginBottom: "0.2rem"}}>
-                                                                {mod.version}
-                                                            </p>
-                                                            <div style={{display: "flex", gap: "0.2rem"}}>
-                                                                <Tag minimal intent={mod.mounted && "success" || "danger"}>{mod.mounted && "Mounted" || "Un-mounted"}</Tag>
+                                                    <div>
+                                                        <H6 style={{marginBottom: "0.1rem"}}>{mod.name || mod.uid}</H6>
+                                                        <p className="muted" style={{marginTop: "0", marginBottom: "0.2rem"}}>
+                                                            {mod.version}
+                                                        </p>
+                                                        <div style={{display: "flex", gap: "0.2rem"}}>
+                                                            <Tag minimal intent={mod.mounted && "success" || "danger"}>{mod.mounted && "Mounted" || "Un-mounted"}</Tag>
 
-                                                                {mod.needsUpdate && <Tag minimal intent="warning">Update Available (latest: 2.0.1)</Tag>}
-                                                                {!mod.url && <Tag minimal intent="primary">Local Mod</Tag>}
-                                                            </div>
-                                                        </div>
-
-                                                        <div style={{margin: "1rem", marginLeft: "auto"}}>
-                                                            <ButtonGroup>
-                                                                {mod.needsUpdate && <Button icon="cloud-download" intent="primary">Update</Button>}
-                                                                {!mod.url && (
-                                                                    <Button
-                                                                        icon="changes"
-                                                                        onClick={() => (syncMod(mod))}
-                                                                        disabled={!mod.mounted}
-                                                                    >
-                                                                        Sync Files
-                                                                    </Button>
-                                                                )}
-                                                                <Button icon={mod.mounted && "switch" || "one-to-one"} onClick={() => (setModMounted(mod, !mod.mounted))}>{mod.mounted && "Un-Mount" || "Mount"}</Button>
-                                                                <ModDropdown mod={mod}/>
-                                                            </ButtonGroup>
+                                                            {mod.needsUpdate && <Tag minimal intent="warning">Update Available (latest: 2.0.1)</Tag>}
+                                                            {!mod.url && <Tag minimal intent="primary">Local Mod</Tag>}
                                                         </div>
                                                     </div>
-                                                </SectionCard>
-                                            )}
-                                        </Draggable>
-                                    ))}
-                                    {provided.placeholder}
-                                </div>
-                            )}
-                        </Droppable>
-                    </DragDropContext>
-                </Section>
-            </div>
-        </>
+
+                                                    <div style={{margin: "1rem", marginLeft: "auto"}}>
+                                                        <ButtonGroup>
+                                                            {mod.needsUpdate && <Button icon="cloud-download" intent="primary">Update</Button>}
+                                                            {!mod.url && (
+                                                                <Button
+                                                                    icon="changes"
+                                                                    onClick={() => (syncMod(mod))}
+                                                                    disabled={!mod.mounted}
+                                                                >
+                                                                    Sync Files
+                                                                </Button>
+                                                            )}
+                                                            <Button icon={mod.mounted && "switch" || "one-to-one"} onClick={() => (setModMounted(mod, !mod.mounted))}>{mod.mounted && "Un-Mount" || "Mount"}</Button>
+                                                            <ModDropdown mod={mod}/>
+                                                        </ButtonGroup>
+                                                    </div>
+                                                </div>
+                                            </SectionCard>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
+            </Section>
+        </div>
     )
 }

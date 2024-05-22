@@ -6,7 +6,7 @@ import EventEmitter from "events"
 import log from "electron-log"
 import { readVdf, writeVdf } from "steam-binary-vdf"
 
-import { shell } from "electron"
+import { app, shell } from "electron"
 import { spawn } from "child_process"
 import * as appPath from "./appPath"
 import * as config from "./config"
@@ -71,12 +71,18 @@ export async function mountFile(filePath: string, from: string, to: string, modN
 
     const fromFull = path.resolve(from, filePath)
     const toFull = path.resolve(to, filePath)
+    // eslint-disable-next-line no-use-before-define
     const manifest = getMountManifest()
     const mods = mod.getAll()
 
     // If link file exists, we'll remove it and replace
-    if (await jetpack.existsAsync(toFull)) {
-        await jetpack.removeAsync(toFull)
+
+    // OLD METHOD: (seemed to have issues)
+    //await jetpack.removeAsync(toFull)
+
+    // NEW METHOD:
+    if (fs.existsSync(toFull)) {
+        fs.unlinkSync(toFull)
     }
 
     try {
@@ -518,4 +524,11 @@ export async function start(args: string = "") {
         //setTempCfg("")
         //console.log("game closed")
     })
+}
+
+export async function getMaps() {
+    const mapsFs = jetpack.cwd(appPath.mapsDir)
+    const maps = mapsFs.find({ matching: "*.bsp" })
+
+    return maps.map((map) => map.endsWith(".bsp") && map.slice(0, map.length - 4) || map)
 }
