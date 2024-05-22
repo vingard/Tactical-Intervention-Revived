@@ -1,10 +1,13 @@
 import { Button, Card, Dialog, DialogBody, DialogFooter, FormGroup, H3, H4, H5, Icon, InputGroup, Switch } from "@blueprintjs/core"
 import { useEffect, useMemo, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FormProvider, useForm } from "react-hook-form"
+import { MapSelect } from "./map_select"
 
 export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: any}) {
-    const {register, handleSubmit, control, formState: {errors}} = useForm()
+    const formMethods = useForm()
+    const {register, handleSubmit, control, formState: {errors}} = formMethods
     const [defaultServerName, setDefaultServerName] = useState("")
+    const [maps, setMaps] = useState([])
 
     async function createServerFormSubmit(data: any, event: any) {
         console.log("submitServerForm")
@@ -15,6 +18,7 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
     useEffect(() => {
         async function onInit() {
             setDefaultServerName(await window.electron.ipcRenderer.invoke("game:getDefaultServerName"))
+            setMaps(await window.electron.ipcRenderer.invoke("game:getMaps"))
         }
 
         onInit()
@@ -28,16 +32,17 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
             title="Create a Server"
             icon="globe-network"
         >
+            <FormProvider {...formMethods}>
                 <form onSubmit={handleSubmit(createServerFormSubmit)}>
                     <DialogBody>
                         <FormGroup
                             label="Name"
+                            helperText="Optional"
                             intent={errors.name && "danger"}
                         >
                             <Controller
                                 name="name"
                                 control={control}
-                                rules={{required: true}}
                                 render={({field}) => (
                                     <InputGroup
                                         {...field}
@@ -64,6 +69,35 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
                                         intent={errors.port && "danger"}
                                     />
                                 )}
+                            />
+                        </FormGroup>
+
+                        <FormGroup
+                            label="Starting Map"
+                            helperText="The starting level - map cycle rotations cannot be configured here yet"
+                            intent={errors.initialMap && "danger"}
+                        >
+                            <Controller
+                                name="initialMap"
+                                control={control}
+                                rules={{required: true}}
+                                defaultValue="mis_highway"
+                                render={({field}) => (
+                                    <MapSelect
+                                        {...field}
+                                        availableMaps={maps}
+                                    />
+                                )}
+                            />
+                        </FormGroup>
+
+                        <FormGroup
+                            label="Is Hidden"
+                            helperText="Hides your server from the public game list, all clients must connect directly via IP instead"
+                            intent={errors.isHidden && "danger"}
+                        >
+                            <Switch
+                                {...register("isHidden")}
                             />
                         </FormGroup>
 
@@ -113,6 +147,7 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
                         }
                     />
                 </form>
+            </FormProvider>
         </Dialog>
     )
 }

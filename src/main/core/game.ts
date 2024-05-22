@@ -6,7 +6,7 @@ import EventEmitter from "events"
 import log from "electron-log"
 import { readVdf, writeVdf } from "steam-binary-vdf"
 
-import { shell } from "electron"
+import { app, shell } from "electron"
 import { spawn } from "child_process"
 import * as appPath from "./appPath"
 import * as config from "./config"
@@ -524,4 +524,11 @@ export async function start(args: string = "") {
         //setTempCfg("")
         //console.log("game closed")
     })
+}
+
+export async function getMaps() {
+    const mapsFs = jetpack.cwd(appPath.mapsDir)
+    const maps = mapsFs.find({ matching: "*.bsp" })
+
+    return maps.map((map) => map.endsWith(".bsp") && map.slice(0, map.length - 4) || map)
 }

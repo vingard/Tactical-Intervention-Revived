@@ -183,16 +183,18 @@ const createWindow = async () => {
 // Start the process watcher...
 export const processWatcher = new ProcessWatcher()
 
-let hostedServer: HostedServer
+let hostedServer: HostedServer | undefined
 
 processWatcher.on("serverStarted", () => {
+    if (server.getLastServerIsHidden()) return
+
     hostedServer = new HostedServer(server.getLastServerPort())
     console.log("srv")
 })
 
 processWatcher.on("serverClosed", () => {
     console.log("close")
-    if (hostedServer) hostedServer.kill()
+    if (hostedServer?.alive) hostedServer.kill()
 })
 
 /**
@@ -479,17 +481,24 @@ async function handleGetServerList() {
 async function handleCreateServer(event: any, serverInfo: any) {
     let args = ""
 
+    console.log(serverInfo)
+
     if (serverInfo.name) args += `\nhostname ${serverInfo.name}`
-    args += `\nti_vehicle_authmode ${event.smoothDriving && 2 || 1}`
+    args += `\nti_vehicle_authmode ${serverInfo.smoothDriving && 2 || 1}`
 
     if (serverInfo.configFile) args += `\nexec "${serverInfo.configFile}"`
+    if (serverInfo.initialMap) args += `\nmap ${serverInfo.initialMap}`
 
-    server.start(args, serverInfo.port)
+    server.start(args, serverInfo.port, serverInfo.isHidden)
     return true
 }
 
 async function handleGetDefaultServerName() {
     return server.getDefaultServerName()
+}
+
+async function handleGameGetMaps() {
+    return game.getMaps()
 }
 
 app.whenReady()
@@ -509,6 +518,7 @@ app.whenReady()
         ipcMain.handle("game:setLoadout", handleSetLoadout)
         ipcMain.handle("game:getServerList", handleGetServerList)
         ipcMain.handle("game:createServer", handleCreateServer)
+        ipcMain.handle("game:getMaps", handleGameGetMaps)
 
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)

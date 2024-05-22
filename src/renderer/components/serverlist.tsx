@@ -2,7 +2,7 @@ import { Button, Card, NonIdealState, Section, SectionCard, Spinner } from "@blu
 import { useMemo } from "react";
 
 export function ServerList({serverList, isLoading, onJoinServer}: {serverList: any, isLoading: boolean, onJoinServer: any}) {
-    const validServers = useMemo(() => serverList.filter((server: any) => server.query?.info?.game === "Tactical Intervention"), [serverList])
+    const validServers = useMemo(() => serverList && serverList.filter((server: any) => server.query?.info?.game === "Tactical Intervention") || [], [serverList])
 
     async function joinServer(ip: string) {
         const connecting = await window.electron.ipcRenderer.invoke("game:connectServer", ip)

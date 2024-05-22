@@ -9,17 +9,22 @@ import { SoftError } from "./softError"
 
 
 let LAST_SERVER_PORT: number
+let LAST_SERVER_IS_HIDDEN: boolean
 
 // this is a nasty hack
 export function getLastServerPort() {
     return LAST_SERVER_PORT
 }
 
+export function getLastServerIsHidden() {
+    return LAST_SERVER_IS_HIDDEN
+}
+
 export async function getDefaultServerName() {
     return `${await game.getUsername()}'s server`
 }
 
-export async function start(args: string = "", port: number = 27015) {
+export async function start(args: string = "", port: number = 27015, isHidden: boolean = false) {
     log.info(`Attempting to start dedicated server with args: ${args}`)
     const conf = {mods: {}, loadoutRules: {}, hidden: false}
 
@@ -48,6 +53,7 @@ export async function start(args: string = "", port: number = 27015) {
     //await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
     console.log("port=",port)
     LAST_SERVER_PORT = port
+    LAST_SERVER_IS_HIDDEN = isHidden
     util.startExecutableWithArgs(appPath.srcdsPath, `-port ${port} +clientport 27006`)
 }
 

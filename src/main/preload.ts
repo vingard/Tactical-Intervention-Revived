@@ -22,6 +22,7 @@ export type Channels =
     | "game:setLoadout"
     | "game:showUninstaller"
     | "game:getServerList"
+    | "game:getMaps"
     | "loading:setState"
     | "loading:setError"
     | "loading:reset"

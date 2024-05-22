@@ -1,7 +1,9 @@
-import { Button, Dialog, DialogBody, DialogFooter, Section, SectionCard } from "@blueprintjs/core"
-import { ipcRenderer } from "electron"
+import { Button, Dialog, DialogBody, DialogFooter, NonIdealState, Section, SectionCard } from "@blueprintjs/core"
 import { useEffect, useRef, useState } from "react"
 import { ServerList } from "./serverlist"
+
+const MESSAGE_RATE_LIMIT = "You have been rate-limited for making too many requests to the master server. Please wait a while before trying again."
+const MESSAGE_OTHER = "Failed to contact the master server. Ensure you have a stable connection or try again later."
 
 export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelectCreateServer}: {open: boolean, onClosed: any, onSelectIPConnect: any, onSelectCreateServer: any}) {
     const [serverList, setServerList] = useState([])
@@ -33,7 +35,13 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelect
                 style={{width: "56rem"}}
             >
                 <DialogBody>
-                    <ServerList serverList={serverList} isLoading={loading} onJoinServer={() => onClosed()}/>
+                    {status !== 200 && (
+                        <div>
+                            <NonIdealState icon="error" title="Error" description={status === 429 && MESSAGE_RATE_LIMIT || MESSAGE_OTHER}/>
+                        </div>
+                    ) || (
+                        <ServerList serverList={serverList} isLoading={loading} onJoinServer={() => onClosed()}/>
+                    )}
                 </DialogBody>
 
                 <DialogFooter
