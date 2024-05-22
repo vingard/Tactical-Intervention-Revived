@@ -186,7 +186,7 @@ export const processWatcher = new ProcessWatcher()
 let hostedServer: HostedServer
 
 processWatcher.on("serverStarted", () => {
-    hostedServer = new HostedServer("TEMP_IP")
+    hostedServer = new HostedServer(server.getLastServerPort())
     console.log("srv")
 })
 
@@ -476,6 +476,22 @@ async function handleGetServerList() {
     return server.getList()
 }
 
+async function handleCreateServer(event: any, serverInfo: any) {
+    let args = ""
+
+    if (serverInfo.name) args += `\nhostname ${serverInfo.name}`
+    args += `\nti_vehicle_authmode ${event.smoothDriving && 2 || 1}`
+
+    if (serverInfo.configFile) args += `\nexec "${serverInfo.configFile}"`
+
+    server.start(args, serverInfo.port)
+    return true
+}
+
+async function handleGetDefaultServerName() {
+    return server.getDefaultServerName()
+}
+
 app.whenReady()
     .then(() => {
         ipcMain.handle("game:checkState", handleGameCheckState)
@@ -483,6 +499,7 @@ app.whenReady()
         ipcMain.handle("game:setStartConfig", handleSetStartConfig)
         ipcMain.handle("game:queryServer", handleQueryServer)
         ipcMain.handle("game:connectServer", handleConnectServer)
+        ipcMain.handle("game:getDefaultServerName", handleGetDefaultServerName)
         ipcMain.handle("game:start", handleGameStart)
         ipcMain.handle("game:startDevTools", handleGmeStartDevTools)
         ipcMain.handle("game:getSettings", handleGetSettings)
@@ -491,6 +508,7 @@ app.whenReady()
         ipcMain.handle("game:getLoadout", handleGetLoadout)
         ipcMain.handle("game:setLoadout", handleSetLoadout)
         ipcMain.handle("game:getServerList", handleGetServerList)
+        ipcMain.handle("game:createServer", handleCreateServer)
 
         ipcMain.handle("mod:query", handleQueryMod)
         ipcMain.handle("mod:install", handleInstallMod)

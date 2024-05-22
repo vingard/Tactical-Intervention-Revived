@@ -7,6 +7,18 @@ import * as game from "./game"
 import * as masterServer from "./masterserver"
 import { SoftError } from "./softError"
 
+
+let LAST_SERVER_PORT: number
+
+// this is a nasty hack
+export function getLastServerPort() {
+    return LAST_SERVER_PORT
+}
+
+export async function getDefaultServerName() {
+    return `${await game.getUsername()}'s server`
+}
+
 export async function start(args: string = "", port: number = 27015) {
     log.info(`Attempting to start dedicated server with args: ${args}`)
     const conf = {mods: {}, loadoutRules: {}, hidden: false}
@@ -17,7 +29,7 @@ export async function start(args: string = "", port: number = 27015) {
     baseArgs += "\nsv_alltalk 2" // all teams can talk
     baseArgs += "\nsv_hibernate_when_empty 0" // disable hibernate
     baseArgs += "\nstringtable_usedictionaries 0" // prevent map change crashes
-    baseArgs += `\nhostname ${await game.getUsername()}'s server`
+    baseArgs += `\nhostname ${await getDefaultServerName()}`
     baseArgs += "\nmap mis_highway"
 
     baseArgs += "\necho Started Tactical Intervention Revived server!"
@@ -35,6 +47,7 @@ export async function start(args: string = "", port: number = 27015) {
 
     //await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
     console.log("port=",port)
+    LAST_SERVER_PORT = port
     util.startExecutableWithArgs(appPath.srcdsPath, `-port ${port} +clientport 27006`)
 }
 

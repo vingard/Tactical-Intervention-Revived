@@ -6,6 +6,7 @@ import { AddModDialog } from "./add_mod_dialog"
 import { LoadoutDialog } from "./loadout_dialog"
 import { NewModDialog } from "./new_mod_dialog"
 import { ServerBrowserDialog } from "./serverbrowser_dialog"
+import { CreateServerDialog } from "./create_server_dialog"
 
 function PlayDropdown() {
     return (
@@ -71,11 +72,13 @@ export function Toolbar() {
                 open={openPopup === "server_browser"}
                 onClosed={() => setOpenPopup("")}
                 onSelectIPConnect={() => setOpenPopup("connect")}
+                onSelectCreateServer={() => setOpenPopup("create_server")}
             />
             <ConnectDialog open={openPopup === "connect"} onClosed={() => setOpenPopup("")}/>
             <AddModDialog open={openPopup === "mod_add"} onClosed={() => setOpenPopup("")}/>
             <NewModDialog open={openPopup === "mod_new"} onClosed={() => setOpenPopup("")}/>
             <LoadoutDialog open={openPopup === "loadout"} onClosed={() => setOpenPopup("")}/>
+            <CreateServerDialog open={openPopup === "create_server"} onClosed={() => setOpenPopup("")}/>
         </>
     )
 }

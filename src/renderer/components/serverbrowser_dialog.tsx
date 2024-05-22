@@ -3,7 +3,7 @@ import { ipcRenderer } from "electron"
 import { useEffect, useRef, useState } from "react"
 import { ServerList } from "./serverlist"
 
-export function ServerBrowserDialog({open, onClosed, onSelectIPConnect}: {open: boolean, onClosed: any, onSelectIPConnect: any}) {
+export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelectCreateServer}: {open: boolean, onClosed: any, onSelectIPConnect: any, onSelectCreateServer: any}) {
     const [serverList, setServerList] = useState([])
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState()
@@ -43,7 +43,7 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect}: {open: 
                                 Refresh
                             </Button>
 
-                            <Button icon="globe-network">
+                            <Button icon="globe-network" onClick={() => onSelectCreateServer()}>
                                 Create Server
                             </Button>
 

@@ -1,7 +1,17 @@
 import { API } from "./api"
 
 export async function getServerList() {
-    const {data, status} = await API.get("server/list")
+    let resp: any
+    let error: any
+
+    try {
+        resp = await API.get("server/list")
+    } catch (err) {
+        error = err
+    }
+
+    const data = resp?.data
+    const status = resp?.status || error?.response?.status
 
     if (data?.servers) {
         return {status, servers: <any[]>data.servers, msVersion: <number>data.msVersion}
@@ -11,10 +21,18 @@ export async function getServerList() {
 }
 
 export async function sendHeartbeat(port: number = 27015) {
-    console.log("heartbeat")
-    const {data, status} = await API.post("server/heartbeat", {port})
+    let resp: any
+    let error: any
 
-    console.log(data)
+    try {
+        resp = await API.post("server/heartbeat", {port})
+    } catch (err) {
+        error = err
+    }
+
+    const data = resp?.data
+    const status = resp?.status || error?.response?.status
+
     return {
         status,
         response: status === 200 && {
@@ -25,11 +43,21 @@ export async function sendHeartbeat(port: number = 27015) {
 }
 
 export async function sendKillHeartbeat(port: number = 27015) {
-    const {data, status} = await API.delete("server/heartbeat", {data: {port}})
+    let resp: any
+    let error: any
+
+    try {
+        resp = await API.delete("server/heartbeat", {data: {port}})
+    } catch (err) {
+        error = err
+    }
+
+    const data = resp?.data
+    const status = resp?.status || error?.response?.status
 
     return {
         status,
-        response: status === 200 && data
+        response: data
     }
 }
 

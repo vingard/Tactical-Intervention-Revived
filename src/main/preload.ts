@@ -11,6 +11,8 @@ export type Channels =
     | "game:getCfg"
     | "game:queryServer"
     | "game:connectServer"
+    | "game:createServer"
+    | "game:getDefaultServerName"
     | "game:start"
     | "game:startDevTools"
     | "game:getSettings"
