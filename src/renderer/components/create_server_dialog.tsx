@@ -22,7 +22,7 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
         }
 
         onInit()
-    }, [])
+    }, [open])
 
     return (
         <Dialog
