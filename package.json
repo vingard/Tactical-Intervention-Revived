@@ -185,7 +185,7 @@
         ],
         "extraFiles": [
             {
-                "from": "src/assets_bin",
+                "from": "./assets_bin",
                 "to": "./",
                 "filter": [
                     "**/*"
@@ -225,6 +225,7 @@
             "oneClick": false,
             "allowToChangeInstallationDirectory": true,
             "perMachine": true,
+            "warningsAsErrors": false,
             "include": ".erb/scripts/installer.nsh"
         },
         "win": {
