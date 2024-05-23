@@ -185,7 +185,7 @@
         ],
         "extraFiles": [
             {
-                "from": "src/assets_bin",
+                "from": "./assets_bin",
                 "to": "./",
                 "filter": [
                     "**/*"
