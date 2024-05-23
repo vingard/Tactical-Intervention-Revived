@@ -4,10 +4,9 @@ import path from "path"
 import * as files from "./files"
 import { isDev } from "./util"
 
-const appPath = app.getAppPath()
-export const binAssetPath = isDev() ? path.resolve(appPath, "assets_bin") : appPath
 export const exePath = app.getPath("exe")
 export const workingDir = path.dirname(exePath)
+export const binAssetPath = isDev() ? path.resolve(workingDir, "assets_bin") : workingDir
 const appData = app.getPath("appData")
 
 export const tacintDir = files.createDirIfNotExists(path.resolve(workingDir, "tacint"))
