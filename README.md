@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/vingard/Tactical-Intervention-Revived/blob/main/assets/icons/256x256.png?raw=true" alt="Tactical Intervention Revived Logo" width="170px"/>
+  <img src="./readme_assets/icon.png" alt="Tactical Intervention Revived Logo" width="180px"/>
 </p>
 
 # Tactical Intervention Revived
@@ -7,7 +7,12 @@ A maintained non-Steam version of Tactical Intervention. Comes with restored fea
 
 **Tactical Intervention Revived only supports Windows (currently)**
 
-### Discord
+<img src="./readme_assets/loadout.png" alt="drawing" height="420"/>
+<img src="./readme_assets/create_server.png" alt="drawing" height="420"/>
+<img src="./readme_assets/mods.png" alt="drawing" width="650"/>
+<img src="./readme_assets/server_browser.png" alt="drawing" width="650"/>
+
+## Discord
 Join the [Discord](https://discord.gg/DZhySxaVbr) to chat with other players and share mods.
 
 ## How to install
