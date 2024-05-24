@@ -84,8 +84,9 @@ export class AppUpdater {
     }
 
     static async checkForUpdates(silent: boolean = false) {
+        if (AppUpdater.isFinalBuildVersion()) return // for FB (final builds)
         const updateResult = await autoUpdater.checkForUpdates()
-        if (!updateResult || AppUpdater.isFinalBuildVersion()) return // for dev builds or FB (final builds)
+        if (!updateResult) return // for dev builds
 
         // If remote version is not greater than cur app ver and not silent mode then display message
         if (updateResult?.updateInfo?.version && compareVersions(updateResult?.updateInfo.version, app.getVersion()) !== 1 && !silent) {
