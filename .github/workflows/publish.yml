@@ -8,6 +8,7 @@ on:
 jobs:
   publish:
     runs-on: ${{ matrix.os }}
+    container: electronuserland/builder:wine
 
     strategy:
       matrix:
