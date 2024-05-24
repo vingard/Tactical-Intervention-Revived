@@ -94,7 +94,8 @@
         "source-server-query": "^3.0.3",
         "steam-binary-vdf": "^0.1.0",
         "tcp-ping": "^0.1.1",
-        "uuid": "^9.0.0"
+        "uuid": "^9.0.0",
+        "yargs": "^17.7.2"
     },
     "devDependencies": {
         "@electron/notarize": "^1.2.3",

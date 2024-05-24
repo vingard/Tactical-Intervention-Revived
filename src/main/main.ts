@@ -13,6 +13,8 @@ import { app, BrowserWindow, shell, ipcMain, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
 import { compareVersions } from "compare-versions"
+import yargs from "yargs"
+import { hideBin } from "yargs/helpers"
 //import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
 import { resolveHtmlPath } from "./util"
@@ -26,6 +28,7 @@ import { devToolsPath, modsDir } from "./core/appPath"
 import { LOADOUTS } from "./loadout_data"
 import { ProcessWatcher } from "./core/procwatch"
 import { HostedServer } from "./core/hostedserver"
+import { startServer } from "./cli"
 
 export class AppUpdater {
     constructor() {
@@ -166,6 +169,11 @@ const createWindow = async () => {
         mainWindow = null
     })
 
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url)
+        return { action: "deny" }
+    })
+
     const menuBuilder = new MenuBuilder(mainWindow)
     menuBuilder.buildMenu()
 
@@ -178,6 +186,11 @@ const createWindow = async () => {
     // Remove this if your app does not use auto updates
     // eslint-disable-next-line
     new AppUpdater();
+
+    // cli stuff
+    const args = await yargs(hideBin(process.argv)).argv
+
+    if (args.serverPort || args.serverCfg) startServer(args)
 }
 
 // Start the process watcher...
@@ -480,8 +493,6 @@ async function handleGetServerList() {
 
 async function handleCreateServer(event: any, serverInfo: any) {
     let args = ""
-
-    console.log(serverInfo)
 
     if (serverInfo.name) args += `\nhostname ${serverInfo.name}`
     args += `\nti_vehicle_authmode ${serverInfo.smoothDriving && 2 || 1}`
