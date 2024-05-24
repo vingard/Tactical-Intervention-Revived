@@ -7,10 +7,15 @@ A maintained non-Steam version of Tactical Intervention. Comes with restored fea
 
 **Tactical Intervention Revived only supports Windows (currently)**
 
-<img src="./readme_assets/loadout.png" alt="drawing" width="260"/>
-<img src="./readme_assets/create_server.png" alt="drawing" width="260"/>
-<img src="./readme_assets/mods.png" alt="drawing" width="650"/>
-<img src="./readme_assets/server_browser.png" alt="drawing" width="650"/>
+<p float="middle">
+    <img src="./readme_assets/loadout.png" alt="drawing" width="50%"/>
+    <img src="./readme_assets/create_server.png" alt="drawing" width="50%"/>
+</p>
+
+<p float="middle">
+    <img src="./readme_assets/mods.png" alt="drawing" width="650"/>
+    <img src="./readme_assets/server_browser.png" alt="drawing" width="650"/>
+</p>
 
 ## Discord
 Join the [Discord](https://discord.gg/DZhySxaVbr) to chat with other players and share mods.
