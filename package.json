@@ -184,6 +184,15 @@
             "node_modules",
             "package.json"
         ],
+        "extraFiles": [
+            {
+                "from": "assets_bin",
+                "to": "",
+                "filter": [
+                    "**/*"
+                ]
+            }
+        ],
         "afterSign": ".erb/scripts/notarize.js",
         "mac": {
             "target": {
