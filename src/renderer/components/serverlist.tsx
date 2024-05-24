@@ -66,7 +66,7 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
                                 <Card style={{margin: "2px", padding: "0.4rem"}}>
                                     <div style={{}}>
                                         {server.query.players.map((ply: any) => (
-                                            <span>{`${ply.name} - ${ply.score}`}</span>
+                                            <span style={{margin: "2px", color: "GrayText"}}>{`${ply.name} - ${ply.score}`}</span>
                                         ))}
                                     </div>
                                 </Card>
