@@ -41,6 +41,8 @@ export class AppUpdater {
         })
 
         autoUpdater.on("update-available", async () => {
+            if (AppUpdater.isFinalBuildVersion()) return // FB versions ignore updates
+
             // eslint-disable-next-line promise/catch-or-return
             const buttonPressed = await dialog.showMessageBox({
                 type: "info",
@@ -77,9 +79,13 @@ export class AppUpdater {
         AppUpdater.checkForUpdates(true)
     }
 
+    static isFinalBuildVersion() {
+        return (app.getVersion() || "").endsWith("-fb")
+    }
+
     static async checkForUpdates(silent: boolean = false) {
         const updateResult = await autoUpdater.checkForUpdates()
-        if (!updateResult) return // for dev builds
+        if (!updateResult || AppUpdater.isFinalBuildVersion()) return // for dev builds or FB (final builds)
 
         // If remote version is not greater than cur app ver and not silent mode then display message
         if (updateResult?.updateInfo?.version && compareVersions(updateResult?.updateInfo.version, app.getVersion()) !== 1 && !silent) {
