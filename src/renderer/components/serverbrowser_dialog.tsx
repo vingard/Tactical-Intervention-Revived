@@ -9,6 +9,7 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelect
     const [serverList, setServerList] = useState([])
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState()
+    const [refreshEnabled, setRefreshEnabled] = useState(true)
 
     async function loadServerList() {
         setLoading(true)
@@ -17,6 +18,12 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelect
         setServerList(resp.servers)
         setStatus(resp.status)
         setLoading(false)
+    }
+
+    function doClickRefresh() {
+        setRefreshEnabled(false)
+        loadServerList()
+        setTimeout(() => setRefreshEnabled(true), 1600)
     }
 
     useEffect(() => {
@@ -47,7 +54,7 @@ export function ServerBrowserDialog({open, onClosed, onSelectIPConnect, onSelect
                 <DialogFooter
                     actions={
                         <>
-                            <Button icon="refresh" onClick={() => loadServerList()}>
+                            <Button icon="refresh" disabled={!refreshEnabled} onClick={() => doClickRefresh()}>
                                 Refresh
                             </Button>
 

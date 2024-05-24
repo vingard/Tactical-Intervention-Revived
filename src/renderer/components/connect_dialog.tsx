@@ -53,7 +53,7 @@ export function ConnectDialog({open, onClosed}: {open: boolean, onClosed: any}) 
             isOpen={open}
             onClose={onClosed}
             className="bp5-dark"
-            title="Connect to a server"
+            title="Connect to a server via IP"
             icon="send-to"
         >
                 <form onSubmit={handleSubmit(connectFormSubmit)}>
