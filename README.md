@@ -10,7 +10,7 @@ A maintained non-Steam version of Tactical Intervention. Comes with restored fea
 <p align="center">
     <img src="./readme_assets/loadout.png" alt="Loadout UI" width="45%"/>
     &nbsp; &nbsp; &nbsp; &nbsp;
-    <img src="./readme_assets/create_server.png" alt="Create server UI" width="45%"/>
+    <img src="./readme_assets/create_server.png" alt="Create server UI" width="36.4%"/>
 </p>
 
 <p align="middle">
