@@ -50,6 +50,13 @@ function DownloadPanel() {
 
                 <br/>
                 <p>Please wait for the download and installation to complete. It may take a while depending on your internet connection speed. Do not close this program.</p>
+                <a
+                    href="https://github.com/vingard/Tactical-Intervention-Revived/wiki/Installation-Troubleshooting"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Having issues?
+                </a>
             </div>
         </DialogBody>
     )

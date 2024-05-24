@@ -528,7 +528,10 @@ export async function start(args: string = "") {
 
 export async function getMaps() {
     const mapsFs = jetpack.cwd(appPath.mapsDir)
-    const maps = mapsFs.find({ matching: "*.bsp" })
 
+    // if this dir doesnt exist, return no maps
+    if (mapsFs.exists("./") !== "dir") return []
+
+    const maps = mapsFs.find({ matching: "*.bsp" })
     return maps.map((map) => map.endsWith(".bsp") && map.slice(0, map.length - 4) || map)
 }

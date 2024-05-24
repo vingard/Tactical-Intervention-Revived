@@ -1,8 +1,13 @@
 import { Button, Card, NonIdealState, Section, SectionCard, Spinner } from "@blueprintjs/core";
 import { useMemo } from "react";
 
-export function ServerList({serverList, isLoading, onJoinServer}: {serverList: any, isLoading: boolean, onJoinServer: any}) {
-    const validServers = useMemo(() => serverList && serverList.filter((server: any) => server.query?.info?.game === "Tactical Intervention") || [], [serverList])
+export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: any[], isLoading: boolean, onJoinServer: any}) {
+    const validServers = useMemo(
+        () => serverList &&
+            serverList
+            .filter((server: any) => server.query?.info?.game === "Tactical Intervention")
+            .sort((a, b) => (a.query?.info?.players || 0) - (b.query?.info?.players || 0)) || [],
+    [serverList])
 
     async function joinServer(ip: string) {
         const connecting = await window.electron.ipcRenderer.invoke("game:connectServer", ip)

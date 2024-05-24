@@ -169,6 +169,11 @@ const createWindow = async () => {
         mainWindow = null
     })
 
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        shell.openExternal(url)
+        return { action: "deny" }
+    })
+
     const menuBuilder = new MenuBuilder(mainWindow)
     menuBuilder.buildMenu()
 
