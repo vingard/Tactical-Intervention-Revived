@@ -492,6 +492,7 @@ async function handleGetServerList() {
 }
 
 async function handleCreateServer(event: any, serverInfo: any) {
+    if (processWatcher.isServerOpen()) return dialog.showErrorBox("Server already running", "You already have a server running!")
     let args = ""
 
     if (serverInfo.name) args += `\nhostname ${serverInfo.name}`
