@@ -29,6 +29,7 @@ import { LOADOUTS } from "./loadout_data"
 import { ProcessWatcher } from "./core/procwatch"
 import { HostedServer } from "./core/hostedserver"
 import { startServer } from "./cli"
+import { serverInit } from "./ds/main"
 
 export class AppUpdater {
     constructor() {
@@ -525,7 +526,7 @@ app.whenReady()
         config.create()
 
         if (isDedicatedServerBuild()) {
-            console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started`)
+            serverInit()
             return
         }
 
