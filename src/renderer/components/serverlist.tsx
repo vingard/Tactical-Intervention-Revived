@@ -6,7 +6,7 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
         () => serverList &&
             serverList
             .filter((server: any) => server.query?.info?.game === "Tactical Intervention")
-            .sort((a, b) => (a.query?.info?.players || 0) - (b.query?.info?.players || 0)) || [],
+            .sort((a, b) => (a.query?.info?.players || 0) + (b.query?.info?.players || 0)) || [],
     [serverList])
 
     async function joinServer(ip: string) {

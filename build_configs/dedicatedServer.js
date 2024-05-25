@@ -51,14 +51,14 @@ module.exports = {
     "nsis": {
         "oneClick": false,
         "allowToChangeInstallationDirectory": true,
-        "perMachine": true,
+        "perMachine": false,
         "warningsAsErrors": false,
         "include": ".erb/scripts/installer.nsh"
     },
     "win": {
         "requestedExecutionLevel": "asInvoker",
         "target": [
-            "nsis"
+            "portable"
         ]
     },
     "linux": {

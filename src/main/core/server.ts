@@ -1,12 +1,12 @@
 import log from "electron-log"
 import srcdsQuery from "source-server-query"
+import { spawn } from "child_process"
 
 import * as util from "./util"
 import * as appPath from "./appPath"
 import * as game from "./game"
 import * as masterServer from "./masterserver"
 import { SoftError } from "./softError"
-import { spawn } from "child_process"
 
 
 let LAST_SERVER_PORT: number
@@ -59,27 +59,10 @@ export async function start(args: string = "", port: number = 27015, isHidden: b
 }
 
 export async function startExperimentalStreamed() {
-    const srcds = spawn(appPath.srcdsPath, [], { shell: true })
-    srcds.send("echo hellocomms", console.error)
-    srcds.stdout.pipe(process.stdout)
-    srcds.stderr.pipe(process.stderr)
+    start("rcon_password")
 
-    const { stdin } = process
-    //stdin.setRawMode(true)
-    stdin.setEncoding("utf8")
-    stdin.pipe(srcds.stdin)
-    stdin.resume()
-
-    srcds.on("error", (err) => console.error("SRCDS ERR", err))
-    srcds.on("message", (msg) => console.log("SRCDS msg", msg))
-    srcds.on("data", (msg) => console.log("SRCDS data", msg))
-    srcds.on("exit", () => console.log("SRCDS DISCONNECT"))
-    srcds.on("spawn", () => console.log("SRCDS CONNECT"))
-
-    setTimeout(() => {
-        console.log("send comms")
-        srcds.stdin.write("echo test\n", (err) => console.log("err", err))
-    }, 3000)
+    const server = await srcdsQuery
+    server.authenticate("")
 }
 
 export async function query(ip: string, port: number = 27015, getPlayers: boolean = true) {

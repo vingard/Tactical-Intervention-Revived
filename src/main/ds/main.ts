@@ -25,5 +25,6 @@ export async function serverInit() {
 
     console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${program.getOptionValue("port")}`)
 
-    server.startExperimentalStreamed()
+    //server.startExperimentalStreamed()
+    server.start()
 }
