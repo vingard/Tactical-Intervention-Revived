@@ -8,17 +8,19 @@
     "main": "./src/main/main.ts",
     "scripts": {
         "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
+        "build:ds": "npm run build:main",
         "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
         "build:renderer": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
         "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && patch-package && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
         "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx --fix",
-        "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
+        "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never --config ./build_configs/launcher.js",
         "package:debug": "npx cross-env DEBUG_PROD=true npm run package",
-        "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
+        "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app --config ./build_configs/launcher.js",
         "start": "ts-node ./.erb/scripts/check-port-in-use.js && npm run start:renderer",
         "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
         "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
         "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
+        "start:ds": "cross-env DEV_TACINTREV_IS_DS=true npm run start:main",
         "test": "jest"
     },
     "browserslist": [],
@@ -171,89 +173,6 @@
         "webpack-cli": "^5.1.1",
         "webpack-dev-server": "^4.15.0",
         "webpack-merge": "^5.9.0"
-    },
-    "build": {
-        "productName": "Tactical Intervention Revived",
-        "appId": "org.erb.TacticalInterventionRevived",
-        "asar": true,
-        "asarUnpack": [
-            "**\\*.{node,dll}"
-        ],
-        "files": [
-            "dist",
-            "node_modules",
-            "package.json"
-        ],
-        "extraFiles": [
-            {
-                "from": "assets_bin",
-                "to": "",
-                "filter": [
-                    "**/*"
-                ]
-            }
-        ],
-        "afterSign": ".erb/scripts/notarize.js",
-        "mac": {
-            "target": {
-                "target": "default",
-                "arch": [
-                    "arm64",
-                    "x64"
-                ]
-            },
-            "type": "distribution",
-            "hardenedRuntime": true,
-            "entitlements": "assets/entitlements.mac.plist",
-            "entitlementsInherit": "assets/entitlements.mac.plist",
-            "gatekeeperAssess": false
-        },
-        "dmg": {
-            "contents": [
-                {
-                    "x": 130,
-                    "y": 220
-                },
-                {
-                    "x": 410,
-                    "y": 220,
-                    "type": "link",
-                    "path": "/Applications"
-                }
-            ]
-        },
-        "nsis": {
-            "oneClick": false,
-            "allowToChangeInstallationDirectory": true,
-            "perMachine": true,
-            "warningsAsErrors": false,
-            "include": ".erb/scripts/installer.nsh"
-        },
-        "win": {
-            "requestedExecutionLevel": "requireAdministrator",
-            "target": [
-                "nsis"
-            ]
-        },
-        "linux": {
-            "target": [
-                "AppImage"
-            ],
-            "category": "Development"
-        },
-        "directories": {
-            "app": "release/app",
-            "buildResources": "assets",
-            "output": "release/build"
-        },
-        "extraResources": [
-            "./assets/**"
-        ],
-        "publish": {
-            "provider": "github",
-            "owner": "vingard",
-            "repo": "Tactical-Intervention-Revived"
-        }
     },
     "devEngines": {
         "node": ">=14.x",

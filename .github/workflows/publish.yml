@@ -25,11 +25,22 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build/release Electron app
+      - name: Build/release launcher app
         uses: heliomarpm/action-electron-builder@v2.1
         with:
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: true
-          
+          args: --config ./build_configs/launcher.js
+
+      - name: Build/release dedicated server app
+        uses: heliomarpm/action-electron-builder@v2.1
+        with:
+          # GitHub token, automatically provided to the action
+          # (No need to define this secret in the repo settings)
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release: true
+          build_script_name: build:ds
+          args: --config ./build_configs/dedicatedServer.js
+

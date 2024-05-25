@@ -17,7 +17,7 @@ import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
 //import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
-import { resolveHtmlPath } from "./util"
+import { isDedicatedServerBuild, resolveHtmlPath } from "./util"
 import * as config from "./core/config"
 import * as game from "./core/game"
 import * as server from "./core/server"
@@ -522,6 +522,13 @@ async function handleGameGetMaps() {
 
 app.whenReady()
     .then(() => {
+        config.create()
+
+        if (isDedicatedServerBuild()) {
+            console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started`)
+            return
+        }
+
         ipcMain.handle("game:checkState", handleGameCheckState)
         ipcMain.handle("game:startInstall", handleGameStartInstall)
         ipcMain.handle("game:setStartConfig", handleSetStartConfig)
@@ -550,8 +557,6 @@ app.whenReady()
         ipcMain.handle("mod:sync", handleModSync)
         ipcMain.handle("mod:setPriority", handleModSetPriority)
         ipcMain.handle("mod:installFromFolder", handleModInstallFromFolder)
-
-        config.create()
 
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the
