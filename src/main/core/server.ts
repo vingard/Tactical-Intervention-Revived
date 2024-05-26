@@ -25,7 +25,8 @@ export async function getDefaultServerName() {
     return `${await game.getUsername()}'s server`
 }
 
-export async function start(args: string = "", port: number = 27015, isHidden: boolean = false) {
+// eslint-disable-next-line default-param-last
+export async function start(args: string = "", port: number = 27015, publicPort?: number, isHidden: boolean = false) {
     log.info(`Attempting to start dedicated server with args: ${args}`)
     const conf = {mods: {}, loadoutRules: {}, hidden: false}
 
@@ -33,6 +34,7 @@ export async function start(args: string = "", port: number = 27015, isHidden: b
     baseArgs += "\nsv_enableoldqueries 1" // restore Source Server Queries
     baseArgs += "\nsv_use_steam_voice 0" // restore VOIP
     baseArgs += "\nsv_alltalk 2" // all teams can talk
+    baseArgs += "\nsetinfo debug_disable_rounds 0" // stop annoying console spam
     baseArgs += "\nsv_hibernate_when_empty 0" // disable hibernate
     baseArgs += "\nstringtable_usedictionaries 0" // prevent map change crashes
     baseArgs += `\nhostname ${await getDefaultServerName()}`
@@ -52,8 +54,10 @@ export async function start(args: string = "", port: number = 27015, isHidden: b
     await game.setTempCfg(`${baseArgs}\n\n${args}`)
 
     //await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
-    console.log("port=",port)
-    LAST_SERVER_PORT = port
+    const exposedPort = publicPort || port
+
+    console.log("port=",exposedPort)
+    LAST_SERVER_PORT = exposedPort
     LAST_SERVER_IS_HIDDEN = isHidden
     util.startExecutableWithArgs(appPath.srcdsPath, `-port ${port} +clientport 27006`)
 }

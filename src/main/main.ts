@@ -509,7 +509,7 @@ async function handleCreateServer(event: any, serverInfo: any) {
     if (serverInfo.configFile) args += `\nexec "${serverInfo.configFile}"`
     if (serverInfo.initialMap) args += `\nmap ${serverInfo.initialMap}`
 
-    server.start(args, serverInfo.port, serverInfo.isHidden)
+    server.start(args, serverInfo.port, serverInfo.publicPort, serverInfo.isHidden)
     return true
 }
 

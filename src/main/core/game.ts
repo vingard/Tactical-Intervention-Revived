@@ -453,6 +453,8 @@ export async function createSteamShortcuts() {
 
 export async function setTempCfg(content: string) {
     let baseCfg = await getCfg("default.cfg")
+    baseCfg += "\nsetinfo debug_disable_rounds 0" // stop the annoying round debug spam
+
     const includeTemp = "exec \"_temp.cfg\""
 
     if (baseCfg && !baseCfg.includes(includeTemp)) {

@@ -5,7 +5,7 @@ import { MapSelect } from "./map_select"
 
 export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: any}) {
     const formMethods = useForm()
-    const {register, handleSubmit, control, formState: {errors}} = formMethods
+    const {register, handleSubmit, control, getValues, formState: {errors}} = formMethods
     const [defaultServerName, setDefaultServerName] = useState("")
     const [maps, setMaps] = useState([])
 
@@ -31,6 +31,7 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
             className="bp5-dark"
             title="Create a Server"
             icon="globe-network"
+            style={{width: "46rem"}}
         >
             <FormProvider {...formMethods}>
                 <form onSubmit={handleSubmit(createServerFormSubmit)}>
@@ -53,24 +54,49 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
                             />
                         </FormGroup>
 
-                        <FormGroup
-                            label="Port"
-                            helperText="Optional"
-                            intent={errors.port && "danger"}
-                        >
-                            <Controller
-                                name="port"
-                                control={control}
-                                render={({field}) => (
-                                    <InputGroup
-                                        {...field}
-                                        type="number"
-                                        placeholder="27015"
-                                        intent={errors.port && "danger"}
+                        <div style={{display: "flex", gap: "1rem"}}>
+                            <div style={{width: "50%"}}>
+                                <FormGroup
+                                    label="Port"
+                                    helperText="Optional - Port to host the server on, best to leave this as the default"
+                                    intent={errors.port && "danger"}
+                                >
+                                    <Controller
+                                        name="port"
+                                        control={control}
+                                        render={({field}) => (
+                                            <InputGroup
+                                                {...field}
+                                                type="number"
+                                                placeholder="27015"
+                                                intent={errors.port && "danger"}
+                                            />
+                                        )}
                                     />
-                                )}
-                            />
-                        </FormGroup>
+                                </FormGroup>
+                            </div>
+
+                            <div style={{width: "50%"}}>
+                                <FormGroup
+                                    label="Public Port"
+                                    helperText="Optional - This is a public port this server is exposed on, if you are hosting with a proxy, the server port and public port may be different."
+                                    intent={errors.publicPort && "danger"}
+                                >
+                                    <Controller
+                                        name="publicPort"
+                                        control={control}
+                                        render={({field}) => (
+                                            <InputGroup
+                                                {...field}
+                                                type="number"
+                                                placeholder="Same as Port"
+                                                intent={errors.publicPort && "danger"}
+                                            />
+                                        )}
+                                    />
+                                </FormGroup>
+                            </div>
+                        </div>
 
                         <FormGroup
                             label="Starting Map"
@@ -145,7 +171,19 @@ export function CreateServerDialog({open, onClosed}: {open: boolean, onClosed: a
                                 Create Server
                             </Button>
                         }
-                    />
+                    >
+                        <>
+                        {`Read the `}
+                            <a
+                                href="https://github.com/vingard/Tactical-Intervention-Revived/wiki/Hosting-a-Server"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                Server Hosting Guide
+                            </a>
+                        {` on the wiki`}
+                        </>
+                    </DialogFooter>
                 </form>
             </FormProvider>
         </Dialog>
