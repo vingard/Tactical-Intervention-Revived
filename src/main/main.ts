@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from "path"
-import { app, BrowserWindow, shell, ipcMain, dialog } from "electron"
+import { app, BrowserWindow, shell, ipcMain, dialog, powerSaveBlocker } from "electron"
 import { autoUpdater } from "electron-updater"
 import log from "electron-log"
 import { compareVersions } from "compare-versions"
@@ -524,6 +524,8 @@ async function handleGameGetMaps() {
 app.whenReady()
     .then(() => {
         config.create()
+
+        powerSaveBlocker.start("prevent-app-suspension")
 
         if (isDedicatedServerBuild()) {
             serverInit()
