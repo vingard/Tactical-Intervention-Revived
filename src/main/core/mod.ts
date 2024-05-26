@@ -14,7 +14,7 @@ import { loadingReset, loadingSetState } from "./util"
 
 async function readRemoteModJson(location: string, branch: string = "main") {
     try {
-        return (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`)).data
+        return (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/${branch}/mod.json`)).data
     } catch (err) {
         throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
     }
