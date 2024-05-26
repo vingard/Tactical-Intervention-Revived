@@ -6,7 +6,7 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
         () => serverList &&
             serverList
             .filter((server: any) => server.query?.info?.game === "Tactical Intervention")
-            .sort((a, b) => (a.query?.info?.players || 0) + (b.query?.info?.players || 0)) || [],
+            .sort((a, b) => (b.query?.info?.players || 0) - (a.query?.info?.players || 0)) || [],
     [serverList])
 
     async function joinServer(ip: string) {
@@ -21,6 +21,29 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
             </div>
         )
     }
+
+    const testPlayers = [
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 },
+        { name: "Test player", score: 4590 }
+    ]
 
     return (
         <div style={{overflowX: "hidden", overflowY: "auto"}}>
@@ -54,7 +77,7 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
 
                             {typeof server.query.meta?.mods === "object" && Object.keys(server.query.meta.mods).length > 0 && (
                                 <div>
-                                    <span>Mods</span>{`${Object.keys(server.query.meta.mods).join(",")}`}
+                                    <span>Mods</span>{`${Object.keys(server.query.meta.mods).length}`}
                                 </div>
                             )}
 
@@ -64,11 +87,11 @@ export function ServerList({serverList, isLoading, onJoinServer}: {serverList?: 
 
                             {server.query.info.players !== 0 && (
                                 <Card style={{margin: "2px", padding: "0.4rem"}}>
-                                    <div style={{}}>
-                                        {server.query.players.map((ply: any) => (
-                                            <span style={{margin: "2px", color: "GrayText"}}>{`${ply.name} - ${ply.score}`}</span>
+                                    <ul className="serverList playersGrid">
+                                        {((server.query.players || []) as any[]).sort((a, b) => b.score - a.score).map((ply: any) => (
+                                            <li className="serverList playersGridItem"><b>{`${ply.name}`}</b>{` - ${ply.score} kills`}</li>
                                         ))}
-                                    </div>
+                                    </ul>
                                 </Card>
                             )}
                         </div>

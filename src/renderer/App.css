@@ -136,3 +136,14 @@ body,
         justify-content: space-between;
     }
 }
+
+.serverList.playersGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
+}
+
+.serverList.playersGridItem {
+    color: #ABB3BF;
+    list-style-type: none;
+}
