@@ -2,6 +2,7 @@ import axios from "axios"
 import path from "path"
 import jetpack from "fs-jetpack"
 import log from "electron-log"
+import { compareVersions } from "compare-versions"
 import { getWindow } from "../main"
 import * as config from "./config"
 import * as files from "./files"
@@ -10,6 +11,14 @@ import * as game from "./game"
 import * as appPath from "./appPath"
 import { SoftError } from "./softError"
 import { loadingReset, loadingSetState } from "./util"
+
+async function readRemoteModJson(location: string, branch: string = "main") {
+    try {
+        return (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`)).data
+    } catch (err) {
+        throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
+    }
+}
 
 export async function getInfo(location: string, isFileSystem: boolean = false) {
     let modInfo
@@ -30,10 +39,12 @@ export async function getInfo(location: string, isFileSystem: boolean = false) {
             throw new SoftError(`Failed to parse JSON for ${modInfoFilePath}`)
         }
     } else {
+        // try and fetch from main and if not go for master...
+
         try {
-            modInfo = (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/main/mod.json`)).data
-        } catch (err) {
-            throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
+            modInfo = readRemoteModJson(location, "main")
+        } catch(err) {
+            modInfo = readRemoteModJson(location, "master")
         }
     }
 
@@ -485,4 +496,14 @@ export async function setPriority(mod: any, priority: number) {
 
     updateState()
     return mod
+}
+
+export async function checkForUpdates(mod: any) {
+    if (!mod.url) return false
+
+    const remoteInfo = await getInfo(mod.url, false)
+
+    if (compareVersions(mod.version, remoteInfo.version) === 1) return false // we are up to date!
+
+    // todo do update....
 }
