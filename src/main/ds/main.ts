@@ -48,6 +48,9 @@ function setupConfig(configFile: string = "revived_server.yml") {
 }
 
 export async function serverInit() {
+    program
+        .option("-c --config <string>", "The revived server .yml configuration file", "revived_server.yml")
+
     program.parse(hideBin(process.argv))
 
     if (!game.isInstalled) return log.warn("Tried to start dedicated server when game was not installed!")
@@ -58,7 +61,7 @@ export async function serverInit() {
         allOptions[opt.name()] = program.getOptionValue(opt.name())
     }
 
-    const conf = setupConfig()
+    const conf = setupConfig(program.getOptionValue("config"))
     console.log(conf)
 
     console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${program.getOptionValue("port")}`)
