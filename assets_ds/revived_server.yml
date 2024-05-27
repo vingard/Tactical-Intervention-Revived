@@ -7,10 +7,10 @@ public: true # if we should be listed in the server browser
 
 # mods loaded last have the highest mount priority
 mods:
-    -
+-
     url: https://github.com/vingard/tacint_revived_car_chase_only_mapcycle_mod
-    required: false
+    requireClientDownload: false
 
-    -
+-
     url: https://github.com/lokachop/tacint-revived-trump-vip-replacement
-    required: true
+    requireClientDownload: true

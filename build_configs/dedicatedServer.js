@@ -20,7 +20,7 @@ module.exports = {
         },
         {
             "from": "assets_ds",
-            "to": "_revived",
+            "to": "",
             "filter": [
                 "**/*"
             ]
@@ -66,7 +66,8 @@ module.exports = {
     "win": {
         "requestedExecutionLevel": "asInvoker",
         "target": [
-            "tar.gz"
+            //"tar.gz"
+            "dir"
         ]
     },
     "linux": {

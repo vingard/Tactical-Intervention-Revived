@@ -8,7 +8,7 @@ export const exePath = app.getPath("exe")
 export const exeName =  path.basename(exePath)
 export const workingDir = path.dirname(exePath)
 export const binAssetPath = isDev() ? path.resolve(workingDir, "assets_bin") : workingDir
-export const dsAssetPath = isDev() ? path.resolve(workingDir, "assets_ds") : workingDir
+export const dsAssetPath = workingDir
 const appData = app.getPath("appData")
 
 export const tacintDir = files.createDirIfNotExists(path.resolve(workingDir, "tacint"))

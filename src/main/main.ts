@@ -634,5 +634,3 @@ app.whenReady()
         })()
     })
     .catch(console.log)
-
-console.log("maxim")

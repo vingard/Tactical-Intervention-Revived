@@ -1,5 +1,6 @@
 import * as dns from "dns"
 import { app, shell } from "electron"
+import { ZodError } from "zod"
 import { getWindow } from "../main"
 import { exeName } from "./appPath"
 
@@ -59,4 +60,15 @@ export function isDedicatedServerBuild() {
     if (process.env.DEV_TACINTREV_IS_DS === "true") return true // special env var for dev builds
 
     return exeName === "ti_revived_server.exe"
+}
+
+export function prettyZodError(zodError: ZodError) {
+    let errOut = ""
+
+    for (const issue of zodError.errors) {
+        const postFix = (issue.code === "invalid_type") &&`expected ${issue.expected}, got ${issue.received}` || issue.message
+        errOut += `[${issue.path.join(".")}] ${issue.code}: ${postFix}\n`
+    }
+
+    return errOut
 }
