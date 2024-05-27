@@ -531,6 +531,8 @@ export async function update(mod: any) {
     let newMod = await install(mod.url, mod.mounted || false)
     newMod = await setPriority(newMod, mod.priority)
 
+    log.info(`Succesfully updated ${newMod.name} (${newMod.uid}) from ${mod.version} to ${newMod.version}`)
+
     return newMod
 }
 
