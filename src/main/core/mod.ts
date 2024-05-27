@@ -2,7 +2,7 @@ import axios from "axios"
 import path from "path"
 import jetpack from "fs-jetpack"
 import log from "electron-log"
-import { compareVersions } from "compare-versions"
+import { compareVersions, validate } from "compare-versions"
 import { getWindow } from "../main"
 import * as config from "./config"
 import * as files from "./files"
@@ -12,11 +12,12 @@ import * as appPath from "./appPath"
 import { SoftError } from "./softError"
 import { loadingReset, loadingSetState } from "./util"
 
+
 async function readRemoteModJson(location: string, branch: string = "main") {
     try {
-        return (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/${branch}/mod.json`)).data
+        return { data: (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/${branch}/mod.json`)).data }
     } catch (err) {
-        throw new SoftError(`Could not find a valid mod at ${location} (${err})`)
+        return { error: err }
     }
 }
 
@@ -40,12 +41,13 @@ export async function getInfo(location: string, isFileSystem: boolean = false) {
         }
     } else {
         // try and fetch from main and if not go for master...
+        const mainRemote = await readRemoteModJson(location, "main")
+        const masterRemote = await readRemoteModJson(location, "master")
 
-        try {
-            modInfo = readRemoteModJson(location, "main")
-        } catch(err) {
-            modInfo = readRemoteModJson(location, "master")
-        }
+        const found = mainRemote?.data || masterRemote?.data
+        if (!found) throw mainRemote.error || masterRemote.error
+
+        modInfo = found
     }
 
     if (!modInfo.uid) {
@@ -66,6 +68,10 @@ export async function getInfo(location: string, isFileSystem: boolean = false) {
 
     if (modInfo.version && typeof modInfo.version !== "string") {
         throw new SoftError("Mod 'version' must be a string!")
+    }
+
+    if (!validate(modInfo.version)) {
+        throw new SoftError("Mod 'version' is not a valid version string! It must use the semver.org format (E.G. 1.4.2)")
     }
 
     modInfo.uid = `${modInfo.uid.toLowerCase()}${!isFileSystem && "-DL" || ""}`
@@ -89,7 +95,7 @@ export function get(name: string) {
 
 export function getAll(): any[] {
     const conf = config.read()
-    return conf.mods
+    return conf.mods || []
 }
 
 export function getLoadOrder(mod: any) {
@@ -415,10 +421,6 @@ export async function resetAllClaims() {
     updateState()
 }
 
-export async function init() {
-    updateState()
-}
-
 export async function remove(mod: any) {
     const modLoadingStateId = `mod_${mod.uid}`
     loadingReset(modLoadingStateId)
@@ -498,12 +500,38 @@ export async function setPriority(mod: any, priority: number) {
     return mod
 }
 
-export async function checkForUpdates(mod: any) {
-    if (!mod.url) return false
+/**
+ * Checks if a given mod has an available update on remote, and if so, will return update details.
+ * The mod state for the renderer is also automatically updated when this is called.
+ * @param mod Mod object
+ * @returns
+ */
+export async function checkForUpdates(mod: any, shouldUpdateState: boolean = true): Promise<{ available: boolean, version?: string }> {
+    if (!mod.url) return { available: false }
 
     const remoteInfo = await getInfo(mod.url, false)
 
-    if (compareVersions(mod.version, remoteInfo.version) === 1) return false // we are up to date!
+    //console.log("compare mod version: local =", mod.version, "remote =", remoteInfo.version)
 
-    // todo do update....
+    const available = compareVersions(mod.version, remoteInfo.version) === -1 // -1 means we are outdated!
+
+    mod = get(mod.uid)
+
+    // set some values, for the renderer
+    mod.updateAvailable = available
+    mod.updateTarget = remoteInfo.version
+
+    mod = await addToConfig(mod, true) // merge mod to config
+    if (shouldUpdateState) await updateState()
+
+    return { available, version: mod.version }
+}
+
+export async function init() {
+    updateState() // send an initial state pre update check
+
+    for (const mod of getAll()) {
+        // eslint-disable-next-line no-await-in-loop
+        await checkForUpdates(mod)
+    }
 }

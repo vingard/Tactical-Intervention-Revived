@@ -19,7 +19,7 @@ function ModDropdown({mod}: {mod: any}) {
             <Popover
                 content={
                     <Menu>
-                        <MenuItem icon="automatic-updates" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate"))}/>
+                        <MenuItem icon="automatic-updates" text="Check for updates" onClick={() => (window.electron.ipcRenderer.invoke("mod:checkForUpdate", mod.uid))}/>
                         {mod.url && <MenuItem icon="share" text="Open GitHub page" onClick={() => (window.electron.ipcRenderer.invoke("mod:openRemoteURL", mod.uid))}/>}
                         <MenuItem icon="folder-shared-open" text="Open mod directory" onClick={() => (window.electron.ipcRenderer.invoke("mod:openDirectory", mod.uid))}/>
                         <MenuItem icon="trash" text="Delete" intent="danger" onClick={() => setDeletePopup(true)}/>
@@ -202,14 +202,14 @@ export function ModList() {
                                                         <div style={{display: "flex", gap: "0.2rem"}}>
                                                             <Tag minimal intent={mod.mounted && "success" || "danger"}>{mod.mounted && "Mounted" || "Un-mounted"}</Tag>
 
-                                                            {mod.needsUpdate && <Tag minimal intent="warning">Update Available (latest: 2.0.1)</Tag>}
+                                                            {mod.updateAvailable && <Tag minimal intent="warning">Update Available (latest: {mod.updateTarget})</Tag>}
                                                             {!mod.url && <Tag minimal intent="primary">Local Mod</Tag>}
                                                         </div>
                                                     </div>
 
                                                     <div style={{margin: "1rem", marginLeft: "auto"}}>
                                                         <ButtonGroup>
-                                                            {mod.needsUpdate && <Button icon="cloud-download" intent="primary">Update</Button>}
+                                                            {mod.updateAvailable && <Button icon="cloud-download" intent="primary">Update</Button>}
                                                             {!mod.url && (
                                                                 <Button
                                                                     icon="changes"

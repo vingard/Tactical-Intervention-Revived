@@ -473,6 +473,38 @@ async function handleModSetPriority(event: any, modUID: string, priority: number
     }
 }
 
+async function handleModCheckForUpdate(event: any, modUID: string) {
+    try {
+        const modData = await mod.get(modUID)
+        const update = await mod.checkForUpdates(modData)
+
+        const win = getWindow()!
+        if (!win) return false
+
+        if (!update.available) {
+            dialog.showMessageBox(win, {
+                type: "info",
+                title: `${modData.name} is all up to date!`,
+                message: `You are on the latest version (${modData.version})`
+            })
+
+            return false
+        }
+
+        dialog.showMessageBox(win, {
+            type: "info",
+            title: `${modData.name} has an update!`,
+            message: `Version ${modData.version} of '${modData.name}' is ready to be installed.`
+        })
+
+        return true
+    } catch(err: any) {
+        log.error(err.message)
+        dialog.showErrorBox(`Error when checking updates status for mod ${modUID}`, err.message)
+    }
+}
+
+
 // todo: recode this to support loading bar in the future?
 async function handleModInstallFromFolder(event: any) {
     try {
@@ -520,7 +552,6 @@ async function handleGetDefaultServerName() {
 async function handleGameGetMaps() {
     return game.getMaps()
 }
-
 app.whenReady()
     .then(() => {
         config.create()
@@ -560,6 +591,7 @@ app.whenReady()
         ipcMain.handle("mod:sync", handleModSync)
         ipcMain.handle("mod:setPriority", handleModSetPriority)
         ipcMain.handle("mod:installFromFolder", handleModInstallFromFolder)
+        ipcMain.handle("mod:checkForUpdate", handleModCheckForUpdate)
 
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the
