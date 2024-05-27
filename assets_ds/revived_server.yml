@@ -1,9 +1,10 @@
 port: 27015
 publicPort: 27015 # what public port is our server running on
-cfg: carchase.cfg # cfg to load in the tacint/cfg directory
-autoRestart: true # if the dedicated server process dies? should we restart
-autoUpdateMods: false # should the server auto update mods each time it starts?
+hostname: "Example Server"
 public: true # if we should be listed in the server browser
+cfg: carchase.cfg # cfg to load in the tacint/cfg directory
+autoRestart: true # if the dedicated server process dies should we restart?
+autoUpdateMods: false # should the server auto update mods each time it starts?
 
 # mods loaded last have the highest mount priority
 mods:

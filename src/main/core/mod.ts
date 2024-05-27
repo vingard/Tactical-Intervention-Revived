@@ -204,6 +204,8 @@ export async function install(url: string, shouldMount: boolean = false) {
     // Download archive
     log.info(`Downloading from ${mod.url}`)
 
+    console.log("") // newline for replacement
+
     await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true, 0)
 
     // Make mods folder and remove old install
@@ -520,13 +522,18 @@ export async function checkForUpdates(mod: any, shouldUpdateState: boolean = tru
     mod = get(mod.uid)
 
     // set some values, for the renderer
-    mod.updateAvailable = available === true || undefined
+    mod.updateAvailable = available
     mod.updateTarget = available === true && remoteInfo.version || undefined
 
     mod = await addToConfig(mod, true) // merge mod to config
     if (shouldUpdateState) await updateState()
 
     return { available, version: remoteInfo.version }
+}
+
+export async function setRequireClientDownload(mod: any, isRequired: boolean) {
+    mod.requireClientDownload = isRequired
+    return addToConfig(mod, true)
 }
 
 export async function update(mod: any) {

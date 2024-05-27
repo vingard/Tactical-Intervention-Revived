@@ -22,6 +22,7 @@ interface ServerConfigMod {
 interface ServerConfig {
     port: number
     public: boolean
+    hostname: string
     publicPort?: number
     cfg?: string
     autoRestart: boolean
@@ -37,6 +38,7 @@ const MOD_SCHEMA = z.object({
 const REVIVED_SERVER_YML_SCHEMA = z.object({
     port: z.number({message: "must be a number"}).int({message: "must be an integer"}).positive({message: "must be positive"}),
     public: z.boolean({message: "must be a boolean"}),
+    hostname: z.string({message: "must be a string"}),
     publicPort: z.number({message: "must be a number" }).int({message: "must be a integer"}).positive({message: "must be positive"}).optional(),
     cfg: z.string({message: "must be a string"}).endsWith(".cfg", {message: "must end with .cfg"}).optional(),
     autoRestart: z.boolean({message: "must be boolean"}).optional().default(true),
@@ -92,31 +94,63 @@ export async function serverInit() {
         }
     }
 
+    console.log(`This server is using ${conf.mods.length} mods`)
+
     const installedModIndex: any = {}
 
-    for (const modObj of mod.getAll()) {
+    for (let modObj of mod.getAll()) {
         // remove any mods not in config
         if (!conf.mods.find((cMod) => cMod.url === modObj.url)) {
-            mod.remove(modObj)
+            try {
+                log.info(`Removing non-required mod ${modObj.uid}...`)
+                console.log("")
+                mod.remove(modObj)
+            } catch(err: any) { log.error(`Error removing mod - ${err.message}`) }
             continue
         }
 
         installedModIndex[modObj.url as string] = true
 
-        const result = await mod.checkForUpdates(modObj, false)
-        if (result.available) await mod.update(modObj)
+        console.log("Checking for mod updates...")
+        console.log("")
 
-        // mount all mods
-        if (!modObj.mounted) await mod.mountMod(modObj)
+        try {
+            const result = await mod.checkForUpdates(modObj, false)
+            if (result.available) {
+                log.info(`Updating ${modObj.uid} to version ${result.version}...`)
+                console.log("")
+                modObj = await mod.update(modObj)
+            }
+
+            // mount all mods
+            if (!modObj.mounted) {
+                log.info(`${modObj.uid} was not mounted - mounting...`)
+                console.log("")
+                modObj = await mod.mountMod(modObj)
+            }
+        } catch(err: any) {
+            log.error(`Error checking/installing update for mod '${modObj.uid}': ${err.message}`)
+        }
     }
 
     for (const thisMod of conf.mods) {
         // get any mods we dont have already
-        if (!installedModIndex) await mod.install(thisMod.url, true)
+        let modObj = installedModIndex[thisMod.url]
+        if (!modObj) modObj = await mod.install(thisMod.url, true)
+
+        await mod.setRequireClientDownload(modObj, thisMod.requireClientDownload)
     }
 
-    console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${program.getOptionValue("port")}`)
+    const publicPort = conf.publicPort || conf.port
+
+    console.log(`\nTactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${conf.port}`)
+    console.log(`Total Mods: ${conf.mods.length} | Config: ${conf.cfg} | Is Public: ${conf.public} | Public Port: ${config.pub}`)
+    console.log("-----------------------------------------------------------------\n")
 
     //server.startExperimentalStreamed()
-    server.start()
+    const startConfig = `hostname ${conf.hostname}
+    ti_vehicle_authmode 1
+    ${conf.cfg && `exec ${conf.cfg}`}`
+
+    server.start(startConfig, conf.port, publicPort, !conf.public)
 }

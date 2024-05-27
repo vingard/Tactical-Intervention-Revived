@@ -42,7 +42,7 @@ export class AppUpdater {
         })
 
         autoUpdater.on("update-available", async () => {
-            if (AppUpdater.isFinalBuildVersion()) return // FB versions ignore updates
+            if (AppUpdater.isFinalBuildVersion() || isDedicatedServerBuild()) return // FB versions ignore updates
 
             // eslint-disable-next-line promise/catch-or-return
             const buttonPressed = await dialog.showMessageBox({

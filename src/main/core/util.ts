@@ -1,11 +1,14 @@
 import * as dns from "dns"
+import * as readline from "readline"
 import { app, shell } from "electron"
 import { ZodError } from "zod"
 import { getWindow } from "../main"
 import { exeName } from "./appPath"
 
 export function loadingSetState(key: string, message: string, completedItems: number = 0, totalItems: number = 0, success: boolean = false) {
-    console.log(message)
+    readline.clearLine(process.stdout, 0)
+    readline.cursorTo(process.stdout, 0)
+    process.stdout.write(`${message} (${totalItems}/${completedItems})`)
 
     const win = getWindow()
     if (!win) return

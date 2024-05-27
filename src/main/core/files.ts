@@ -206,7 +206,6 @@ export async function extractArchive(archive: string, destination: string, loadS
     })
 
     extract.on("progress", (perc: number) => {
-        console.log(`Extracting ${perc}%...`)
         loadingSetState(loadStateId, "Extracting", perc / 100, 1)
     })
 

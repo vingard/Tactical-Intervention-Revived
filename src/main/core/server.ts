@@ -5,6 +5,7 @@ import { spawn } from "child_process"
 import * as util from "./util"
 import * as appPath from "./appPath"
 import * as game from "./game"
+import * as mod from "./mod"
 import * as masterServer from "./masterserver"
 import { SoftError } from "./softError"
 
@@ -22,13 +23,26 @@ export function getLastServerIsHidden() {
 }
 
 export async function getDefaultServerName() {
-    return `${await game.getUsername()}'s server`
+    let username
+
+    try { username = await game.getUsername() } catch { /** nothing */ }
+
+    return `${username}'s server`
 }
 
 // eslint-disable-next-line default-param-last
 export async function start(args: string = "", port: number = 27015, publicPort?: number, isHidden: boolean = false) {
     log.info(`Attempting to start dedicated server with args: ${args}`)
-    const conf = {mods: {}, loadoutRules: {}, hidden: false}
+
+    const serverModObjects: any = {}
+
+    for (const modObj of mod.getAll()) {
+        if (!modObj.mounted || !modObj.url) continue
+
+        serverModObjects[modObj.uid] = { url: modObj.url, version: modObj.version, require: modObj.requireClientDownload }
+    }
+
+    const conf = {mods: serverModObjects, loadoutRules: {}}
 
     let baseArgs = "sv_master_legacy_mode 1"
     baseArgs += "\nsv_enableoldqueries 1" // restore Source Server Queries
@@ -56,7 +70,6 @@ export async function start(args: string = "", port: number = 27015, publicPort?
     //await game.setCfg(`${baseArgs}\n\n${args}`, "ds.cfg")
     const exposedPort = publicPort || port
 
-    console.log("port=",exposedPort)
     LAST_SERVER_PORT = exposedPort
     LAST_SERVER_IS_HIDDEN = isHidden
     util.startExecutableWithArgs(appPath.srcdsPath, `-port ${port} +clientport 27006`)
