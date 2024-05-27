@@ -238,6 +238,7 @@ export async function mountBaseContent() {
 
     const [emitter, totalFiles] = mountContent(contents, appPath.baseContentDir, appPath.mountDir)
     loadingSetState("game", "Starting mount...")
+    console.log("Start")
 
     emitter.on("progress", (totalCompleted) => loadingSetState("game", "Mounting", totalCompleted, totalFiles))
     emitter.once("error", (errMessage) => {throw new SoftError(errMessage, "game")})
@@ -256,7 +257,6 @@ export async function installGame(overrideUrl?: string) {
 
     // Get content download URL from remote
     if (!overrideUrl) {
-        log.info("Getting remote 'package.json' file...")
         loadingSetState("game", "Getting remote 'package.json' file...")
 
         const remotePackage = await getRemotePackage()
@@ -280,6 +280,7 @@ export async function installGame(overrideUrl?: string) {
     if (!contentHash) throw new SoftError("No content hash was provided!")
 
     loadingSetState("game", "Preparing for game content extraction...")
+
     // Removes mapkit dir (this is for backwards compat as old revived versions used this as a mounting dir)
     await files.tryRemove(path.resolve(appPath.workingDir, "mapkit"))
 

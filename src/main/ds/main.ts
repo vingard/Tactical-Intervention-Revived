@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { program } from "commander";
 import { app } from "electron";
 import { hideBin } from "yargs/helpers";
@@ -9,8 +10,24 @@ import YAML from "yaml"
 
 import * as server from "../core/server"
 import * as game from "../core/game"
+import * as mod from  "../core/mod"
 import { dsAssetPath } from "../core/appPath"
-import { prettyZodError } from "../core/util";
+import { prettyZodError } from "../core/util"
+
+interface ServerConfigMod {
+    url: string
+    requireClientDownload: boolean
+}
+
+interface ServerConfig {
+    port: number
+    public: boolean
+    publicPort?: number
+    cfg?: string
+    autoRestart: boolean
+    autoUpdateMods: boolean
+    mods: ServerConfigMod[]
+}
 
 const MOD_SCHEMA = z.object({
     url: z.string({message: "must be a string"}).url({message: "must be a url"}),
@@ -22,12 +39,13 @@ const REVIVED_SERVER_YML_SCHEMA = z.object({
     public: z.boolean({message: "must be a boolean"}),
     publicPort: z.number({message: "must be a number" }).int({message: "must be a integer"}).positive({message: "must be positive"}).optional(),
     cfg: z.string({message: "must be a string"}).endsWith(".cfg", {message: "must end with .cfg"}).optional(),
-    autoRestart: z.boolean({message: "must be boolean"}).optional(),
-    autoUpdateMods: z.boolean({message: "must be a boolean"}).optional(),
-    mods: z.array(MOD_SCHEMA, {message: "must be an array"}).optional()
+    autoRestart: z.boolean({message: "must be boolean"}).optional().default(true),
+    autoUpdateMods: z.boolean({message: "must be a boolean"}).optional().default(true),
+    mods: z.array(MOD_SCHEMA, {message: "must be an array"}).optional().default([])
 }).strict()
 
-function setupConfig(configFile: string = "revived_server.yml") {
+
+function setupConfig(configFile: string = "revived_server.yml"): ServerConfig {
     const confPath = path.resolve(dsAssetPath, configFile)
     if (jetpack.exists(confPath) !== "file") return program.error(`'${confPath}' does not exist`)
 
@@ -63,6 +81,39 @@ export async function serverInit() {
 
     const conf = setupConfig(program.getOptionValue("config"))
     console.log(conf)
+
+    if (!game.isInstalled()) {
+        console.log("This server does not have an active install of Tactical Intervention... installing:")
+
+        try {
+            await game.installGame()
+        } catch (err: any) {
+            return program.error(`Error installing game: ${err.message}`)
+        }
+    }
+
+    const installedModIndex: any = {}
+
+    for (const modObj of mod.getAll()) {
+        // remove any mods not in config
+        if (!conf.mods.find((cMod) => cMod.url === modObj.url)) {
+            mod.remove(modObj)
+            continue
+        }
+
+        installedModIndex[modObj.url as string] = true
+
+        const result = await mod.checkForUpdates(modObj, false)
+        if (result.available) await mod.update(modObj)
+
+        // mount all mods
+        if (!modObj.mounted) await mod.mountMod(modObj)
+    }
+
+    for (const thisMod of conf.mods) {
+        // get any mods we dont have already
+        if (!installedModIndex) await mod.install(thisMod.url, true)
+    }
 
     console.log(`Tactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${program.getOptionValue("port")}`)
 

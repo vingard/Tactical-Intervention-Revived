@@ -5,6 +5,8 @@ import { getWindow } from "../main"
 import { exeName } from "./appPath"
 
 export function loadingSetState(key: string, message: string, completedItems: number = 0, totalItems: number = 0, success: boolean = false) {
+    console.log(message)
+
     const win = getWindow()
     if (!win) return
     win.webContents.send("loading:setState", key, completedItems, totalItems, message, success)

@@ -134,12 +134,12 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
             const writer = fs.createWriteStream(savePath, {flags: fileOffset && "a" || undefined}) // append IF we are continuing parial dl
 
             data.on("data", (chunk: any) => {
-
                 const downloadPostfix = totalLength && totalLength > 0 && Number.isFinite(totalLength) && `/${byteSize(totalLength)}`
+                const downloadStr = `Downloading ${byteSize(downloadedLength)}${downloadPostfix || ""}`
 
                 loadingSetState(
                     loadStateId,
-                    `Downloading ${byteSize(downloadedLength)}${downloadPostfix || ""}`,
+                    downloadStr,
                     (downloadedLength += chunk.length) / totalLength,
                     1
                 )
@@ -206,6 +206,7 @@ export async function extractArchive(archive: string, destination: string, loadS
     })
 
     extract.on("progress", (perc: number) => {
+        console.log(`Extracting ${perc}%...`)
         loadingSetState(loadStateId, "Extracting", perc / 100, 1)
     })
 
