@@ -527,6 +527,13 @@ export async function checkForUpdates(mod: any, shouldUpdateState: boolean = tru
     return { available, version: remoteInfo.version }
 }
 
+export async function update(mod: any) {
+    let newMod = await install(mod.url, mod.mounted || false)
+    newMod = await setPriority(newMod, mod.priority)
+
+    return newMod
+}
+
 export async function init() {
     updateState() // send an initial state pre update check
 

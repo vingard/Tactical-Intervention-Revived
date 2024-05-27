@@ -516,7 +516,7 @@ async function handleModUpdate(event: any, modUID: string) {
             return false
         }
 
-        const newMod = await mod.install(modData.url, modData.mounted || false)
+        const newMod = await mod.update(modData)
 
         // dialog.showMessageBox(win, {
         //     type: "info",
