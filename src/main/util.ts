@@ -12,8 +12,3 @@ export function resolveHtmlPath(htmlFileName: string) {
     }
     return `file://${path.resolve(__dirname, "../renderer/", htmlFileName)}`
 }
-
-export function isDedicatedServerBuild() {
-    if (process.env.DEV_TACINTREV_IS_DS === "true") return true // special env var for dev builds
-    return app.getName() === "ti_revived_server"
-}

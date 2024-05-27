@@ -17,12 +17,12 @@ import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
 //import { tcpPingPort } from "tcp-ping-port"
 import MenuBuilder from "./menu"
-import { isDedicatedServerBuild, resolveHtmlPath } from "./util"
+import { resolveHtmlPath } from "./util"
 import * as config from "./core/config"
 import * as game from "./core/game"
 import * as server from "./core/server"
 import * as mod from "./core/mod"
-import { loadingSetError } from "./core/util"
+import { isDedicatedServerBuild, loadingSetError } from "./core/util"
 import { SoftError } from "./core/softError"
 import { devToolsPath, modsDir } from "./core/appPath"
 import { LOADOUTS } from "./loadout_data"
@@ -634,3 +634,5 @@ app.whenReady()
         })()
     })
     .catch(console.log)
+
+console.log("maxim")

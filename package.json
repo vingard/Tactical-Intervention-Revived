@@ -99,6 +99,8 @@
         "steam-binary-vdf": "^0.1.0",
         "tcp-ping": "^0.1.1",
         "uuid": "^9.0.0",
+        "yaml": "^2.4.2",
+        "yaml-schema-validator": "^1.2.3",
         "yargs": "^17.7.2"
     },
     "devDependencies": {

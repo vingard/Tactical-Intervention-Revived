@@ -17,6 +17,13 @@ module.exports = {
             "filter": [
                 "**/*"
             ]
+        },
+        {
+            "from": "assets_ds",
+            "to": "_revived",
+            "filter": [
+                "**/*"
+            ]
         }
     ],
     "afterSign": ".erb/scripts/notarize.js",
@@ -49,6 +56,7 @@ module.exports = {
         ]
     },
     "nsis": {
+        "artifactName": "ti_revived_server.${ext}",
         "oneClick": false,
         "allowToChangeInstallationDirectory": true,
         "perMachine": false,
@@ -58,7 +66,7 @@ module.exports = {
     "win": {
         "requestedExecutionLevel": "asInvoker",
         "target": [
-            "portable"
+            "tar.gz"
         ]
     },
     "linux": {

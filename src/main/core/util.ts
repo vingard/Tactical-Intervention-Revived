@@ -1,6 +1,7 @@
 import * as dns from "dns"
-import { shell } from "electron"
+import { app, shell } from "electron"
 import { getWindow } from "../main"
+import { exeName } from "./appPath"
 
 export function loadingSetState(key: string, message: string, completedItems: number = 0, totalItems: number = 0, success: boolean = false) {
     const win = getWindow()
@@ -52,4 +53,10 @@ export async function dnsLookup(host: string): Promise<string | undefined> {
             resolve(address)
         })
     })
+}
+
+export function isDedicatedServerBuild() {
+    if (process.env.DEV_TACINTREV_IS_DS === "true") return true // special env var for dev builds
+
+    return exeName === "ti_revived_server.exe"
 }

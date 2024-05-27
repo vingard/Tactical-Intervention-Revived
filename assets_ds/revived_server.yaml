@@ -1,0 +1,16 @@
+port: 27015
+publicPort: 27015 # what public port is our server running on
+cfg: carchase.cfg # cfg to load in the tacint/cfg directory
+autoRestart: true # if the dedicated server process dies? should we restart
+autoUpdateMods: false # should the server auto update mods each time it starts?
+public: true # if we should be listed in the server browser
+
+# mods loaded last have the highest mount priority
+mods:
+    -
+    url: https://github.com/vingard/tacint_revived_car_chase_only_mapcycle_mod
+    required: false
+
+    -
+    url: https://github.com/lokachop/tacint-revived-trump-vip-replacement
+    required: true
