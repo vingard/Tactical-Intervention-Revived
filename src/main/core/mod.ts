@@ -511,6 +511,8 @@ export async function checkForUpdates(mod: any, shouldUpdateState: boolean = tru
 
     const remoteInfo = await getInfo(mod.url, false)
 
+    if (remoteInfo.uid !== mod.uid) throw new SoftError("Mod UID has been changed on local or remote. Don't do this. Refusing to update!")
+
     //console.log("compare mod version: local =", mod.version, "remote =", remoteInfo.version)
 
     const available = compareVersions(mod.version, remoteInfo.version) === -1 // -1 means we are outdated!
