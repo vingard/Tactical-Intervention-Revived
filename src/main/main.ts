@@ -484,8 +484,8 @@ async function handleModCheckForUpdate(event: any, modUID: string) {
         if (!update.available) {
             dialog.showMessageBox(win, {
                 type: "info",
-                title: `${modData.name} is all up to date!`,
-                message: `You are on the latest version (${modData.version})`
+                title: `Mod Update Unavailable`,
+                message: `You have the latest version of the '${modData.name}' mod (${modData.version}).`
             })
 
             return false
@@ -493,14 +493,41 @@ async function handleModCheckForUpdate(event: any, modUID: string) {
 
         dialog.showMessageBox(win, {
             type: "info",
-            title: `${modData.name} has an update!`,
-            message: `Version ${modData.version} of '${modData.name}' is ready to be installed.`
+            title: `Mod Update Available`,
+            message: `An update for the mod '${modData.name}' is ready to be installed.\nInstalled version: ${modData.version}\nNew version: ${update.version}`
         })
 
         return true
     } catch(err: any) {
         log.error(err.message)
         dialog.showErrorBox(`Error when checking updates status for mod ${modUID}`, err.message)
+    }
+}
+
+async function handleModUpdate(event: any, modUID: string) {
+    try {
+        const modData = await mod.get(modUID)
+        const update = await mod.checkForUpdates(modData)
+
+        const win = getWindow()!
+        if (!win) return false
+
+        if (!update.available || !modData.url) {
+            return false
+        }
+
+        const newMod = await mod.install(modData.url, modData.mounted || false)
+
+        // dialog.showMessageBox(win, {
+        //     type: "info",
+        //     title: `${newMod.name} succesfully updated`,
+        //     message: `${newMod.name} has been updated to version ${newMod.version}`
+        // })
+
+        return true
+    } catch(err: any) {
+        log.error(err.message)
+        dialog.showErrorBox(`Error when updating mod ${modUID}`, err.message)
     }
 }
 
@@ -552,6 +579,7 @@ async function handleGetDefaultServerName() {
 async function handleGameGetMaps() {
     return game.getMaps()
 }
+
 app.whenReady()
     .then(() => {
         config.create()
@@ -592,6 +620,7 @@ app.whenReady()
         ipcMain.handle("mod:setPriority", handleModSetPriority)
         ipcMain.handle("mod:installFromFolder", handleModInstallFromFolder)
         ipcMain.handle("mod:checkForUpdate", handleModCheckForUpdate)
+        ipcMain.handle("mod:update", handleModUpdate)
 
         app.on("activate", () => {
             // On macOS it's common to re-create a window in the app when the

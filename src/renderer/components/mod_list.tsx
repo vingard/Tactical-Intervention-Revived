@@ -95,6 +95,15 @@ export function ModList() {
         if (success) setMounting(false)
     }
 
+    async function updateMod(mod: any) {
+        setWorkerTitle(`Updating ${mod.name || mod.uid} to version ${mod.updateTarget}`)
+        setLoadingStateId(`mod_${mod.uid}`)
+        setMounting(true)
+        const success = await window.electron.ipcRenderer.invoke("mod:update", mod.uid)
+        // regardless of success, get the loader OUT
+        setMounting(false)
+    }
+
     function reorder(list: any, startIndex: number, endIndex: number) {
         const result = Array.from(list)
         const [removed] = result.splice(startIndex, 1)
@@ -209,7 +218,16 @@ export function ModList() {
 
                                                     <div style={{margin: "1rem", marginLeft: "auto"}}>
                                                         <ButtonGroup>
-                                                            {mod.updateAvailable && <Button icon="cloud-download" intent="primary">Update</Button>}
+                                                            {mod.updateAvailable && (
+                                                                <Button
+                                                                    icon="cloud-download"
+                                                                    intent="primary"
+                                                                    onClick={() => updateMod(mod)}
+                                                                >
+                                                                    Update
+                                                                </Button>
+                                                            )}
+
                                                             {!mod.url && (
                                                                 <Button
                                                                     icon="changes"

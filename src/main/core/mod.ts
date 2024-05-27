@@ -13,7 +13,7 @@ import { SoftError } from "./softError"
 import { loadingReset, loadingSetState } from "./util"
 
 
-async function readRemoteModJson(location: string, branch: string = "main") {
+async function readRemoteModJson(location: string, branch: string = "main"): Promise<{ data?: any, error?: any }> {
     try {
         return { data: (await axios.get(`${location.replace("github.com", "raw.githubusercontent.com")}/${branch}/mod.json`)).data }
     } catch (err) {
@@ -45,7 +45,7 @@ export async function getInfo(location: string, isFileSystem: boolean = false) {
         const masterRemote = await readRemoteModJson(location, "master")
 
         const found = mainRemote?.data || masterRemote?.data
-        if (!found) throw mainRemote.error || masterRemote.error
+        if (!found) throw new SoftError(`Failed to find remote mod.json file at ${location}\n${mainRemote.error?.message || masterRemote.error?.message}`)
 
         modInfo = found
     }
@@ -518,13 +518,13 @@ export async function checkForUpdates(mod: any, shouldUpdateState: boolean = tru
     mod = get(mod.uid)
 
     // set some values, for the renderer
-    mod.updateAvailable = available
-    mod.updateTarget = remoteInfo.version
+    mod.updateAvailable = available === true || undefined
+    mod.updateTarget = available === true && remoteInfo.version || undefined
 
     mod = await addToConfig(mod, true) // merge mod to config
     if (shouldUpdateState) await updateState()
 
-    return { available, version: mod.version }
+    return { available, version: remoteInfo.version }
 }
 
 export async function init() {

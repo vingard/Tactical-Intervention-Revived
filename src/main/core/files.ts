@@ -133,12 +133,17 @@ export async function downloadTempFile(url: string, name: string, loadStateId: s
         try {
             const writer = fs.createWriteStream(savePath, {flags: fileOffset && "a" || undefined}) // append IF we are continuing parial dl
 
-            data.on("data", (chunk: any) => loadingSetState(
-                loadStateId,
-                `Downloading ${byteSize(downloadedLength)}/${byteSize(totalLength)}`,
-                (downloadedLength += chunk.length) / totalLength,
-                1
-            ))
+            data.on("data", (chunk: any) => {
+
+                const downloadPostfix = totalLength && totalLength > 0 && Number.isFinite(totalLength) && `/${byteSize(totalLength)}`
+
+                loadingSetState(
+                    loadStateId,
+                    `Downloading ${byteSize(downloadedLength)}${downloadPostfix || ""}`,
+                    (downloadedLength += chunk.length) / totalLength,
+                    1
+                )
+            })
 
             data.pipe(writer)
         } catch (err) {
