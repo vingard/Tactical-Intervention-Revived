@@ -7,6 +7,7 @@ import path from "path";
 import log from "electron-log"
 import { z } from "zod"
 import YAML from "yaml"
+import * as readline from "readline"
 import { processWatcher } from "main/main";
 
 import * as server from "../core/server"
@@ -134,9 +135,25 @@ async function setupMods(conf: ServerConfig) {
     console.log("Mod setup complete!")
 }
 
+const shutdown = () => {
+    app.quit()
+    process.exit(0)
+}
+
+// hacky fix for windows sigint stuff
+if (process.platform === "win32") {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+
+    rl.on("SIGINT", () => process.emit("SIGINT"))
+}
+
 export async function serverInit() {
-    process.on("SIGINT", () => process.exit(0)) // shut down properly when CTRL+C'd
-    process.on("SIGQUIT", () => process.exit(0))
+    process.on("SIGINT", () => shutdown()) // shut down properly when CTRL+C'd
+    process.on("SIGQUIT", () => shutdown())
+    process.on("SIGTERM", () => shutdown())
 
     program
         .option("-c --config <string>", "The revived server .yml configuration file", "revived_server.yml")
@@ -153,7 +170,7 @@ export async function serverInit() {
     const conf = setupConfig(program.getOptionValue("config"))
 
     console.log("Tactical Intervention Revived Dedicated Server (TIRDS)")
-    console.log("[!] For any mouting, installing or updating this executable must be ran with administrator permissions! ")
+    console.log("[!] For any mounting, installing or updating this executable must be ran with administrator permissions! ")
 
     await setupGame()
     await setupMods(conf)

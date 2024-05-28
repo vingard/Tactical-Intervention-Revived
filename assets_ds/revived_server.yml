@@ -1,6 +1,6 @@
 port: 27015
 publicPort: 27015 # what public port is our server running on
-hostname: "Example Server"
+hostname: "Example TIRDS Server"
 public: true # if we should be listed in the server browser
 autoRestart: true # if the dedicated server process dies should we restart?
 autoUpdateMods: false # should the server auto update mods each time it starts?

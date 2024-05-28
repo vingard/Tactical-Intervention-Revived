@@ -278,7 +278,6 @@ export async function tryRemove(filePath: string) {
     if (jetpack.exists(filePath) !== "dir") return
 
     try {
-        console.log("rm", filePath)
         await rimraf.windows(filePath, {maxRetries: 12, retryDelay: 300}) // rimraf is used here cause turns out this can be a real pain, see comment above
     } catch (err: any) {
         log.warn(`Error when removing ${filePath} - ${err.message} - contuining!`)
