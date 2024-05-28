@@ -40,7 +40,7 @@ const REVIVED_SERVER_YML_SCHEMA = z.object({
     public: z.boolean({message: "must be a boolean"}),
     hostname: z.string({message: "must be a string"}),
     publicPort: z.number({message: "must be a number" }).int({message: "must be a integer"}).positive({message: "must be positive"}).optional(),
-    cfg: z.string({message: "must be a string"}).endsWith(".cfg", {message: "must end with .cfg"}).optional(),
+    cfg: z.string({message: "must be a string"}).optional(),
     autoRestart: z.boolean({message: "must be boolean"}).optional().default(true),
     autoUpdateMods: z.boolean({message: "must be a boolean"}).optional().default(true),
     mods: z.array(MOD_SCHEMA, {message: "must be an array"}).optional().default([])
@@ -67,22 +67,8 @@ function setupConfig(configFile: string = "revived_server.yml"): ServerConfig {
     return conf
 }
 
-export async function serverInit() {
-    program
-        .option("-c --config <string>", "The revived server .yml configuration file", "revived_server.yml")
-
-    program.parse(hideBin(process.argv))
-
-    if (!game.isInstalled) return log.warn("Tried to start dedicated server when game was not installed!")
-
-    const allOptions: any = {}
-
-    for (const opt of program.options) {
-        allOptions[opt.name()] = program.getOptionValue(opt.name())
-    }
-
-    const conf = setupConfig(program.getOptionValue("config"))
-
+async function setupGame() {
+    // make sure game is installed
     if (!game.isInstalled()) {
         console.log("This server does not have an active install of Tactical Intervention... installing:")
 
@@ -92,7 +78,9 @@ export async function serverInit() {
             return program.error(`Error installing game: ${err.message}`)
         }
     }
+}
 
+async function setupMods(conf: ServerConfig) {
     console.log(`This server is using ${conf.mods.length} mods`)
 
     const installedModIndex: any = {}
@@ -140,16 +128,40 @@ export async function serverInit() {
         await mod.setRequireClientDownload(modObj, thisMod.requireClientDownload)
     }
 
+    console.log("Mod setup complete!")
+}
+
+export async function serverInit() {
+    process.on("SIGINT", () => process.exit(0)) // shut down properly when CTRL+C'd
+
+    program
+        .option("-c --config <string>", "The revived server .yml configuration file", "revived_server.yml")
+
+    program.parse(hideBin(process.argv))
+
+    if (!game.isInstalled) return log.warn("Tried to start dedicated server when game was not installed!")
+
+    const allOptions: any = {}
+
+    for (const opt of program.options) {
+        allOptions[opt.name()] = program.getOptionValue(opt.name())
+    }
+
+    const conf = setupConfig(program.getOptionValue("config"))
+
+    await setupGame()
+    await setupMods(conf)
+
     const publicPort = conf.publicPort || conf.port
 
     console.log(`\nTactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${conf.port}`)
-    console.log(`Total Mods: ${conf.mods.length} | Config: ${conf.cfg} | Is Public: ${conf.public} | Public Port: ${conf.pub}`)
+    console.log(`Total Mods: ${conf.mods.length} | Config: ${conf.cfg} | Is Public: ${conf.public} | Public Port: ${conf.publicPort}`)
     console.log("-----------------------------------------------------------------\n")
 
     //server.startExperimentalStreamed()
     const startConfig = `hostname ${conf.hostname}
     ti_vehicle_authmode 1
-    ${conf.cfg && `exec ${conf.cfg}`}`
+    \n\n${conf.cfg}`
 
     server.start(startConfig, conf.port, publicPort, !conf.public)
 }
