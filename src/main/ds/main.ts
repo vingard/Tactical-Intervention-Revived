@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { program } from "commander";
+import { Command, program } from "commander";
 import { app } from "electron";
 import { hideBin } from "yargs/helpers";
 import jetpack from "fs-jetpack";
@@ -7,6 +7,7 @@ import path from "path";
 import log from "electron-log"
 import { z } from "zod"
 import YAML from "yaml"
+import { processWatcher } from "main/main";
 
 import * as server from "../core/server"
 import * as game from "../core/game"
@@ -102,11 +103,13 @@ async function setupMods(conf: ServerConfig) {
         console.log("")
 
         try {
-            const result = await mod.checkForUpdates(modObj, false)
-            if (result.available) {
-                log.info(`Updating ${modObj.uid} to version ${result.version}...`)
-                console.log("")
-                modObj = await mod.update(modObj)
+            if (conf.autoUpdateMods || program.getOptionValue("allowUpdates")) {
+                const result = await mod.checkForUpdates(modObj, false)
+                if (result.available) {
+                    log.info(`Updating ${modObj.uid} to version ${result.version}...`)
+                    console.log("")
+                    modObj = await mod.update(modObj)
+                }
             }
 
             // mount all mods
@@ -133,13 +136,13 @@ async function setupMods(conf: ServerConfig) {
 
 export async function serverInit() {
     process.on("SIGINT", () => process.exit(0)) // shut down properly when CTRL+C'd
+    process.on("SIGQUIT", () => process.exit(0))
 
     program
         .option("-c --config <string>", "The revived server .yml configuration file", "revived_server.yml")
+        .option("-u --allowUpdates", "Should we allow the updating of mods, inherits from the config by default")
 
     program.parse(hideBin(process.argv))
-
-    if (!game.isInstalled) return log.warn("Tried to start dedicated server when game was not installed!")
 
     const allOptions: any = {}
 
@@ -148,6 +151,9 @@ export async function serverInit() {
     }
 
     const conf = setupConfig(program.getOptionValue("config"))
+
+    console.log("Tactical Intervention Revived Dedicated Server (TIRDS)")
+    console.log("[!] For any mouting, installing or updating this executable must be ran with administrator permissions! ")
 
     await setupGame()
     await setupMods(conf)
@@ -163,5 +169,13 @@ export async function serverInit() {
     ti_vehicle_authmode 1
     \n\n${conf.cfg}`
 
-    server.start(startConfig, conf.port, publicPort, !conf.public)
+    const startServer = () => server.start(startConfig, conf.port, publicPort, !conf.public)
+
+    await startServer()
+
+    processWatcher.on("serverClosed", async () => {
+        if (!conf.autoRestart) return
+        log.warn("Server detected as crashed - restarting!")
+        await startServer()
+    })
 }

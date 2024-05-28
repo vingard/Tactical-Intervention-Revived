@@ -15,8 +15,7 @@ mods:
     url: https://github.com/lokachop/tacint-revived-trump-vip-replacement
     requireClientDownload: true
 
-# the server configuration, paste your cfg file into this multi-line string
-cfg: "
-map mis_highway
-echo Server started custom!
-"
+# the .cfg style server configuration, paste your cfg file into this multi-line string, make sure you keep the correct indentation
+cfg: |
+    map mis_highway
+    echo Server started custom!
