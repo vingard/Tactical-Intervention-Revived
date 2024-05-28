@@ -46,8 +46,8 @@ export async function getInfo(location: string, isFileSystem: boolean = false) {
 
         const found = mainRemote?.data || masterRemote?.data
         if (!found) throw new SoftError(`Failed to find remote mod.json file at ${location}\n${mainRemote.error?.message || masterRemote.error?.message}`)
-
         modInfo = found
+        modInfo.branch = mainRemote?.data && "main" || "master"
     }
 
     if (!modInfo.uid) {
@@ -206,7 +206,7 @@ export async function install(url: string, shouldMount: boolean = false) {
 
     console.log("") // newline for replacement
 
-    await files.downloadTempFile(`${mod.url}/archive/refs/heads/main.zip`, modTempFileName, modLoadStateId, true, 0)
+    await files.downloadTempFile(`${mod.url}/archive/refs/heads/${mod.branch || "main"}.zip`, modTempFileName, modLoadStateId, true, 0)
 
     // Make mods folder and remove old install
     await files.tryToRemoveDirectory(modPath)

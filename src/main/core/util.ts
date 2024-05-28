@@ -8,7 +8,7 @@ import { exeName } from "./appPath"
 export function loadingSetState(key: string, message: string, completedItems: number = 0, totalItems: number = 0, success: boolean = false) {
     readline.clearLine(process.stdout, 0)
     readline.cursorTo(process.stdout, 0)
-    process.stdout.write(`${message} (${totalItems}/${completedItems})`)
+    process.stdout.write(`${message} (${completedItems}/${totalItems})`)
 
     const win = getWindow()
     if (!win) return

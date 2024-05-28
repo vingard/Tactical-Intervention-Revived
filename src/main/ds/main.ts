@@ -82,7 +82,6 @@ export async function serverInit() {
     }
 
     const conf = setupConfig(program.getOptionValue("config"))
-    console.log(conf)
 
     if (!game.isInstalled()) {
         console.log("This server does not have an active install of Tactical Intervention... installing:")
@@ -144,7 +143,7 @@ export async function serverInit() {
     const publicPort = conf.publicPort || conf.port
 
     console.log(`\nTactical Intervention Revived Dedicated Server (${app.getVersion()}) started on port ${conf.port}`)
-    console.log(`Total Mods: ${conf.mods.length} | Config: ${conf.cfg} | Is Public: ${conf.public} | Public Port: ${config.pub}`)
+    console.log(`Total Mods: ${conf.mods.length} | Config: ${conf.cfg} | Is Public: ${conf.public} | Public Port: ${conf.pub}`)
     console.log("-----------------------------------------------------------------\n")
 
     //server.startExperimentalStreamed()
