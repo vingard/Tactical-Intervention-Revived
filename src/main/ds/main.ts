@@ -92,7 +92,7 @@ async function setupMods(conf: ServerConfig) {
             try {
                 log.info(`Removing non-required mod ${modObj.uid}...`)
                 console.log("")
-                mod.remove(modObj)
+                await mod.remove(modObj)
             } catch(err: any) { log.error(`Error removing mod - ${err.message}`) }
             continue
         }
