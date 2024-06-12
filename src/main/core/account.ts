@@ -1,7 +1,7 @@
 import { BrowserWindow, dialog, shell } from "electron";
 import { jwtDecode } from "jwt-decode";
 import { API } from "./api";
-import { storeSet } from "./store";
+import { storeRemove, storeSet } from "./store";
 
 // TODO: https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
 // 1 open login in browser
@@ -15,8 +15,8 @@ let activeAuthToken: string | undefined
 interface JWTPayload {
     id: string
     username: string
-    iat: string
-    exp: string
+    iat: number
+    exp: number
 }
 
 export function getUser() {
@@ -31,8 +31,12 @@ export function getUser() {
 export function checkLoggedIn() {
     const user = getUser()
 
-    console.log(user)
-    if (!user?.accessToken) return false
+    // ensure we have an access token
+    if (!user?.accessToken) return { loggedIn: false }
+
+    // check if access token has expired
+    const now = Date.now() / 10000 // now in seconds
+    if (!user.info.exp || now >= user.info.exp) return { loggedIn: false, expired: true }
 
     return true
 }
@@ -74,7 +78,8 @@ export async function login(loginToken: string) {
 }
 
 export function logout() {
-
+    activeAuthToken = undefined
+    storeRemove("token")
 }
 
 export function handleProtocol(commandLine: string[]) {
@@ -90,6 +95,5 @@ export function handleProtocol(commandLine: string[]) {
     const code = protocol.get("code")
 
     if (!code || code === "undefined") return
-
     login(code)
 }
