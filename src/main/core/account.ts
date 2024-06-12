@@ -2,7 +2,6 @@ import { BrowserWindow, dialog, shell } from "electron";
 import { jwtDecode } from "jwt-decode";
 import { API } from "./api";
 import { storeSet } from "./store";
-import { AxiosError } from "axios";
 
 // TODO: https://www.electronjs.org/docs/latest/tutorial/launch-app-from-url-in-another-app
 // 1 open login in browser
@@ -55,7 +54,8 @@ export async function login(loginToken: string) {
     try {
         resp = await API.get("auth/callback", {
             params: {
-                code: loginToken
+                code: loginToken,
+                launcher: true
             }
         })
     } catch(ex: any) {
