@@ -10,6 +10,7 @@ import {
 import * as appPath from "./core/appPath"
 import * as server from "./core/server"
 import * as game from "./core/game"
+import * as account from "./core/account"
 import { AppUpdater } from "./main";
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
@@ -122,6 +123,12 @@ export default class MenuBuilder {
                         accelerator: "Alt+Ctrl+I",
                         click: () => {
                             this.mainWindow.webContents.toggleDevTools()
+                        }
+                    },
+                    {
+                        label: "Master Server Login",
+                        click: () => {
+                            account.promptLogin()
                         }
                     }
                 ]

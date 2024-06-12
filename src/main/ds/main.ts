@@ -8,7 +8,7 @@ import log from "electron-log"
 import { z } from "zod"
 import YAML from "yaml"
 import * as readline from "readline"
-import { processWatcher } from "main/main";
+import { processWatcher } from "../main"
 
 import * as server from "../core/server"
 import * as game from "../core/game"
@@ -42,6 +42,7 @@ const REVIVED_SERVER_YML_SCHEMA = z.object({
     public: z.boolean({message: "must be a boolean"}),
     hostname: z.string({message: "must be a string"}),
     publicPort: z.number({message: "must be a number" }).int({message: "must be a integer"}).positive({message: "must be positive"}).optional(),
+    hostToken: z.string().optional(),
     cfg: z.string({message: "must be a string"}).optional(),
     autoRestart: z.boolean({message: "must be boolean"}).optional().default(true),
     autoUpdateMods: z.boolean({message: "must be a boolean"}).optional().default(true),

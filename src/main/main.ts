@@ -30,6 +30,7 @@ import { ProcessWatcher } from "./core/procwatch"
 import { HostedServer } from "./core/hostedserver"
 import { startServer } from "./cli"
 import { serverInit } from "./ds/main"
+import { handleProtocol } from "./core/account"
 
 export class AppUpdater {
     constructor() {
@@ -199,6 +200,40 @@ const createWindow = async () => {
     const args = await yargs(hideBin(process.argv)).argv
 
     if (args.serverPort || args.serverCfg) startServer(args)
+
+    // protocolClient.on("request", async (requestUrl) => {
+    //     console.log("new protocol req:", requestUrl)
+    // })
+
+    // // custom protocol stuff
+    // await protocolClient.initialize({
+    //     protocol: "tacint-revived",
+    //     mode: process.env.NODE_ENV === "development" && "development" || "production"
+    // })
+
+    // protocol stuff
+
+    const PROTOCOL = "tacint-revived"
+
+    app.removeAsDefaultProtocolClient(PROTOCOL)
+
+    if (process.defaultApp) {
+        if (process.argv.length >= 2) {
+            app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [
+                "-r",
+                path.join(
+                    __dirname,
+                    "..",
+                    "..",
+                    "node_modules",
+                    "ts-node/register/transpile-only"
+                ),
+                path.join(__dirname, "..", "..")
+            ])
+        }
+    } else {
+        app.setAsDefaultProtocolClient(PROTOCOL)
+    }
 }
 
 // Start the process watcher...
@@ -580,7 +615,8 @@ async function handleGameGetMaps() {
     return game.getMaps()
 }
 
-app.whenReady()
+function appInit() {
+    app.whenReady()
     .then(() => {
         config.create()
 
@@ -634,3 +670,26 @@ app.whenReady()
         })()
     })
     .catch(console.log)
+}
+
+const gotTheLock = app.requestSingleInstanceLock()
+
+console.log("lock", gotTheLock)
+
+if (!gotTheLock) {
+    app.quit()
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        // Someone tried to run a second instance, we should focus our window.
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore()
+            mainWindow.focus()
+        }
+
+        handleProtocol(commandLine)
+    })
+
+    appInit()
+}
+
+
